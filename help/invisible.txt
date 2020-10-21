@@ -1,0 +1,5 @@
+invisible [on | off]
+
+Go visible/invisible
+
+Wizards+ only.

@@ -1,0 +1,5 @@
+Bans connected user
+
+ban [username]
+
+Archwizard+ only.

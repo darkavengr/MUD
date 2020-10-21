@@ -1,0 +1,5 @@
+ungag [user]
+
+Ungags a user
+
+Wizards+ only.

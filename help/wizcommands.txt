@@ -1,0 +1,27 @@
+Wizard commands:
+
+kill		[user]			-- kills a person
+create		[object]		-- creates a object
+delete		[object]		-- deletes a object
+rename		[object] [newname]	-- renames a object
+chown		[object] [newowner]	-- changes objects owner
+chmod		[object] [attributes]	-- sets objects attributes 
+move		[object] [location]	-- moves a object
+dig					-- creates a new room
+					-- creates a new monster
+addmonster	[name] [desc] [stamina] [damage] [class]
+					-- adds a new weapon
+addweapon	[name] [desc] [damage]	[level] [class]
+					-- add a new spell
+addspell	[name] [desc] [message] [points] [damage] [level] [class]
+invisible 	[on | off]		-- go invisble
+force		[user] [command]	-- force user to perform command
+go		[location]		-- teleport to location
+wall		[message]		-- send message to all users
+banishmonster				-- banish monster in room
+take		[user] [object]		-- take object from user
+
+Archwizard commands:
+
+reload					-- reload configuration
+

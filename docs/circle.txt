@@ -1,0 +1,363 @@
+
+  The History of CircleMUD
+
+As told by its author <http://www.circlemud.org/~jelson/>.
+------------------------------------------------------------------------
+
+
+    What Has Come Before
+
+A MUD <http://www.cis.upenn.edu/~lwl/mudinfo.html> (Multiple User
+Dimension or Multiple User Dungeon) is a computer program which allows
+Internet users from around the world to connect to it, create fictional
+characters for themselves, and then interact with other real users as
+well as computer-generated entities in a virtual environment. Users can
+explore their virtual world, talk to or perform actions with other human
+players, roam through dangerous monster-infested areas, solve puzzles,
+and seek treasures. DikuMUD <http://www.dikumud.com/diku> is a
+particular class of MUD which tends to be combat-oriented with a look
+and feel similar to some (non-computerized) role-playing games
+<http://www.common.net/~shadow/rpg_index/>. CircleMUD is a derivative of
+DikuMUD.
+
+While Circle still retains the "look and feel" of the original DikuMUD,
+it has dozens of additional features and bug fixes, and much of the code
+has been rewritten to be more flexible, efficient, easy to understand,
+and easy to extend. CircleMUD's history began in January of 1992 when
+development on it started on one of the DECstation 3100's
+<http://www.digital.com/home.html> in Johns Hopkins'
+<http://www.jhu.edu> Department of Computer Science
+<http://www.cs.jhu.edu>. Most current development takes place on a
+home-built 486 DX2/80 running Linux 1.2 <http://www.linux.org>.
+
+
+    From Innocence to Addiction
+
+I was introduced to MUDding in my first semester at Johns Hopkins
+<http://www.jhu.edu> at the tender age of 17 when I noticed some friends
+playing an interactive, multi-user game -- WhatMUD, a MUD run at Hopkins
+by undergraduates Dave Reed and Justin Chandler. I began to play,
+choosing "Rasmussen" as my character's name (after the character
+Berlinghoff Rasmussen, star of that week's new 'Star Trek: The Next
+Generation' episode.) After WhatMUD was forced to close in November of
+1991 due to a hardware failure, I found a copy of the DikuMUD source
+code and began developing my own MUD, finding that working "behind the
+scenes" at creating a MUD was far more enjoyable and interesting than
+playing one.
+
+After a couple of weeks of learning how the DikuMUD source code was
+organized and adding a couple of elementary new features, my fledgling
+MUD was (covertly) tested for the first time by several of my friends
+and me. Dubbed 'CircleMUD' in honor of the DECstation on which it was
+running (circle.cs.jhu.edu), the MUD seemed to work well and (still
+covertly) was opened to players on a very limited basis.
+
+Development and limited play-testing continued for several weeks, and
+Circle began to get a fair amount of word-of-mouth popularity on the
+Hopkins campus; between 8 and 12 people could often be found logged in
+at once. At this point (January 1992), I decided to take the big plunge
+and inform the Computer Science system administrator (at that time, Tim
+Stearns) of CircleMUD's existence, knowing it would either lead to the
+MUD's immediate demise or open the doors to running it in the open
+without having to hide it.
+
+
+    The Adventure Begins
+
+Happily, Tim responded positively, declaring that Circle would be
+welcome in the Computer Science department as long as I made sure it did
+not use more than 2500K of disk space. With that fateful email, I
+happily declared in Circle's MOTD (Message of The Day -- the message
+users see when logging in), "CIRCLEMUD IS HERE TO STAY!!", officially
+opening Circle to players on a full-time basis.
+
+At first, Circle was plagued by the same problems many other MUDs have
+-- instabilities in the code and a lack of features. However, my
+advantage was that I was a programmer, whereas many other MUD
+administrators of that era (and even today) were solely game-players,
+not programmers, and weren't capable of fixing many of the more elusive
+bugs. Circle soon became and exceptionally stable and bug-free MUD -- a
+reputation which I think it still maintains to this day. I was also able
+to create other special features such as a MUD Mail system (commonplace
+today, but rare at the time.)
+
+I never advertised CircleMUD in any public forum such as the DikuMUD
+newsgroup. Through word-of-mouth advertising alone, Circle became
+moderately popular; it became standard to find 30 to 40 people playing
+during the afternoon. The operating system under which Circle was
+running (Ultrix 4.0 on a DECstation 3100) limited the MUD to about 58
+players -- a limit which was reached several times over the course of
+Circle's existance.
+
+
+    The End?
+
+However, the dark side of MUDding soon reared its ugly head, as
+political battles ensued in Circle's later months of operation. I had
+appointed several players as "Gods" (i.e. administrators) to help the
+"mortals" (i.e., players) with problems, and received much grief as some
+of the Gods vehemently opposed my policies or choices of which Gods
+should receive promotions. Some "Immortals" (i.e., players who have
+received enough points to 'retire' from active play, and are granted
+special privledges) also loudly opposed me. One of them even kept
+likening me to Hitler.
+
+Not all Gods and Immortals were causing problems; indeed, many of them
+became close friends in "RL" (Real Life -- i.e., off the MUD). However,
+finding that I was devoting more time to politics than coding, faced
+with the imminent loss of the circle machine as a site on which to run
+the MUD, and given an offer to work solely as a coder (and not as a
+political administrator) on a new MUD running at Hopkins called JediMUD,
+I chose to permanently bring CircleMUD down on August 26, 1992.
+
+The decision was certainly not made without much disappointment from
+many of Circle's players; indeed, at least 8 of them offered the use of
+their machines for me to use as a new home for Circle. However, not
+wanting to deal with the political problems of running a MUD on my own
+or dealing with a "foreign" site to run my MUD from, I instead archived
+the CircleMUD code and became a full-time coder for JediMUD at the
+beginning of September, 1992.
+
+
+    A New Beginning
+
+It should here be noted that an individual who wishes to start his or
+her own, new MUD must first find a "code base" -- i.e., a currently
+existing MUD on which he or she can build. The original DikuMUD,
+released in 1990, was not desirable to many people because it had many
+bugs and did not have any "modern" MUD features which most MUDs of the
+day already had. Most MUD implementors kept their code closely guarded,
+not wanting to work for hours to create special new features only to
+have some other MUD use them.
+
+The few MUDs which had released their code publically were better than
+the original DikuMUD, but were often difficult to find (you usually had
+to get them from someone who knew someone who knew someone who had a
+copy), and some were quite old and did not have many modern features. At
+least one publically available MUD, SillyMUD, did have many fancy
+features, but was large and unwieldy. In addition, many people did /not/
+want to start with a MUD which had fancy features -- they wanted to
+start with a very "plain" MUD, so as to be able to add their /own/ fancy
+features based around their /own/ vision of how a MUD "should" be.
+
+Another publically available MUD, Merc DikuMUD, was compact an
+efficient, but had a very different "look and feel" than the original
+DikuMUD -- in fact, much of the DikuMUD code and area files were not
+even compatible with Merc, turning many MUD implementors away from it.
+
+All of the publically available code, with the notable exception of
+Merc, also suffered from the problem of portability: if the person who
+released it was using a Sun running SunOS, and your machine an SGI
+running Irix, you were in for some major headaches getting their code to
+work on your system.
+
+In May of 1993, in light of all the above circumstances, in addition to
+the constant pleas on the USENET newsgroup rec.games.mud.diku from
+people asking where they could get a nice copy of DikuMUD source code, I
+realized that there was a big niche waiting to be filled in the DikuMUD
+world. A well-written, stable, bug-free, publically available and easily
+accessible DikuMUD code base was needed. A code base which was fancy
+enough to have the standard features which most contemporary DikuMUDs
+players and implementors expected, yet basic enough to allow each
+implementor huge latitude in customization, and which which would be
+easily portable to many different operating systems and hardware
+platforms. I decided that with a little work, CircleMUD would be perfect
+to fill that niche.
+
+
+    The Adventure Begins Again
+
+I pulled the original CircleMUD out of its archive, and for many weeks
+during the summer of 1993, devoted almost all of my spare time to
+modernizing and improving Circle. I infused Circle with much of the Diku
+code I'd written while working for JediMUD, in addition to dozens of
+other new features and optimizations.
+
+CircleMUD 2.0, the first public release of Circle, was quickly becoming
+a reality. Circle 2.0 was specifically written to be very small and
+efficient -- indeed, the basic system used only about 2 megabytes of
+memory (an unprecedented amount at the time -- most MUDs of its size
+used 6, 8, or even 10 megs.) Circle 2.0 was specifically designed to be
+flexible, easy to expand, and easy to debug -- a starting point upon
+which other MUD implementors could easily turn their dreams of what a
+MUD should look like into reality.
+
+CircleMUD 2.0 was relased on July 16, 1993. Here is the post which
+accompanied it:
+
+
+---------------------------------------------------------------------------
+Wake the kids and find the dog, because it's the FTP release of
+
+
+                    C  I  R  C  L  E  M  U  D     2  .  0
+
+
+That's right -- CircleMUD 2.0 is done and is now available for anonymous FTP
+at ftp.cs.jhu.edu!
+
+CircleMUD is highly developed from the programming side, but highly UNdeveloped
+on the game-playing side.  So, if you're looking for a huge MUD with billions
+of spells, skills, classes, races, and areas, Circle will probably disappoint
+you severely.  Circle still has only the 4 original Diku classes, the original
+spells, the original skills, and about a dozen areas.
+
+On the other hand, if you're looking for a highly stable, well-developed,
+well-organized "blank slate" MUD on which you can put your OWN ideas for
+spells, skills, classes, and areas, then Circle might be just what you're
+looking for.
+
+Just take a gander at some of Circle's nifty features:
+
+	-- In-memory mobile and object prototypes and string sharing for
+	   decreased memory usage and blazingly fast zone resets
+
+	-- All large realloc()s have been removed and replaced by boot-time
+	   record counting and a single malloc() for superior memory efficiency
+
+	-- Split world/obj/mob/zon/shp files for easy addition of areas; plus,
+	   all the world files are still in the original Diku format for
+	   compatibility with existing areas
+
+	-- Boot-time and run-time error checking of most data files with
+	   diagnostic messages a lot more helpful than "segmentation fault"!
+
+	-- Player mail system and bank
+
+	-- Rewritten board system: boards are now stable, robust, more
+	   intelligent, and easily expandable -- adding a new board is
+	   as easy as adding another line to an array
+
+	-- ANSI color codes with a fully documented programmers' interface
+
+	-- On-line system logs
+
+	-- Optional automatically regenerating wizlist -- a final end
+	   to new immortals constantly asking you when they'll be added
+	   to the immlist!
+
+	-- "config.c" file allows you to change aspects of the game such
+	   as playerkilling/playerthieving legality, max number of objects
+	   rentable, and nameserver usage -- WITHOUT recompiling the
+	   entire MUD!
+
+	-- All text (help, mortal/immort MOTDs, etc.) is rebootable at
+	   run-time with the "reboot" command
+
+	-- All players are given a unique serial number -- no more messy,
+	   time consuming str_cmp()s when you're trying to identify people!
+
+	-- Fully integrated and robust rent/crash system -- allows normal
+	   renting, cryo-renting, crash protection, and forced rent
+	   (at an increased price) after an hour of idling
+
+	-- All the standard wizard stuff you're used to: level-sensitive
+	   invisibility, settable poofin/poofouts, wizline
+
+	-- Advanced 'set' command which allows you to set dozens of aspects
+	   of players -- even if they aren't logged in!  "Stat" also allows
+	   you to stat people who aren't logged in!
+
+	-- Intelligent 'autorun' script handles different types of reboots,
+	   organizing your system logs, and more!
+
+	-- Circle comes with more than a dozen utilities, all fully
+	   documented, to make maintenance a snap!
+
+	-- And much, much more!
+
+Unfortunately, the original Circle had more than its fair share of Bad People
+when it was alive, but it DID lead to an impressive list of security and
+"asshole control" features:
+
+	-- 3 types of sitebanning available: 'all' to refuse all connections,
+	   'new' to refuse new players, or 'select' to refuse new players and
+	   all registered players who don't have a SITEOK flag.
+
+	-- 'wizlock' allows you to close the game to all new players or all
+	   players below a certain level.
+
+	-- Handy 'mute' command squelches a player off of all public
+	   communication channels
+
+	-- Handy 'freeze' command freezes a player in his tracks: the MUD
+	   totally ignores all commands from that player until he's thawed.
+
+	-- Even handier DELETE flag allows you to delete players on the fly.
+
+	-- 'set' command (mentioned above) allows you to freeze/unfreeze/
+	   delete/siteok/un-siteok players -- even if they aren't logged in!
+
+	-- Bad password attempts are written to the system log and saved;
+	   if someone tries to hack your account, you see "4 LOGIN FAILURES
+	   SINCE LAST SUCCESSFUL LOGIN" next time you log on.
+
+	-- Passwords don't echo to the screen; allows 3 bad PW attempts
+	   before disconnecting you.  
+
+	-- Players aren't allowed to choose their character's name as their
+	   password -- you'd be surprised how many do!
+
+	-- "xnames" text file specifies a list of invalid name substrings
+	   to prevent creation of characters with overly profane names.
+
+
+Listen to all the rave reviews of CircleMUD 2.0!
+
+        "How long ago was that deadline you set for yourself?" -- My Friend
+
+        "NO ONE should be denied the power of computation." -- My Professor
+
+        "Multi-user WHAT?" -- My Mom
+
+Give it a try -- what do you have to lose other than your GPA/job, friends,
+and life?
+
+---------------------------------------------------------------------------
+
+
+    CircleMUD Today
+
+Since Circle v2.00, many new features have been added; much of the code
+has been revised or completely rewritten to be smaller, easier to
+understand and modify, more efficient, and more functional. The most
+current version is v2.20; the release of CircleMUD 3.0, eagerly awaited
+by much of the Circle and Diku communities, is scheduled for release
+later in 1996.
+
+Since its original release, the various releases of CircleMUD have been
+downloaded tens of thousands of times from its official FTP archive by
+users from every corner of the United States and from over 65 foreign
+countries. It has also been downloaded an unknown number of times from
+dozens of other FTP sites in the U.S. and abroad which started carrying
+it (most of them through Linux mirroring). A CircleMUD mailing list,
+with a readership of about 350 people in May of 1996, was established
+for users of Circle to discuss their experiences, toss around ideas,
+exchange code, and propose new directions for future versions of Circle.
+
+Circle was designed to be highly portable on as many Unix systems as
+possible; it is known to run under Ultrix, SunOS, Solaris, IRIX, AIX,
+Linux, HP/UX, ConvexOS, and other versions of Unix using the GNU
+autoconf package. Using the WinSock API, it is even possible to compile
+and run CircleMUD under Windows 95 and Windows NT! In addition,
+CircleMUD users have also ported Circle to the Amiga and OS/2.
+
+Hundreds of MUDs around the world are based on CircleMUD (here's a small
+list <http://www.circlemud.org/sites.shtml> of a few of them). New
+Circle-based MUDs pop up almost every day, and I've recieved thousands
+of pieces of mail from thrilled users who love the code. Some use it to
+run huge MUDs intended to attract an international audience; others just
+use it to hack on at home and maybe share with their friends or
+schoolmates. It makes me very happy to know that I've contributed to the
+total amount of coolness inherent to the Universe, even if CircleMUD
+really is a small contribution in the grand scheme of things.
+
+------------------------------------------------------------------------
+<-- Back to the CircleMUD Home Page </>
+
+jelson@circlemud.org
+
+<http://www.circlemud.org/~jelson>
+
+Last updated: 1 May 96
+

@@ -1,0 +1,5 @@
+fight [target]
+f [target]
+
+Enter battle with a monster or player,
+type spells or attacks to attack your opponent, or type f to abandon the battle.

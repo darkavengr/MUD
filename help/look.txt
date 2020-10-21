@@ -1,0 +1,7 @@
+look [name]
+
+look at object,room or player.
+
+If no name is given after the command then the current room is looked at,
+otherwise a object or player is looked at.
+

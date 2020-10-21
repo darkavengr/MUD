@@ -1,0 +1,16 @@
+:	  	@chmod		@chown	 
+@create  	@delete   	@dig
+@move	   	@rename         addmonster
+addspell   	addweapon       attack
+banishmonster   describe	down
+drop		east      	force
+give 	        help	        home
+inv	        invisible 	kill
+look		north		northeast
+northwest 	password      	pickup
+quit          	reload    	say	
+score  		south   	southeast
+southwest 	spell         	take
+teleport 	up  	        version
+wall   		west		whisper
+who

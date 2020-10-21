@@ -1,0 +1,4 @@
+To go north, south east west, etc type "north" "south" "east" "west" "northeast" "northwest"
+"southeast" "southhwest" "up" or "down"
+
+To go your home room type "home"

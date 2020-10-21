@@ -1,0 +1,44 @@
+Commands avaliable:
+
+
+:	 Emote
+ban	  ban by user
+banip	  ban by ip address
+chmod	  set object or room attributes
+chown     change object or room owner
+create    create new object
+delete    delete object
+describe  describe object or room
+dig 	  create room
+down      go down
+drop      drop object
+east      go east
+fight     fight monster or player force
+get       give
+go        go to a room
+help      get help
+home      go to home room
+kill      kill user
+look	  look at room or object
+move      move object
+north     go north
+northeast go northeast 
+northwest go northwest
+password  change password
+pose      emote something
+quit 	  quit
+reload    reload configuration
+rename    rename room or object
+say 	  say something
+score     display score
+shutdown  shutdown server
+south     go south
+southeast go southeast
+southwest go southwest
+spell     cast a spell
+take	  take object from someone
+up        go up
+version   display version
+wall      send message to everyone
+west      go west
+whisper  send to message to someone

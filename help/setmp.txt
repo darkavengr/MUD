@@ -1,0 +1,8 @@
+Sets user spell points (Wizards+ only).
+
+setmp +amount	Increase user magic point
+setmp -amount	Decrease user magic pointsd
+setmp amount	Set user magic points
+
+
+

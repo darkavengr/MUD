@@ -1,0 +1,4 @@
+drop [object]
+
+Drop object, the object be able to be dropped.
+

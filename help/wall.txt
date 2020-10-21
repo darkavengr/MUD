@@ -1,0 +1,5 @@
+wall [message]
+
+Send a message to everyone connected.
+
+Wizards+ only.

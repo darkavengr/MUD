@@ -1,0 +1,25 @@
+Sets user level (wizard only)
+
+setrace [level]
+
+Where [level] can be any of the following levels:
+novice 	 	novice
+warrior		warrior
+hero		heroine
+champion	championess
+superhero	superheroine
+enchanter	enchanteress
+sorceror	sorceress
+necromancer	necromanceress
+legend		legend
+wizard		witch
+Arch Wizard	arch witch
+Dungeon Master	dungeon misteress
+
+or [level] can be a number from 1-12
+or +[level] to add a level
+or -[level]t to subtract levels
+
+
+
+

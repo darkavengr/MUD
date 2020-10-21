@@ -1,0 +1,5 @@
+go [room name]
+
+Go directly to a room.
+
+Wizards+ only.

@@ -1,0 +1,92 @@
+_
+
+
+      A Footnote to Confessions
+
+_ /I recently wrote someone an email about The Confessions of an
+Arch-Wizard <confessions.html> and I thought it worthwhile quoting some
+of this as a proper footnote to the original document. MJL, 5th January,
+2003./
+
+Ok, here's a "real life" confession that perhaps adds some weight to the
+philosophy behind confessions.
+
+My problem with MIST was that ultimately, it wasn't a very difficult
+game to play. There is a balance of making a game interesting and
+violent, and in making it difficult. It's not difficult to kill a lot of
+the players on the game if you have a shotgun or a chainsaw, and without
+a shotgun, a chainsaw, a poleaxe and for example, the odd brand that
+would kill anyone with one blow, MIST wouldn't have been MIST. If you
+were a strong, high level character the game got easier (unless someone
+made sure the lower characters had the nasty weapons) but the bottom
+line was that as a traditional goal oriented game, it wasn't that hard
+to make Wizard on MIST. My aim was to have an end-game where becoming a
+Wizard was more the start of the game than the end.
+
+The philosophy of the age, and indeed, the only philosophy was the
+Bartle-approach. This was obvious on the two commercial games of the
+time, MUD/British-Legends and Shades. Players would play the game,
+players would make Wizard and then it would end. They would get some
+warm feeling or other of achievement being a Wizard, they would sit
+there organising party events and the like but frankly, as a novice on
+Shades in 1983, being a Wizard looked about as interesting as being a
+Nursery School Teacher. I wrote my first proper MUA (called MUCK) in
+1984, and it was unusual in having no wizards, and being far more of a
+modern less goal-oriented society based MUA than anything of its time -
+It would have been great but since each move took up to a minute, it
+wasn't very popular.
+
+When I took on MIST in 1987 I saw an opportunity to "change the world" -
+Why not have Wizard as just another player level? If a game is full of
+Wizards, then why not let them have to play the game to survive as well
+- But how? Wizards are powerful and immortal, that's coded into the
+game, that's what it says and that's how it is. The Bartle-approach
+makes for a lazy game, it uses technology to replace the "Dungeon
+Master" and it relies on Wizards to help it along - It doesn't work, it
+doesn't make for an interesting game, it shouldn't really keep people
+with any intelligence coming back and it can be boring as hell unless
+those Wizards are allowed to exercise their powers to their full extent
+and be responsible for the consequences of that. The Bartle-approach
+creates a dead end - You are a Wizard, you are destined to a life of
+running my game and doing what I tell you do do. Yippee-Fucking-Do Man!
+
+I hope that I changed that. A MIST Wizard was never, ever under any
+illusion at all that he ran the game for me, and a MIST Wizard was never
+ever told what they could and could not do - At least, they were, but
+they were told different things so that the people with any imagination
+and intelligence could start to realise that maybe, just maybe, the game
+hadn't ended and the play was now far more sneaky and political than it
+was before. The aim now was to survive purges, to maybe be promoted to
+one of the new levels that would come and go, to gain favour with "them
+up top" and to have as much fun and create as much havock as they could
+get away with. I insult my Wizards in "Confessions" but that is because
+I want to show that they are players as much as a Novice is a player.
+Did the Arch-Wizards run the game? No, not really... My Arch-Wizards (in
+various forms of capitalisation) were there as administrators and a
+perceived authority. I was the "Dungeon Master" and unlike the
+Arch-Wizards of MUD and MIST, I took a final responsibility to run the
+game as an all powerful and mischeivous being as opposed to just a
+boring and fair overseer. I ran the world's only free and easily
+available MUD, and I like to think that when people look back they will
+say "Lorry? He was a complete bastard, but MIST was one hell of a game."
+- If they do, then I succeeded; but as it says at the end of
+Confessions, 5 years of very active involvelement for 6 hours a night,
+340 odd days a year takes a lot out of a person.
+
+On the subject of the MIST T-Shirt picture
+<http://arch-wizard.com/Mist/>, the caption is /"Do what thou wilt shall
+be the whole of the law. I am the law!" / because this eventually became
+MIST's Slogan. Buuuut, the original caption of that picture was /"Fuck
+off back to your own game!"/ - The MIST Arch-Wizard is Lorry and the
+little traditional Arch-Wizard on the toadstool is a well-known MUD2
+Arch-Wizard. It is actually based on a true-event somewhere deep in the
+game's history that symbolically at least marked our complete divergance
+from any involvement with the original ethos of MUD.
+
+I am tempted to add this little explanation as a "footnote" to
+confessions, maybe it's about time I explained it a bit.
+
+Michael.
+
+------------------------------------------------------------------------
+/ This page is looked after by Michael Lawrie <http://www.lorry.org/>. /

@@ -1,0 +1,4 @@
+Banishes monsters from room
+
+@banishmonster
+

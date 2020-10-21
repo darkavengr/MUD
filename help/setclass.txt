@@ -1,0 +1,9 @@
+Sets user class
+
+setclass [class]
+
+Where [class] can be: warrior thief mage cleric ranger paladin psionic barbarian hero
+
+
+
+

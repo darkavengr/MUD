@@ -1,0 +1,5 @@
+Miscellaneous commands:
+
+quit	--	 disconnects
+version	--	 displays version
+help	--	 displays this help

@@ -1,0 +1,5 @@
+move [object] [location]
+
+Moves an object.
+
+Wizards+ only.

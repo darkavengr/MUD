@@ -1,0 +1,3 @@
+home
+
+Go to home room.

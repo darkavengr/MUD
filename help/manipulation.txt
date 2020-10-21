@@ -1,0 +1,10 @@
+Object commands:
+
+pickup	 [object] 		-- pick an object up and place it in your inventory
+drop 	 [object] 		-- remove an object from your inventory and place it in the room
+give	 [object] [user]	-- hand an object to some other player
+look 	 [object] 		-- see what an object looks like
+describe [object] [desc]	-- describes a object
+You can see what objects you're carrying with the 'inventory' command; see 'help
+ inventory' for details.
+                     

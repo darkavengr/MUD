@@ -1,0 +1,4 @@
+: [emote]
+
+"Emote" something.
+

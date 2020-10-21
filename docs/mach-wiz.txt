@@ -1,0 +1,131 @@
+*A Machiavellian Wizard Lecture*
+
+Release 1.0
+
+/It is better to be feared than loved, if one cannot be both./
+*Niccolo Machiavelli*
+
+This modest proposal is intended as a further expansion of the section
+of the MUSH manual called "The Fundamental Laws of Wizarding" and
+Amberyl's wizard lecture document, aimed primarily at MUSH
+administrators. The following has been amended to incorporate actual
+practice.
+
+Administrators may wield power, but they are not invulnerable.
+Fortunately, lawsuits to date have not been a major threat.
+Nevertheless, this document attempts to describe a practical and
+realistic code of behavior that administrators can follow while
+maintaining their position effectively.
+
+Since administrators' actions reflect upon the entire MUD as a whole,
+and not just themselves, the most important thing is to not get caught
+or be seen as unethical. In practice, administrators still shall do as
+they please. Below is some advice which will assist in meeting all these
+goals.
+
+   1. Players are paranoid about their privacy. A good MUSH
+      administrator should alter @sweep and any such reporting tools to
+      be silent about reporting DARK wizards, so as to remain hidden.
+      Similarly, avoid telling another about what you find when invading
+      others' privacy. Loose lips sink ships. One must strive to
+      maintain the illusion of respecting privacy. Finally, never post
+      or mail logs.
+   2. Do not use @teleport frivolously. Players chafe when you
+      demonstrate capabilities they do not have nor can they defend
+      against. Similarly, a JUMP_OK place is not necessarily a public
+      area. One must not be perceived as a clueless admin. Feign
+      courtesy if you must. Or @set yourself DARK.
+   3. Never use stolen code in a place where the original author may
+      find out about it, lest the original author raise a fuss. If you
+      can improve the code and make it thus unrecognizable, so much the
+      better. To allay suspicions that you may be hoarding code, have a
+      small stock of code you can freely give away.
+   4. Do not reveal sitenames to non-administrators unless you can
+      ensure they will not involve you as an accomplice in a personal
+      vendetta, or reveal they have privileged access. Their needs do
+      not serve you.
+   5. Do not alter other peoples' objects without permission unless the
+      persons involved are generally unpopular. Popular support from the
+      player base is more important than a few troublesome players.
+      There will always be a few disgruntled invidivials to be dealt with.
+   6. Do not coerce a player object without the player's consent. Make
+      backups if you must temporarily change something. Players do not
+      forgive easily, and their memories are long. Besides, they have
+      big mouths.
+   7. Avoid untimely use of @find, @search, and any other performance
+      reducing commands; lock them out from players if need be. The last
+      thing your site needs is a reputation for being badly lagged.
+      Similarly, keep the number of objects and attributes on objects in
+      any parent rooms and objects to a minimum.
+   8. Wizard-only commands must be made secure from intrusion. Aside
+      from the issue of reputation, security is necessary to avoid
+      sabotage. If you can't trust your underlings, dispose of them. Do
+      not trust mortals with wizard powers, as the other players will
+      hold you responsible for their mistakes. Soft-coded administration
+      commands are highly vulnerable. Remember that this fact cuts both
+      ways when exploring competitors MUDs.
+   9. Do not spam players with unnecessary @shouts. Players are a
+      short-tempered, ungrateful lot and do not tolerate spam. If you
+      are in an ill mood, go DARK and hide.
+  10. Learn to code for and maintain your MUD site competently, lest you
+      be considered clueless or a player sneak some abusive code past
+      you. If you can't do it, find someone trustworthy who can.
+      Besides, being unable to maintain your server will leave you the
+      laughingstock of other competing administrators.
+  11. Never wizard while being intoxicated or act rashly when you are
+      enraged. It is unbecoming to a ruler to be seen as a bumbling
+      idiot or a malicious fool. Instead, put off annoyances
+      indefinitely until you want to deal with them. Players do not
+      easily forget a short-tempered wizard. Always try to maintain a
+      position where the annoyance is perceived by others to be at
+      fault. Feign politeness if you must. An alternative is to have a
+      spurious wizard character which you log into solely to abuse
+      players; occasionally "discipline" your wayward wizards to
+      maintain the illusion. Players who are considered an annoyance by
+      the majority of other players may sometimes be dealt with out of
+      hand, however.
+  12. Be lenient the first time with rules-breakers. One must maintain
+      the facade of fairness. Ignoring annoying players sometimes works.
+      Alternately, find someone else with more patience to foist this
+      task upon. Feel free to draft a confidential blacklist of
+      troublesome players and pass it along to other administrators. Of
+      course, a person need only have /allegedly/ violated rules in
+      order to get on the list. It's a lovely tool for character
+      assassination if used judiciously.
+  13. When seeking out potential wizards, ensure that you can deal with
+      them effectively in case of disputes. Dealing with players is
+      troublesome enough without having to deal with rebellious staff.
+      Be sure of their loyalty. If you do not actually have access to
+      the machine the MUSH is hosted on, it is possible for the database
+      to be usurped if the system administrator conspires with wizards
+      who are ill-disposed towards you.
+  14. In times of conflict, make logs to better defend your actions. In
+      some circumstances, even a doctored log is better than no defense
+      at all. Putting players on a warning list or a blacklist may be
+      necessary. Feel free to spread rumors and half-truths so long as
+      they can be plausibly backed-up. Remember, perception is not reality. 
+
+These guidelines are here to make the task of wizarding simpler for you.
+They exist to provide at least the illusion of ethical behavior; in
+general, if you follow these guidelines, players will find it quite
+difficult to accuse you of abusing your wizpowers and be able to back it
+up. They thus work for /your/ protection, albeit not the players'.
+Players, often suffering from self-esteem problems, frequently take
+wizard mistakes personally and seriously, and often carry grudges as
+well as lumping all wizards in the same category. Players who are
+paranoid tend to be more difficult to deal with; thus, for the sake of
+your sanity and that of every other wizard who ever has to deal with
+that player, try to appear faultless. If you consistently have personal
+problems with a player, you should also avoid wizard dealings with that
+player; have another wizard handle the situation instead. Or if they are
+someone whom you can @destroy without consequence, so be it.
+
+In all things, use common sense, and try to appear calm and impartial.
+When all else fails, log off or shut down the site to prove to the
+MUSHing serfs who's really in charge.
+
+Oh, and have a nice day.
+
+
+Jim W. Lai
+

@@ -1,0 +1,8 @@
+Sets user stamina points (WIZARDS only).
+
+setsp +amount	Increase user stamina points
+setsp -amount	Decrease user stamina points
+setsp amount	Set user stamina points
+
+
+

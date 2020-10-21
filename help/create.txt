@@ -1,0 +1,5 @@
+create [name]
+
+Creates a new object.
+
+Wizards+ only.

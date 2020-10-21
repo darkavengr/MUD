@@ -1,0 +1,3 @@
+whisper [name] [text]
+
+Say something privately to someone.

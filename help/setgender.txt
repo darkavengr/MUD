@@ -1,0 +1,8 @@
+Set user gender
+
+setgender [male]	set gender to male
+setgender [female]	set gender to female
+
+
+
+

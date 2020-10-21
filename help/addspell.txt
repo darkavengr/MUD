@@ -1,0 +1,11 @@
+Adds a spell.
+
+addspell [spellname] [spellmessage] [spellpoints] [spelldamage] [spelllevel] [spellclass]
+
+spellname 	- name of the spell
+spellmessage 	- message displayed when the spell is used
+spellpoints 	- number of magic points used by the spell
+spelldamage	- number of points of daage done by the spell
+spelllevel	- user level for the spell
+spellclass	- class of player
+

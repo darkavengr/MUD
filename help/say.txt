@@ -1,0 +1,4 @@
+say [text]
+
+say something to the whole room.
+

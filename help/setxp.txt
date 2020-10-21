@@ -1,0 +1,7 @@
+Sets user experience points (Wizards+ only).
+
+setxp +amount	Increase user xp
+setxp -amount	Decrease user xp
+setxp amount	Set user xp
+
+

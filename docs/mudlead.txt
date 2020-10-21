@@ -1,0 +1,115 @@
+	
+
+
+    MUD LEADERSHIP AND THE ADMINISTRATION
+
+
+Brian Green, pchild@iastate.edu <mailto:pchild@iastate.edu>
+Psychochild@Kerovnia
+
+I enjoy MUDs. As a player/coder/administrator, I have always taken an
+interest in the leadership capabilities of the administration on
+different MUDs. What trends in MUD leadership are there and how do these
+trends affect the MUDs? The answer to this question is very important to
+administrators who wish to attract and keep players.
+
+I fear the growing trend is for administrators to reduce interaction
+with players. In my opinion, this is very detrimental to the MUD. Not
+only do administrators lose touch with the players, but they also lose
+touch with the MUD as a whole.
+
+When I first started playing MUDs, I noticed that many wizards had very
+little idea of what it was like to be a player. Many did not know how
+quickly a player could advance his or her standing, or simple questions
+that new players may ask. I vowed that when I began to code, I would not
+lose touch with the players as many other wizards had.
+
+However, the reality was different. When I began to code, I lost touch
+very quickly. Without the interaction with the players, I found myself
+not knowing simple questions that new players may ask. This disturbed
+me, and I strove to answer the question: Why did I lose touch?
+
+I evaluated the goals of the players and the goals of the coders and
+administrators. I compared my goals as a player to the goals of other
+players on the MUD at the time. Most players wanted to play a game and
+to have fun. They wanted a consistent world in which to challenge
+themselves. They wanted everyone to have the same advantages, with no
+one person or group having more advantages than another.
+
+The goals of the administrators were very similar. They wanted to the
+players to have fun, to recognize their MUD as superior for various
+reasons including fun, flexibility, social atmosphere, etc. They felt
+they should provide a fair and balanced system for the players to
+interact with.
+
+One might ask, where is the problem? Obviously both groups are working
+toward a common goal. Both groups want a fun and memorable environment
+to enjoy and share with others. Although these statements are true,
+there is a fundamental problem that causes problems is the lack of
+communication between the groups. Without interaction there is no
+understanding and therefore no system for both to enjoy.
+
+There is a problematic belief in MUDs today that ruin true, meaningful
+communication between players and administrators. Many believe that
+administrators cannot and should not interfere with players. Although it
+prevents many potential abuses, it prevents true interaction and
+understanding of each group by the other.
+
+This belief is absolutely untrue. Since MUDs are generally dynamic in
+nature, thus giving them a big advantages over packaged computer
+role-playing games, administrators must make changes to the system,
+usually on a daily basis. These changes will affect players, thus
+altering their playing environment. Although certain changes may be
+minor, each change alters the form of the system, changing the way
+players view and interact with the system. Therefore, administrators
+already interfere with player actions in an indirect way due to
+necessity. One must then realize that the administrators may also
+constructively interfere with the players in a direct method.
+
+When administrators do not interact with players, they lose a valuable
+asset: player feedback and opinion. Although a proposed change to the
+system seems numerically balanced and fair, players can often see the
+unbalancing effect of such a change due to their practical experience
+with the system. If administrators test the new change before it is put
+on-line, they can learn of these problems. Administrators should learn
+that there is a difference between the views that each group has of the
+system of the MUD.
+
+To solve this problem, administrators should strive to open the channels
+of communication. Administrators should try their hand at the games they
+design and code, to get a more practical feel for the game. They need to
+view things through the players eyes to really know what the game is
+like. Often, when administrators view the game solely from the abstract,
+numerical, or code point of view, they lose touch with the players they
+wish to attract and entertain. Only by playing within the system using
+the given rules can administrators truly understand what they have created.
+
+There are some issues that need to be addressed before this can be
+advocated as the best solution. Administrators must remember that they
+have much more information about the inner workings of the game than the
+average player does. Due to their limited time, administrators often use
+"above character" information to achieve whatever goal they want. This
+gives them a false perception of the system they have created. In
+addition, many administrators lower themselves to the realm of cheating
+and abusing power in order to give themselves a better character. A good
+administrator must avoid these traps if he or she wishes to truly learn
+more about his or her system.
+
+It is unfortunate that administrators lose touch with the players.
+Without a good knowledge of the game, they cannot make good decisions to
+keep the game fun and balanced. If administrators were to become better
+acquainted with the game from a practical as well as a numerical
+standpoint, they would be better able to make a game everyone could
+enjoy. As a player, coder and administrator, I have made encouraging
+interaction between the players and administrators a personal goal.
+
+/[Editor's note: Green's Comment suggests a number of interesting
+research directions. The transition from player to administrator, with
+all the concomitant changes in activities, goals, and views, has
+received little attention in the literature. In addition, the general
+issue of how a MUD is perceived by different player groups may offer
+intriguing opportunities for further study.] /
+
+	
+
+

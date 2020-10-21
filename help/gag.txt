@@ -1,0 +1,5 @@
+gag [user]
+
+Gags a user
+
+Wizards+ only.

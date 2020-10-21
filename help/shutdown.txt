@@ -1,0 +1,5 @@
+shutdown [message]
+
+Shuts down the MUD server,sending optional message [message] to all connected users
+
+Archwizard+ only.

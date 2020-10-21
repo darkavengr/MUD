@@ -1,0 +1,5 @@
+chown [name] [user]
+
+Change ownership of room or object.
+
+Wizards+ only.

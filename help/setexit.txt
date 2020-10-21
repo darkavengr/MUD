@@ -1,0 +1,12 @@
+Sets a room's exit
+
+Usage:
+
+setexit [target room] [destination room] [direction]
+
+[target room]		The room containing the exit
+[exit]			The destination room
+[direction]		The exit to use (north, south etc)
+
+Archwizard+ only.
+

@@ -1,0 +1,3 @@
+give [object] [player]
+
+Gives [object] to [player]

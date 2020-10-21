@@ -1,0 +1,5 @@
+delete [name]
+
+deletes a new object.
+
+Wizards+ only.

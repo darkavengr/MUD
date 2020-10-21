@@ -1,0 +1,205 @@
+
+  	Mud Resource site for free online multi player text games. Proving
+quality mud hosting, mud list, free mud client, and an interactive
+community for muds, mushes, moos and mucks.
+<http://www.mudmagic.com/banners/click.php?bannerID=276>     
+
+Articles <http://www.mudmagic.com/articles> 	Community
+<http://www.mudmagic.com/community/> 	Downloads
+<http://www.mudmagic.com/codes/> 	Forums
+<http://www.mudmagic.com/boards/> 	Game List
+<http://www.mudmagic.com/listings/> 	Hosting
+<http://www.mudmagic.com/hosting/> 	Links
+<http://www.mudmagic.com/links/> 	Mud Client
+<http://www.mudmagic.com/mud-client/>
+
+
+*Articles*
+# Home <http://www.mudmagic.com/articles>
+# Post Article <http://www.mudmagic.com/articles/post.php>
+# Article Stats <http://www.mudmagic.com/articles/stats.php>
+
+
+*Topics*
+Articles <http://www.mudmagic.com/articles/Big/> 	**43**
+Role Play <http://www.mudmagic.com/articles/RolePlay/> 	**34**
+Wit & Humor <http://www.mudmagic.com/articles/Funny/> 	**8**
+Reviews <http://www.mudmagic.com/articles/Reviews/> 	**74**
+Thesis' <http://www.mudmagic.com/articles/Essay/> 	**8**
+
+
+*Web Wide*
+# Public Polls <http://www.mudmagic.com/polls/>
+# Web Stats <http://www.mudmagic.com/logs/>
+# Our Staff <http://www.mudmagic.com/staff/>
+# Banner Ads <http://www.mudmagic.com/banners/>
+# Site Awards <http://www.mudmagic.com/awards.html>
+# Web Rings <http://www.mudmagic.com/webring>
+# Contact Us <http://www.mudmagic.com/contact>
+# Donations <https://www.mudmagic.com/hosting/donate_web>
+# Figlet Server <http://www.mudmagic.com/figlet-server>
+# Java Client <http://www.mudmagic.com/java-client/>
+# Text Gaming <http://www.mudmagic.com/text-games/>
+
+
+*Friends*
+# Cheat Happens <http://www.cheathappens.com>
+# Download Games <http://www.download-online-games.com>
+# Godwars II <http://www.godwars2.com>
+# The Gypsy Closet <http://www.thegypsyscloset.com>
+# Web Games <http://apexwebgaming.com>
+# Become One <http://www.mudmagic.com/affiliates>
+
+
+20855 members
+*[ 0 chatting now <javascript: void
+window.open('http://www.mudmagic.com/chat/','mywindow','width=200,height=320,top=0,left=0,scrollbars=yes,resizable')>
+]*
+
+	
+*MUD Management*
+Wednesday, April 23 2003 @ 01:05 AM CDT
+Contributed by: Marek <http://www.mudmagic.com/community/pages/marek/> 
+ Aol: lordscotteddy <aim:goim?screenName=lordscotteddy>
+
+[ Print Story <http://www.mudmagic.com/articles/print/138> ] 	
+[ Email Story <http://www.mudmagic.com/articles/email/138> ] 	
+[ Discussion <#comments> ]
+Often times this question comes up in most muds, especially new ones
+with new IMPs and new staff. I offer my advice to anyone new to this, or
+anyone seeking better experiences with their mud. The following are
+points and rules everyone should try and follow if they are serious
+about maintaining an enjoyable and successful mud.
+1.) Define your mud's goals. Is it RP, PK or both? Ooc socials
+encouraged? Anything you as an IMP can think of to describe what
+direction your mud s going is a must. Post an objectives help file for
+imms to read when they first come to apply to build. A good way to let
+people know if they'd fit in is to describe where you're going, adn what
+they can do to help.  Letting someone build for months and then they
+find out they're supposed to be making totally different RP related
+areas is a good way to get your builders to leave.  A sense of direction.
+ 
+ 2.) Keep imms informed of decisions. Involvement in the communication
+field makes them feel welcome.  If you're open to letting other imms and
+players give their suggestion, make sure they KNOW they are allowed and
+encouraged to do so. Making them feel like they have a direct impact on
+decision making is a great for the imms' self confidence. And you never
+know who might have a really good idea you want to use.
+ 
+ 3.) As imms working for an IMP, you -have- to be able to see past the
+outside and through their imm characters. If the IMP is not around very
+much, then you know decisions aren't being made as readily as they
+should be.  Good IMPs should log every day, because they are the runners
+of the mud. There's nothing worse than being a builder and need an IMP
+decision and they aren't around until two days later. No mud can work
+very well in the development process without leadership.
+ 
+ Another thing with IMPs is to ask who people are that you're working
+with. Eitehr ask them directly or ask the IMP who all works here.  They
+should tell you where they are from, if they are mudders or ooc friends,
+etc. If these builders you work with only goof around, perhaps nothing
+is getting done. Ask the IMP sometimes about what's been changing in
+code or area setups, what's new, if they don't post notes about that
+already. An ecample of bad IMP leadership is one who gives friends more
+benefits then the workers.  Avoid that at all costs.
+ 
+ 4.) Recognition of work. IMPs have to be fair in who they promote and
+how they decide it. Someone who builds one area and logs half the time
+another builder does who has built 5 areas should be given more
+consideration on how they are given treatment.  I like the ideas of imm
+level advancement based on work and input into the mud. Think about an
+system where imms can 'level' by getting projects done. Just like
+characters leveling with exp, imms can level through work. Nothing is
+worse than putting time and effort in and not get credit for your work,
+or people don't acknowledge your effort.
+ 
+ 5.) Imm and Mortal relations. Treat everyone the same. Do not let imms
+give special treatment to anyone. Newbies and veterans alike, should be
+given the attention they need, when needed. Newbies will need to have
+questions answered, and old players will have problems with rules and
+the like. the whole point of building a mud is to let others enjoy the
+mud experience, and stay. If imms harass, or push mortals around, it
+leaves a negative impact on the mud's image, and the playerbase will not
+increase as fast, if at all, when imms appear to be jerks. Every mortal
+that asks something should be answered. If they are bugging you, that is
+what Wizi is for. If you have work to do, ignore the stupid questions,
+and talk to important ones individually. There is no reason to type in
+the tone of keyboard that makes you sound aggrivated to answer
+questions. You're trying to keep player base, not kill it, remember?
+Keep communication open. Even if you curse at your screen at their
+stupidity, don't show that through text. Ever.
+ 
+ Remember that ims are there to help characters out. If you add features
+that can stop players' ability to play, like deceasing and retiring,
+there needs to be many safe guards against it. If the staff says "Oh
+wells", this is a terrible thing to do to players who spend time and
+accidently have something bad happen. Player base.  Not Player killing.
+ 
+ 6.) Don't change rules without re-embersing players that will lose
+things in this change. This might be changes in code where people high
+levels lose HP or mana. Let them complain all they want, but consider
+giving them something for their losses. Player base. Remember? Lots of
+people spend thousands of hours on their character. You don't want them
+leaving because of an imm decision that will change the way their
+character works.
+ 
+ 7.) Don't expect builders to be around every day for 5 hours each day.
+Don't be unrealistic. It's better to have an imm building a slow one
+area per month+ than not at all. And the pressure is less. Building is
+not a paying job, so don't force builders to work too much. Ask them to
+work say an hour a day to be productive, but never less than logging
+once a week to check baords. Make sure they also know that inactive imms
+won't e given very good praise. Work = Privilages. Offer RP to those
+that get a minimum amount of work done. Some people think that because
+they are an imm they get to goof around. Bad news.
+ 
+ 8.) Have future ideas ready to IMP. Boring, lame muds reach this when
+nothing new comes up. Always try and add new areas. New mud experience =
+more players Wink
+ 
+ These are the things I often see relatively good muds lack in. Bad muds
+are even worse. Keep all, ALL, of these in mind when trying to manage a
+mud. These are the biggest things I can suggest without being to
+speicific Wink
+ 
+ Marek
+ Marek -AT- Abigor.net <mailto:Marek AT Abigor.net>
+ MSN: Marek
+ AIM: LordscottEddy
+ (Always open for imm apps)
+ ecigames.com 3000 [ top <#top> ]
+
+*Discussion*
+*1 Comments*
+
+
+Login to comment
+mud management <http://www.mudmagic.com/articles/comment/138/view/211>
+Septe <http://www.mudmagic.com/community/pages/septe> 	October 22,2003
+
+	Login </login/index.php>	Create Account </login/create.php> 	Sat Dec 29
+07:07 pm 		Play A Mud Now <javascript: void
+window.open('http://www.mudmagic.com/telnet/index.php?hostcon=godwars2.com&port=3000&gamename=Godwars
+2&id=1414','mywindow','width=350,height=320,top=0,left=0,scrollbars=yes,resizable')>
+
+
+Legenda <http://lengenda.mudmagic.com>
+
+/Legenda text gaming adventure./ Play Now! <javascript:
+voidwindow.open('http://www.mudmagic.com/telnet/index.php?gamename=Legenda&hostcon=lengenda.mudmagic.com&port=5555&id=001','mywindow','height=400,width=500,top=0,left=0,scrollbars=yes,resizable')>
+
+lengenda.mudmagic.com:5555 	
+The Dreaming City <http://dreamingcity.com>
+
+/The Dreaming City text gaming adventure./ Play Now! <javascript:
+voidwindow.open('http://www.mudmagic.com/telnet/index.php?gamename=The_Dreaming_City&hostcon=dreamingcity.com&port=2323&id=001','mywindow','height=400,width=500,top=0,left=0,scrollbars=yes,resizable')>
+
+dreamingcity.com:2323 	
+Colorado Dreams 2 <http://cd2.mudmagic.com>
+
+/Colorado Dreams 2 text gaming adventure./ Play Now! <javascript:
+voidwindow.open('http://www.mudmagic.com/telnet/index.php?gamename=Colorado_Dreams_2&hostcon=cd2.mudmagic.com&port=1882&id=001','mywindow','height=400,width=500,top=0,left=0,scrollbars=yes,resizable')>
+
+cd2.mudmagic.com:1882
+MudMagic Text Game Hosting </hosting>  
+

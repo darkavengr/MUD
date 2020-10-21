@@ -1,0 +1,4 @@
+Combat commands:
+
+attack [target] [weapon]	--	attack person or monster with weapon
+spell [target [spell]		--	cast spell on person or monster

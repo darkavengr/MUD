@@ -1,0 +1,6 @@
+describe [name]
+
+Describe obj person or room
+
+Use describe here to describe the current room or
+describe me to describe yourself

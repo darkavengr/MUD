@@ -1,0 +1,11 @@
+
+There are a number of commands for modifying various characteristics of your player
+er'.  Help on them is available in the
+ following topics:
+
+@describe me [description]  	  -- setting what others see when they look at you
+@gender [male | female | neutral] -- changing your player's gender
+@password [password] 		  -- changing your player's password
+@sethome [room]			  -- changing your designated home room
+inv				  -- displays inventory
+score				  -- displays your score

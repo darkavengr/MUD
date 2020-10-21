@@ -1,0 +1,389 @@
+------------------------------------------------------------------------
+
+
+      Escape from the Dungeon
+
+------------------------------------------------------------------------
+
+/ ... This is VERY draft, at the moment. I just wanted to get some
+substance in whilst I was in the mood to type and then correct it all
+and make it readable later. So please don't complain yet. /
+
+
+      Introduction.
+
+In 1991, I wrote an article called "Confessions of an Arch-Wizard"
+<confessions.html> which has become the seminal guide for Arch-Wizards
+and multi user game managers ever since. I didn't think people still
+took much notice of it until I was asked by Sony if they could use it in
+their new game, Star Wars Universes.
+
+The problem with Confessions is that it is very firmly aimed at
+Arch-Wizards and people who run their own games. Most people who are
+interested in the traditional level based Multi User Games usually end
+up as Wizards without much hope of ever becoming an Arch and there seems
+to be little of any sense written for them. There is also a problem that
+modern Arch-Wizards are very much a product of the new age and I suspect
+are incapable of even imagining a situation where Confessions could be
+set which means they have no context at all in which to understand it.
+With luck, this article will set a more concrete scenario and maybe make
+Confessions a little more easy to understand.
+
+Richard Bartle wrote a very good article called "A Voice from the
+Dungeon" where he describes how the concept of a Wizard came about and
+it is with this legacy that the level based games usually end up stuck.
+Since this article is about the Essex University games, I thought it may
+be interesting to follow it up describing what happened next. I
+originally intended this to be more of an article about game-play and
+how I took over Essex and what led to me developing the "endgame" and
+the role of the wizard but I think that a lot of personal history and
+context may well be required to make this work... So let's see how it goes.
+
+
+      One Moment in Time.
+
+In 1986, Essex University ran MUD on its DEC-10 computer. Not only was
+Essex MUD the only free MUD in the world, it was also the first, the
+original and by far the best. On weekdays, the free account opened up at
+2am, British time and closed at 8am; at weekends you could play all day.
+Even given these restrictions, guaranteed to make its players look (and
+act) like antisocial vampires, it would be something of an
+understatement to say that Essex was popular. Because there was a
+shortage of lines into the DEC-10 it was usual for players to grab a
+line at about midnight and sit there typing "HELP" every 5 minutes until
+2am so they didn't get disconnected. If they lost a line it could
+literally take hours to grab another unused one.
+
+There were other multi user games though. Neil Newell had created a game
+called Shades one Christmas when MUD was closed that now ran on BT's
+Prestel/Micronet network and Compuserve ran a very slow and archaic
+version of Essex MUD called "British Legends". These were very expensive
+to play unless you used "hacked accounts" (which most players did!).
+There were some other pioneers that had written their own Multi User
+Dungeons as well, I wrote my first which was called MUCK (Multi User
+Computer Kingdom) in 1984 with a chap called Neil Burgess and a guy
+called Pip Cordrey had an online dial-up multi user game available for
+free that had its own small but loyal following.
+
+All that aside, there was no mistake that Essex University's MUD was THE
+MUD. An Essex Arch-Wizard was the holy grail of MUDs. It always has been
+and it always will be. In these days where there are thousands of games
+available it is hard to envisage a time when there was only one free
+game that everybody wants to play, and even the ones who say they don't
+do really.
+
+
+      The Abyss.
+
+I came to Essex MUD quite late. I had looked at it in 1983 to try and
+get some ideas for MUCK; I worked out how to login (not easy), I worked
+out how to load the game and... I got killed. I tried again, I got
+killed again and eventually, when people were bored of killing me, I
+tried to talk to a wizard about how the game worked and was told to
+bugger off and then killed again.
+
+This was most people's initial experience of MUD and although at the
+time, I got disillusioned and spent the next two years running up a
+small fortune on my college's Prestel bill so I could play Shades... I
+always really wanted to be a MUD player. MUD was "real", Shades was
+nice, twee and somehow seemed very false and empty. I like Shades, don't
+get me wrong... But it was never a patch on MUD.
+
+In 1986, I tried MUD again. I once more worked out how to login (this
+time it was a bit easier since I was on the same University Network) and
+proudly entered the game declaring to the world that I was back.
+
+/     * Someone tells you "Who cares?"
+    A finger of death from Rick the Wizard has terminated you. /
+
+I re-evaluated my position and realised that perhaps nobody had missed
+me much in the last three years so I entered the game under a different
+name and kept my head down. It didn't work, I was killed within 2
+minutes. THIS time though, I wasn't going to give in.
+
+After a few days, people either got used to me or got bored of killing
+me. I learned to hide from Rick and I started to explore. It was fun but
+it wasn't easy. People didn't help that much, they had their own cliques
+and I wasn't part of one of them. After a while, I made a few friends
+and I got to know how things worked and I figured that rather than
+killing new people as they came in, I may actually talk to them and be
+nice, and perhaps, I could make my own clique full of new people. We
+wouldn't be a very formidable force but at least we could co-operate and
+talk. This approach worked well to the extent that quite a few of my
+"gang" started to progress well - Some even avoided being fodded by Rick.
+
+I was still more interested in how the game worked though. I looked
+around on Essex and realised that MUD wasn't the only game. There were
+three others too. A game called ROCK, that was based on Fraggle Rock and
+didn't work at all well. A game called MIST that had been written by
+some students and was full of bugs and a game called UNI that was a
+multi user game based around Essex University. UNI looked to be the most
+interesting to me in that it used a lot of weird features and I could
+learn a lot more about the actual way the game worked. I was generally
+the only player ever on so that meant I rarely got killed too which was
+a good thing. It was on UNI that I met a MUD wizard called Rognog, a 15
+year old boy who had been playing MUD since 1983 on a 300 baud modem; he
+taught me a lot about how the games worked whilst at the same time still
+being aloof and reasonably distant. In those days, Wizards didn't talk
+to mortals, and I was still somewhat in awe of the whole thing.
+
+Meanwhile... On MUD, my gang was doing reasonably well, and I left them
+pretty much to it, talking mostly on bulletin boards and things whilst I
+learned my way around the other games. This went on for quite a few
+months, until one day in late 1987 we were told that MUD would shut down
+on the 30th of September. Richard Bartle had written a game called MUD2
+that would be run by British Telecom and he was getting pressure from
+them to close Essex MUD. For a lot of us who considered getting a degree
+from university to be somewhat secondary to getting our MUD fixes this
+was somewhat devastating news.
+
+October of 1987 was chaos. The MUD account was deleted, but the guest
+account on Essex University remained open. I guess it wasn't causing any
+trouble so they simply left it. ROCK, UNI and MUD all ran from the MUD
+account so they had gone but... MIST ran from a student account and it
+was still playable. The old MUD players didn't know this of course, they
+had never looked much outside of their own game and when MUD went, so
+did they. My little "gang" by then was quite large, and we talked on
+bulletin boards outside of Essex so, I told people how to access MIST. I
+eventually learned how to put a notice up on the GUEST account telling
+people how to play and within a couple of weeks, MIST had become an
+alternative to MUD but without a lot of the old MUD players who no
+longer had their wizards and intimate knowledge of the game. In fact,
+the only person with a reasonably good knowledge of the game at that
+point was me, and MIST was not very good as a game in its own right.
+
+MIST was a game, roughly set in a Medieval England where small accidents
+of time had left the odd modern weapon lying around. It was designed to
+be a nasty game, where combat was important but some degree of
+co-operation was also required. Whereas MUD was a game in which you
+could, in theory (though rarely in practice) simply amble around the
+game, exploring and learning, MIST was a game where if you stopped to
+stroke a rabbit it would probably eat you. Fundamentally, it was
+great... It had all the elements if a good multi user game and it had
+been written quite well however, the people who had written it were
+guessing a lot of what they were doing and because there had been very
+little actual testing of it as a game, it was by no means at all perfect.
+
+It didn't take long for the flaws in MIST to become very obvious. Using
+various bugs, you could quite literally make yourself a wizard in a
+couple of minutes. In MIST, you dropped treasure into a pit to score
+points and in my favourite bug, you could actually get below the pit,
+and pick up everything that people had dropped and then continually drop
+it and re-collect it to score points. It was lovely really. Eventually
+all of my little gang had Wizards and I started to learn whole new
+aspects of the game. Because I had been the first person to befriend a
+lot of the current players when they started as novices on MUD, I was
+considered to be the "elder" now; despite the fact that there were much
+older MUD players around, they had very little respect due to their
+"better than all of you lot" attitudes. I was faced with a game where
+anybody could make wizard in a few minutes and people were looking at me
+to try and tell them what to do. Well... What else could I do, I got
+myself a crown from the wizards store, and proudly declared myself king;
+whereupon somebody forced me out of wizard mode and shot me with the
+shotgun and I came back as a novice, without a crown. As a small aside,
+my wizard on MIST was called Rmstar, and not Lorry - The reason for this
+was that Rick (remember him) had fodded Lorry a long time earlier and
+set a new password on it just so that I couldn't play. I think my habit
+of logging on as Prick upset him for some reason.
+
+
+      The accidental advent of an End Game.
+
+Over the next few months I got a little better at protecting my crown
+but there were much bigger problems than that. I wanted a game back and
+not just an anarchistic free-for-all as MIST had become. It was now two
+distinctive games; the mortals who didn't know how to cheat (or in come
+cases, didn't want to) played their own game, without any interference
+from wizards at all and the wizards played their own game of politics
+backed up by force and "gangs". It would take a few minutes to cheat a
+wizard but, you had to do it without being spotted... You could be
+forced out of wizard mode and killed with one of the one hit weapons
+(usually the shotgun, the chainsaw or the poleaxe) so if you lost any
+attention you were likely to die. This is where it helped to have
+friends to back you up... If anyone shot me, they knew they would be
+killed by 5 people within 10 seconds and I would be helped straight back
+up. It wasn't perfect, but it was workable. Despite what you may read in
+Confessions (which is written from a very aloof and lofty standpoint)
+this concept of an end-game where wizards were players as well became
+the central ethos of MIST.
+
+In all other games, once you made wizard, the game pretty much ended for
+you. You were one of the immortals, you could sit safely on some cloud
+watching mortals play away and help or interfere as your whims took you
+that day. In MIST, if you sat on a cloud, somebody would have set fire
+to it.
+
+These early days of MIST coloured my view for ever. I honestly don't see
+the point of being a wizard in most games that followed except to stand
+there and say how wonderful you are. People played MUDs for the
+excitement, the exploration, the fighting and the fun and uncertainty
+and when you look at MUD or SHADES or the other games, you simply have a
+bunch of wizards sitting around doing nothing, getting so bored at times
+they end up having the equivalent of a "quiz" to keep them and (they
+assume) the players amused. It's meant to be a game set in a barbaric
+land, it's meant to be about power and killing people - you don't just
+stop and have a bloody quiz about pop songs in the middle of all that!
+
+A few things happened in 1988. I made a deal with Rick Blake at Essex
+that if I made sure that people were generally good we could keep the
+guest account and MIST and finally somebody came along with access to
+the MIST code base. This was Simon Smith and together, we started work
+on what was to become MIST2. I mended all the bugs and Simon added a lot
+of new rooms. I started playing as Roy the Arch-Wizard because we didn't
+have the code to compile in new ones and we finally removed the complete
+anarchy from the game. What I firmly decided not to remove though was
+the end-game. I wiped the MIST personae files and everybody had to start
+from scratch except for a few in my original clique of MUD novices and
+later MIST wizards who I needed to run the game. Some people who knew
+the game made wizard, I watched them, I worked out places where it was
+too easy and I rewrote lots of the game again. I then killed them all
+over again and did this until I was happy that MIST could stand up
+against MUD as a real game in its own right. Then... I sat back and
+watched to see what would happen.
+
+What happened, was not what I intended. The good players made wizard and
+at first, they spent a while being a tad evil but then, inevitably I
+would catch them in home discussing who won the 1978 Eurovision Song
+Contest so that they could pop it in as a question in their next quiz.
+They started to treat the mortals as people to be looked down on and
+basically they became MUD wizards. This wasn't what I wanted at all, by
+this point MIST was developing its own personality and reputation making
+it one of the best multi player games there was and my wizards were
+about to destroy it all by having pop quizzes instead of nightly
+blood-fests. They needed a severe kicking, and after a while, I decided
+to kick them.
+
+I changed MIST so that there was a gap between mortals and wizards, the
+Arch-wizards were told to make sure that it wasn't that easy to make
+wizard and I doubled the number of points required and at the same time
+made the game harder to play as well. I also made sure that players
+would really have to have been around a good few months and played well
+as a mortal to make the rank of wizard. Then... I started on the
+wizards. Although the wizards didn't have to go around collecting
+treasure and scoring points any more, they did have to "play the game".
+MIST became a game where wizard's intervention was part of the game, a
+required object may not even be in the main game any more if it was more
+amusing to let the wizards sort out who should get it in some
+mischievous way. Although I was not a fan of role playing at all, the
+wizards by necessity became a cross between dungeon-masters and
+intelligent mobiles. Although MIST had no written rules, it was
+generally known that if a wizard didn't play the game as I wanted it,
+they wouldn't last very long. Of course, it wasn't all as simple as
+that, to make it more "fun" for them I had to inject a huge amount of
+power politics and randomness but that was all part of the end-game.
+Ultimately, their aim was to make it to the level of "Maintainer Wizard"
+which was the highest rank anyone could play to and was given mostly for
+being a good wizard who understood well how MIST worked and differed
+from anything else.
+
+Reading "Confessions of an Arch-Wizard", the game sounds far more random
+that it really was. Most of what I did was done to make the game
+playable as both a mortal and a wizard and by doing that ways I
+effectively ended up running two games with the people on one of them
+managing the people in the others. As an Arch-Wizard I was mostly
+concerned with the mortals - A new novice in the game was my most
+valuable player and over time a lot of the code in MIST became geared
+towards protecting their first few days experience. The wizards were
+"advised with extreme prejudice" to keep an eye on them. I would rather
+lose 10 wizards than have a single novice share the same experience as I
+did in 1983. At the same time, I had to maintain the whole ethos of MIST
+as a violent and "unfair" game - It was an interesting juggling act that
+most people managed to completely miss.
+
+
+      Escape from the MIST.
+
+MIST wasn't the only game I ran. Although not heavily advertised I
+bought MUD1 back to Essex in about 1989 and ran it for a couple of years
+for a dedicated few. I was surprised personally that given the choice,
+people would rather play MIST than MUD. My management style in MUD
+wasn't appropriate so I basically ignored the game. I finally got my
+revenge on Rick, the Wizard who fodded me years earlier in MUD by making
+him an Arch-Wizard and letting him run it. I also ran a really old
+version of MUD that on a DEC-10 in Sweden. I very rarely saw anybody
+ever play it, but it was nice to have a "legitimate" copy of MUD running
+somewhere.
+
+By this point I was also nominally managing a game called VAXMUD in
+Lampeter, and I had also taken over a new game called AberMUD that two
+of my wizards, Anarchy (Alan Cox) and Moog (Richard Acott) had
+originally written at Aberyswyth University and Alan was now converting
+to Unix at Southampton University. Alan ended up taking a year out so I
+took on AberMUD and roped in a couple of programmers in to help keep the
+thing maintained and expanded. AberMUD ran at different times than MIST
+and was generally shut down at 2am so that people could then go to Essex
+but somehow the management style from MIST never quite managed to
+translate properly to AberMUD. I think my problem with AberMUD is that
+it felt too much like a single-user game that had been converted to be
+multi user whereas MUD and MIST were very firmly written to be
+multi-user from the very start. In 1991, I sent a copy of AberMUD to
+Vijay Subramaniam and Bill Wisner (our only two American MIST wizards)
+and as far as MUDs being generally available to the world, the rest is
+history which oddly isn't true for the credits in AberMUD since a huge
+amount of the original authors were removed somewhere. If nothing else,
+I have always tried to give credit when it is due.
+
+Essex had also acquired a couple of new games. I had bought ROCK back
+for Rognog (who was still around, but now a little older) and two
+students at Essex (Bret Giddings and Richard Thombs) had written a new
+game called LAND from Scratch. It was actually quite a good game but it
+was unfortunate that it had to compete with MIST. Some of the players
+who didn't like my management style played it for a while but they soon
+got bored.
+
+On January the 31st, 1991, Essex University closed the DEC-10 and with
+it, MIST and MUD1. MUD1 had a worthy successor in MUD2 which by now was
+doing fairly well and I had to take a decision about MIST. I had some
+Unix software that somebody had written years earlier to run MUD1 and I
+had a VMS driver that could easily have run MIST as a proper game but,
+times were changing. AberMUD was spreading around the world and
+following it, TinyMUD and various other oddly named versions of pretty
+much the same old thing. The days of a single, huge and centrally
+managed game were over and MIST was firmly a relic of those days. People
+didn't want to play MUD at Essex and even in the last months of MIST
+people were leaving the game to play some new game that had popped up
+and would be dead within a week and if a game of MIST's strength was
+starting to lose its grip then what hope was there for it a few years on
+when it was already nearing its tenth Birthday. I eventually took the
+decision to shut down MIST and not bring it back again.
+
+It is now nearly 13 years on from me shutting down MIST and although I
+haven't been too closely involved with anything to do with muds for
+years it is interesting to see how things have changed. I have yet to
+see a traditional game that has adopted MIST's idea of an endgame.
+
+I am not too sure where this article went. It was intended to fill in
+some of the gaps from Richard's "Voice from the Dungeon" and also to
+explore a little more about the concept of a wizard's game. With luck it
+achieved that and with luck I will get around to tidying it up soon!
+
+Michael Lawrie. 2003.12.03
+
+
+      Footnote:
+
+Since this seems to have become a history of MUDs, I should also mention
+CornMUD. CornMUD was the most advanced game of its kind ever written. It
+ran at Cornwall Agricultural College on their large VAX systems and it
+was loosely based on a feudal Baronial land with Knights, Serfs, Kings
+and a full blown class system. The game was run by Lorry the Arch-Farmer
+and jam packed with the latest in artificial intelligence driven
+mobiles. A lot was written about CornMUD and a lot of people talked
+about how they were doing but it has to be admitted, 18 years on that
+there never was such a game, and as far as I know there is no such place
+as Cornwall Agricultural College and if there is, they certainly weren't
+on the Academic Network. The amusing thing about CornMUD was just how
+well the legend spread in academic circles, despite there being no more
+to it than occasional discussions of tactics on bulletin boards and the
+rare posted log of an Arch-Farmer burning down somebody's small-holding.
+
+To this day, when I am in a cynical mood, I consider CornMUD to be my
+greatest contribution to the world of Multi User Games and I still defy
+anybody to write a better game than it was!
+
+------------------------------------------------------------------------
+I also once also wrote a Footnote to Confessions of an Arch-Wizard
+<footnote.html> which may be of interest.
+
+------------------------------------------------------------------------
+/ This page is looked after by Michael Lawrie <http://www.lorry.org/>. /

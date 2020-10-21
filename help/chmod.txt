@@ -1,0 +1,28 @@
+Alters attributes of an object or room
+
+chmod [+attribute | -attribute] [object]
+
++ Sets attribute
+- Clears an attribute
+
+object attributes lowercase is user attributes, uppercase is for public attributes
+ object attributes lowercase is user attributes, uppercase is for public attributes
+
+ dD             - object can be deleted
+ mM             - object can be moved
+ pP             - object can be picked up
+ rR             - object can be renamed
+ t              - object is temporary - dungeonmaster only
+
+room attributes
+ cC            - objects can be created in this room
+ eE            - new exits can be constructed
+ rR            - room can be renamed
+ h             - haven - no player-on-player killing allowed, no monsters allowed
+ p             - private only owner can enter, can only be seen by owner
+
+user attributes
+ i	       - user is invisible
+ g	       - user is gagged
+
+Wizards+ only.

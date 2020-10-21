@@ -1,0 +1,7 @@
+There are several commands available to allow you to communicate with other players
+Help is available on the following communication-related topics:
+
+say     [message] 	 -- talking to the other connected players in the room
+:	[message]	 -- non-verbal communication with others in the same room  
+whisper [user] [message] -- talking privately to someone in the same room
+@who     		 -- finding out who is currently logged in   

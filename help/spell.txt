@@ -1,0 +1,4 @@
+spell [spell] [target]
+
+Cast a spell on someone or a monster,
+You must have enough spell points and the spell being cast must be able to be cast by you player's level and class.

@@ -1,0 +1,8 @@
+Sets user race
+
+setrace [race]
+
+Where [race] is:human dwarf elf halfling sprite orc centaur wolfman dwarf gnome
+
+
+

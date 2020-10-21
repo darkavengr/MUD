@@ -1,0 +1,6 @@
+force [user] [command]
+
+Forces a user to do something.
+
+Wizards+ only.
+

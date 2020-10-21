@@ -1,0 +1,596 @@
+_
+
+
+  Confessions of an Arch-Wizard
+
+_ *Michael Lawrie, 1991*
+
+/ "Oh, no, my dear; I'm really a very good man, but I'm a very bad
+Wizard, I must admit." -- The Wizard of Oz. /
+
+    * History of this document
+    * Original Introduction
+    * Background
+    * Full Purges
+    * Decimation
+    * Singular purges
+    * Hierarchies and red tape
+    * Wizards
+    * Arch-wizards
+    * Game features
+    * Cheating
+    * Diplomacy
+    * Being nice
+    * Rules
+    * Off Game Contact
+    * Bribery, Corruption, Creeps and Threats
+    * Arrogance and Ego
+    * Finally
+
+------------------------------------------------------------------------
+
+
+    History of this document
+
+/ Considering that this document was written about a long-dead game and
+describes a method of game management that could never really be
+reproduced these days, it has lasted a suprisingly long time. Indeed,
+this "manual" appears to have become the authoritive text on being an
+Arch-Wizard... I have no objections this of course, it is quite
+flattering but I do sometimes wonder how long someone would last if they
+tried to run a game in this way now. /
+
+/A lot of people have re-formatted this document in HTML from the
+original text file and, being lazy, I took this one from
+http://homepages.iol.ie/~ecarroll/mud/archwiz.html - This was a good
+version but since it missed some of the introduction out I added it back
+in. This was written for rec.games.mud a long time ago and I keep
+wanting to edit it because the grammar and writing style is truly
+terrible; however, I have left it in its original state for historical
+reasons. /
+
+/In Jan 2003, I wrote a footnote to Confessions <footnote.html> which
+you may want to read to explain more about this document afterwards. /
+
+/Michael Lawrie. /
+
+------------------------------------------------------------------------
+
+
+    The Original Introduction
+
+I was pointed in the direction of rec.games.mud yesterday by a "student"
+of mine who had been nominated for some nastiest player award. Having
+read all sorts of fascinating insights into how players are considered
+nasty simply because they victimise someone or how player killing is
+ever so bad and evil, I thought I'd write you a little article to show
+you how it really is, in the world of grown up games.
+
+The article is a padded out summary of something I was considering
+writing based on Machiavelli's "The Prince" giving all you lucky people
+my view on how a good game should be run, this is how I ran MIST which,
+after MUD was the most popular and long running non-commercial Multi
+User Adventure system there was.
+
+No apologies for any grammatical errors, spelling mistakes or personal
+pronoun switches. I will compromise and apologise for the misuse of
+commas though.
+
+------------------------------------------------------------------------
+
+
+    Background
+
+Before I start, it would be helpful to describe some of the background
+details of MIST, showing why it was run as it was and showing the
+environment the people who ran the game grew from.
+
+MIST was written in MUDDL, the language for creating and running Multi
+User Adventure systems (written by Roy Trubshaw and Richard Bartle). It
+originally ran alongside MUD, but in 1986, when Richard left Essex and
+took MUD along with him (to become MUD2), all that was left was MIST. In
+the first few months of it running alone it had no administration at all
+and ran as a complete anarchy. There were lots of bugs and it was easy
+to cheat to wizard. During the anarchistic time, a few people rose to
+prominence through various means; normally by being old MUD players,
+being bloody good MIST players or being very quick with the shotgun. I
+fit into the last category and eventually more or less took the game
+over by force, sheer arrogance and good politics.
+
+In 1987, the account MIST ran from was taken over legally by someone in
+Essex (Simon Smith). He and I then took control of the game properly. We
+fixed all the bugs, deleted all the files and started again from scratch.
+
+MIST ran until about August 1990, when the DEC-10 at Essex was turned
+off. It will be returning soon, but whether the atmosphere will remain
+the same I don't know. During the 4 years I ran it, it had a lot of
+changes in the map, the administration style and in the type of people
+who played it - I learnt a lot, which is why I find it funny when people
+who have been running MUA's for 6 months speak as experts and say that
+things like "player killing will never work".
+
+In Richard's article on MUA systems, he mentions an aspect of MIST that
+some people these days would find odd. MIST had no real rules (except
+ones we were forced to put on for political and diplomatic reasons). The
+basic rule was if someone bigger than you told you to do something, you
+did it. The quote I like to use to sum it up was:
+
+/Do what thou wilt shall be the whole of the law. I am the law!/
+
+Anyway, enough background, now you know the scenario I think you should
+know a bit about how to abuse it.
+
+The nice thing about running the only system of its kind, is that you
+can abuse it to your heart's content and get away with it. People aren't
+willing to believe that a big powerful arch-wizard can be such a
+complete bastard and so with a bit of sweet talking, you can come out of
+most situations looking squeeky clean - In these modern days of
+competition it's not quite as easy but think about it, if you annoy 20
+players in a night and they never play again, you'll get 20 more the day
+after.
+
+Being nasty is an art form. If you are continually nasty the players get
+set into a learned helplessness mode where they don't have any survival
+spirit any more - You must balance nastiness with generosity to a degree.
+
+The rest of this article looks at various aspects of player abuse, and
+how to get the most out of them.
+
+------------------------------------------------------------------------
+
+
+    Full Purges
+
+A full purge is the simple task of wiping the persona file, the wizard
+list and the player credit list (in MIST's case, the WHOSWHO notes). In
+many cases this remains the ultimate way of killing a couple of thousand
+players with the least effort on your part.
+
+The main use of the full purge if to keep the wizards on their toes. I
+don't like games where everyone and their dog is a wizard, this is silly
+since there seems little point in people playing. If you make it known
+to your wizards that you only want the best to make it and you remind
+them that if there are too many wizards then you will do a full purge
+then this has two effects. First the wizards are forced to be nasty and
+secondly you keep them on their toes and stop them getting too
+complacent. If you do do a full purge, remember to put some of your
+wizards back because if you don't you may end up having to run the game
+yourself!
+
+Full purges can be great fun if you are bored. If you have a player who
+has been playing for ages and is nearly at wizard. A neatly timed 'full
+purge' or accidental persona file deletion can really ruin their night,
+week, month.... To save face amongst the other players it is always a
+good idea to make a show of being sorry and giving the good player most
+of their points back. Remember to kill them later though with a cheated
+character or you'll have ruined the whole point.
+
+One convenient use of a full purge is to get your own back on someone
+who is continually whining about the number of wizards or high level
+players. All you do here is do a full purge and advertise the fact that
+it was requested by this person (if possible giving their real name and
+university). It normally teaches them not to moan.
+
+------------------------------------------------------------------------
+
+
+    Decimation
+
+This is an old trick coined by those clever Roman chappies.... If
+anything it works a lot better than the full purge because with a full
+purge everyone starts off equal again. With Decimation all you do is
+wipe a tenth of the persona file, randomly. This way everyone worries it
+may be them. You use it in the same circumstances as a full purge.
+
+An added bonus of decimation over a full purge is that instead of doing
+it randomly you can go through the file wiping the people you don't like
+out. This also gives you a happy few hours whilst you do it.
+
+------------------------------------------------------------------------
+
+
+    Singular purges
+
+The singular purge on MIST was a lovely tool. It allowed you to delete a
+player regardless of whether they were on the game at the time or not.
+If you deleted a player who was logged on then when they quit or tried
+to save, it would tell them that they didn't exist any more, so saving
+would be silly.
+
+Obviously, any good student will by now be able to see the hours of
+pleasure that this one command can bring, but for the less promising
+amongst you a few examples may help.
+
+Consider a player is on a game, alone. They have the whole day in front
+of them and a nicely reset game with loads of treasures and mobiles to
+kill. Due to the nature of MIST's closing times, this used to happen
+quite a lot. What you now do is pop onto the game, and purge the player
+- They now spend ages and ages clearing it up and scoring points and
+finally they save, or more to the point.... Finally they know they are
+already dead. This method has the advantage that you don't have to hang
+around to see the finished result, since you know it'll be funny anyway.
+
+Personally, I used to like going onto a game as a wizard and threatening
+someone. They'd normally quit and come on as someone else, since arguing
+with wizards is normally fatal. In this position all you do is purge
+their real character and gradually make it clear to them. If you want to
+make this more interesting, I would suggest starting playing as the
+character you just deleted and being abusive to people.
+
+------------------------------------------------------------------------
+
+
+    Hierarchies and red tape
+
+The British civil service invented this one I think and if you use it as
+half as well as they do, you are well on your way to becoming a master.
+The point is that you should build hierarchies and once you have built
+them you should invent a use for the various levels and make sure people
+only channel requests or complaints properly. Luckily, games like MIST
+are naturally designed this way so all you have to do is create a new
+hierarchy at the top. At its best, MIST had:
+
+    * mortal-wizard
+    * berserker-wizard
+    * wizard
+    * maintainer-wizard lev 1 (existed in a list as being more important)
+    * maintainer-wizard lev 2 (who had extra commands)
+    * Maintainer-wizard (who knew the admin password, note capital "M")
+    * arch-wizard
+    * Arch-wizard (I hate the level name 'God') 
+
+We had channels of complaint, so if a mortal wanted to complain about
+being mistreated by a wizard (which of course wasn't really illegal),
+then they had to complain to the wizards. The wizards could complain to
+the levels above them and as a rule anyone a couple of levels above
+anyone else would ignore people below them. To make it seem fair and
+because forcing people to use the correct channels isn't easy, the
+arch-wizards would often listen to little problems, but most of the time
+they ignored them.
+
+Once you have created this hierarchy, the most important thing to do is
+to keep changing it. Never keep it stable else people will get
+complacent, also make sure you do make some pretence of enforcing the
+red-tape system as it stands at the time - This has the disadvantage
+that you have to remember what it currently is yourself.
+
+------------------------------------------------------------------------
+
+
+    Wizards
+
+Wizards are there for two reasons. Mainly they are there for the people
+above them to abuse, but as a sideline, they are there to abuse the
+people below them. It's a bad idea to push all the wizards too far; as
+an arch-wizard you need someone to run the game for you so that you
+don't have to do it yourself. If it comes to it, it's a good idea to
+weigh up the fun you'd get in deleting all the wizards to the hassle
+you'd get from the lower players with no-one to look after their petty
+moans.
+
+Basically treat your wizards badly, but not too badly. One nice way of
+really annoying them is to promote a subset of them to a new level. This
+helps because if you have to delete all the lower wizards the upper ones
+still side with you and can continue running the game.
+
+------------------------------------------------------------------------
+
+
+    Arch-wizards
+
+My philosophy on game management has the arch-wizard as an honourary
+position. Arch-wizards are all powerful people who I pick because they
+are a varied set of people with differing ideals and they are not all
+socially inadequete MUA players with warped views on the world. It is
+important for you to build up a fairly close group of arch-wizards who
+you trust and who are not scared to tell you what they think. Though it
+may pain you after all the trouble you go to be nasty to people, I think
+it's a good idea to make arch-wizards immune from everything, even
+purges so they are never scared to tell you things. This all sounds very
+serious but think of it this way, you need someone on your side! I find
+it helps to enlist a few black belts in various martial arts as
+arch-wizards too, in case some mad MUD-spod gang decides to beat you up
+at a meet. Enlisting arch-wizards for their worldly skills rather than
+their game skills has the added advantage that more often than not they
+don't know anything about the game and how to play it. This really winds
+up the lower levels.
+------------------------------------------------------------------------
+
+
+    Game features
+
+Game features can provide no end of amusement for folks who have to
+write them; even the most unimaginative of people can think up some very
+irritating features to add that will really drive people mad. The best
+way to really annoy people is also a nice way of making the game harder,
+so the more guilt ridden ones of you can feel justified. If you have a
+vital object in the game, for example, in MIST the hammer was needed to
+open up a large section of the game, then put it fairly near the start
+location. This has the effect that the killers and the trouble makers
+run for the hammer and then dispose of it, rendering most of the game
+unreachable. Now what happens is either all the players are running
+round a couple of hundred rooms making easy targets for the killers or,
+if you are lucky, they decide to hassle the wizards to give them objects
+back. If you play this right you can have no end of fun, either
+chastising the wizards for helping players cheat, flatly refusing to
+help them or going to such levels as forcing one of the players to
+sacrifice themselves in order that the rest get the hammer. I preferred
+the latter myself.
+
+Not many games seem to have much in the way of irritating features that
+totally destroy any concepts of fairness, MIST's pistol was probably
+fairly unique in this. The theory was that when you got to legend (one
+level below wizard) you could get the pistol and play Russian Roulette.
+If the pistol went off, you got half the points needed to get to wizard
+and if not you died... dead. The only problem was that it never quite
+got round to giving you the points if you won and so basically it was
+left to the discretion of wizards or arches. As the wizards lived in
+fear of giving players too many points (they tended to just get wiped
+without question) they weren't often willing to comply. As an added
+bonus, a legend could be forced by a lower level character to shoot
+themselves.
+
+Straying off the subject of MIST slightly, the only feature I have ever
+seen in a game that comes close is AberMUD's runesword which attacks
+players by itself and doesn't give its carrier any choice in the matter.
+As an added barb, the person who picks it up isn't allowed to drop it.
+Admittedly this is slightly spoiled in AberMUD's case by having the
+runesword as a powerful weapon, if I'd have written it I think I would
+have made it a wooden ruler or something.
+
+Finally on the subject of game features, I'd suggest you give serious
+consideration to making wizards killable and putting in the odd weapon
+that can do this quite easily; this keeps them slightly more paranoid
+and makes them behave better. The natural tendency of a wizard faced
+with this situation is to hoarde all the weapons somewhere the mortals
+can't get them - If someone does this, just give one of your cheated
+mortals some suitable tools and go wizard hunting (with the help of your
+arch wizard of course!).
+
+------------------------------------------------------------------------
+
+
+    Cheating
+
+I have mentioned cheating in a few places as something that naturally
+happens. Cheating isn't the right word in MIST's case because one of the
+basic premises of the game was that arch-wizards couldn't cheat. The
+problem with running games is that most of the time all the players are
+better at playing than you, they do, after all, have a lot more
+practice. I find it handy to have a few arch-wizard powered characters
+who are disguised as mortals who can go and do your dirty work for you
+and get rid of people you don't like much. Doing it this way rather than
+using a high level character you created can reap all sorts of extra
+benefits; especially when all the players gang up on you. Not only do
+they all die because you are immortal but you get a nice warm feeling
+inside you that for once all the players are co-operating in a common
+cause and that if it hadn't been for you, they would never have been
+such close allies.
+
+Cheating by players is difficult to deal with. If they know a bug that
+is hard to fix, then you may have problems. I think player cheating is a
+perfectly valid part of the game, so I don't react that badly. If it
+gets annoying, I may do something like ban them from the site but that's
+very infrequent and it was hard to enforce on Essex. I often find that
+giving people who know too much about the game for your liking a bit of
+power takes away their need to abuse the system and so everyone is
+happy. Later you can fix the bug and wipe them out when you are in need
+of a bit of idle amusement.
+
+Wizard cheating is fairly easy to spot if you log well and have
+reasonable informers. The easiest way to deal with this is just not to
+tolerate it and wipe them and all of their friends out in one fell
+swoop. Make a point of doing it loudly if you want people to take note
+of it.
+
+Slightly off the subject of cheating, it's often fun to accidentally let
+a wizard or an arch-wizard password be known generally and see what
+happens. This also gives you a good excuse for a full purge. If it's an
+arch and you are really lucky, they may dispose of some of the more
+annoying wizards for you. Of course, if you don't feel too safe letting
+a password be known you could just do it yourself and tell everyone a
+little lie.
+
+------------------------------------------------------------------------
+
+
+    Diplomacy
+
+To keep a game running for a long time, you need good relations with the
+people who are above you, like the systems managers of the machines you
+run on. This was actually the reason I started running games in the way
+I do, because a game running as an anarchy with no control doesn't do
+any site's reputation any good at all. Good diplomacy is vital, as is
+good communications and good relations. If you are a spoddy computer
+person who thinks politics are something that happens on BBC2 at dinner
+time then I suggest you enlist the help of someone good to do the job
+for you. This incidentally is the reason I became powerful on most of
+the other Muds outside Essex a few years ago, that and my sincere
+modesty, of course.
+
+Diplomacy on the game is, of course, less vital. Players will expect
+you, as their all powerful arch-wizard to play middle man in little
+disputes from time to time. The best thing to do is to put your most
+tactless wizard on the job and leave them to it. If you are forced to do
+it yourself, try and be serious and look at both sides of the argument.
+After a while, toss a coin, decide who wins and say goodbye.
+
+------------------------------------------------------------------------
+
+
+    Being nice
+
+This may look out of place, but by being nice you can really irritate
+people. The odd act of kindness, like say, making a novice with a cute
+name a wizard, can really annoy people who have been playing for months.
+
+One of the nice things I used to do was take fighting out of the game on
+St Valentine's day and put lots of roses around the game. This has an
+increasingly annoying effect with every day you forget to change it back.
+
+Turning fighting off can be used to good effect all the time, but only
+do it when by far the vast majority of players are fighting types and
+always do it for some low level person - This almost guarantees that the
+low level character will be taken revenge on when you next turn fighting
+on, especially if you make a big thing of doing it because people were
+being nasty to them.
+
+------------------------------------------------------------------------
+
+
+    Rules
+
+You need to treat rules in two different ways. Every game, no matter how
+anarchistic must have a couple of firm rules. For example if you let
+folks shout hacking hints, you can get in trouble yourself. It also
+helps if you always follow a brief set of rules yourself. If you are
+firm in sticking to them it acts as a buffer to stop you going too far.
+I have one about winding people up - Basically you can wind someone up
+as much as you want but always make sure you leave a big hole in it so
+you can pull yourself out of it if you need to.
+
+On a happier note the other rules are much more fun. These are the game
+rules and they govern things like, who can do what, what they can and
+can't do to each other and generally govern "fair play". As should be
+obvious by now, those rules don't apply to you, nor anyone else who you
+let get away with breaking them. The phrase "Do as I say, not as I do"
+is very relevant to an arch-wizard. Making silly petty rules and making
+people stick to them can cause no end of amusement. It's also a good
+idea to change the rules often, and occasionally have contradictory ones.
+
+Players take this sort of thing ever so seriously and they try as best
+as they can to govern by peer pressure - For you this is good and you
+should encourage it. Having a new set of rules for wizards is a good
+idea, it makes them feel they have got somewhere to be told they can't
+use their powers to do various things. It is of course up to your mood
+at the time whether you actually do anything about people breaking rules
+and more to the point, what you actually end up doing.
+
+------------------------------------------------------------------------
+
+
+    Off Game Contact
+
+I always discourage off game contact. The address I gave on MIST went to
+a mailbox I regularly deleted, just picking out the ones from people I
+knew. If you are really bored and in an evil mood it's often fun to
+reply to a random set of them. Normally, if they whinge or moan, I'd
+delete their persona - If you don't tell them why you deleted them they
+will soon be annoyed enough to send another whingey moany message and
+then you simply delete them all over again.
+
+If you take the trouble to reply, I often find a reply about the current
+state of the Dutch Tulip Industry confuses them enough to stop them
+sending you silly mail you didn't want in the first place. If they think
+this is amusing and insist on replying them just delete their persona or
+victimise them if you can be bothered to remember their name.
+
+------------------------------------------------------------------------
+
+
+    Bribery, Corruption, Creeps and Threats
+
+Being in a position of power, you'll get all of these. I have had the
+most wonderful threats in the past, including a fair number of death
+threats. The most inventive was from someone who claimed to be in the
+Italian Air Force and threatened to bomb my house; He asked for the grid
+references, but I didn't take this one too seriously. A MIST wizard a
+couple of years ago was a much respected thing - An arch-wizard many
+fold more. It was different from modern games in that it was the only
+one, it was something of a true indication of status rather than this
+modern idea that if a spod can't play someone else's game, they write
+their own. Bribes used to flow quite thick and fast and how serious they
+were was sometimes quite funny. Whether you take bribes or not is up to
+you, I never really did except for the odd pint of guinness - If you
+don't take bribes, make sure people think you do otherwise you'll miss
+the fun of people trying to bribe you.
+
+The wizards should be watched. Let them have some leeway, but don't let
+them start to get above themselves or corruption will start to creep in.
+Corruption is very difficult to get rid of once you let it start.
+
+Creeps are fun. I am not the sort of person who lets people get anywhere
+by creeping but I enjoy watching people try - It's odd the level to
+which people will lower themselves at times! If you get a person who
+does continue doing it (or doing it to the wizards and arches), the best
+way of dealing with them is to force them to creep more and more by
+slowly giving in to the demands. Build up some lovely log files of all
+this excitement and then, when you are bored, dump the player back down
+to the lowest of the low and stick the logs as text files readable from
+the game.
+
+Incidentally, if someone had ever offered me a villa in the south of
+France in exchange for an arch-wizard (and I'd known they were serious),
+I'd have been pretty quick editing that arch-wizard list.
+
+------------------------------------------------------------------------
+
+
+    Arrogance and Ego
+
+To be successful at being a "big" arch-wizard you need to be extremely
+arrogant. Take every opportunity to practice, whether it's arguing with
+the muddies or going onto other peoples' games and telling them how crap
+they are. The latter gives you good battle training if someone should
+ever dare to do it to you.
+
+Even if you are the most modest person there is, you need to appear to
+have a massive ego. If you get upset and take things personally then you
+just won't be any good at running MUA systems. It's useful that the best
+way of building a big ego is by squashing other peoples' and as an
+arch-wizard you should be in a good position to do this - If it sounds
+nasty to you, then you really don't have the right stuff in you for the
+job.
+
+With a little practice you can turn all this 'training' into a fairly
+relaxing pasttime. If you are in a bad mood, for example, then going
+onto your system and putting everyone else in a foul mood should cheer
+you up no end. Rather like yoga but without all the stretching.
+
+The arrogance and ego of the wizards should be watched. If one of the
+wizards starts to get too arrogant for their own good, then dispose of
+them. If you let them carry on the other wizards will start to resent it
+and too much in-fighting means they aren't looking after the game. If
+you want to be more subtle, simply promote everyone else above them,
+thus giving you the advantage of complicating the heirarchy even more!
+
+Running a popular game is hard work and if you are dedicated to keeping
+it going, it'll take a lot out of you. Most of the players will never
+begin to realise this, so there is little point wasting the effort of
+trying to tell them. Think of it this way, the players are having fun,
+otherwise they wouldn't be there, so why should you feel guilty about
+messing them around? The day you stop having fun and become a martyr to
+the game is the day you should either give up or have a holiday for a
+while.
+
+------------------------------------------------------------------------
+
+
+    Finally
+
+Those were summaries and ideas from my way of running a MUA system. I
+imagine my MIST players will be rather surprised to read some of this
+because to them it just looked like it ran fairly smoothly most of the
+time. In actual fact it does, once you have built your regime it looks
+after itself pretty much, all you need to do is tweak it now and then to
+stop it becoming stale. I was pretty brutally honest and I tried to
+refrain from making it funny or exaggerating. I expect some of you will
+argue with me but it's ok, I don't imagine many of you will be speaking
+from any degree of experience. If any of you decide to take up my ideas
+then I guess you will at least have fun - Maybe you should wait till the
+proper textbook comes out though.
+
+/Michael Lawrie./
+
+(Or to keep the spods happy)
+
+/----* Lorry./
+
+------------------------------------------------------------------------
+*Copyright (C) 1991, 1998 Michael Lawrie (lorry@lorry.com
+<mailto:lorry@lorry.com>)*
+
+/This article may be freely re-distributed in full as long as you gain
+nothing by doing so. No part of it can be quoted in any other text
+without the permission of the author and a suitable acknowledgement./
+

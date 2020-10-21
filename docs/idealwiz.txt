@@ -1,0 +1,108 @@
+
+    Idealized MUD Administration
+
+Jim Lai AKA GrimJim. Copyright 1999-2001.
+Permission is granted for unlimited not-for-profit reproduction.
+Version: Draft 0.21
+
+There are not rules so much as guidelines. I've been on MUDs on and off
+since January 1990 and have seen many a MUD wither, splinter, or explode
+under the stresses of internal conflict. Ultimately, all the problems
+involve a lack of open communication or an inability to anticipate
+people's reactions. Below are a few strategies to minimize such
+communication problems. Administration is by definition a political
+process. Being able to hack code is not enough. One must be able to hack
+people.
+
+*1. Recognize that friendship is not enough to guarantee you will get
+along with them as staff.* Conflict resolution skills are vital to
+keeping a staff reasonably united.
+
+/Why:/ You will be working with them closely. It is a working
+relationship, and slackness now spills over to relations with players
+(possible strangers), not just among friends.
+
+*2. Intra-staff communication is vital.* Regular meetings to inform each
+other of what has been done is good. Mailing lists work well if people
+have difficulty establishing a regular meeting time. Other staff should
+be notified if a decision might impact them. There are plenty of free or
+near-free mailing list servers out there one can employ.
+
+/Why:/ Without this communication, one staffer may make rulings which
+contradict another, or duplicate work effort during construction. Such
+conflicts should be resolved before a wily player attempts to play off
+different staff against each other. Failures to keep all staff informed
+will make your staff appear disorganized and ill-informed, which would
+be the case!
+
+*3. Appear firm and consistent.* Players as well as staff like to be
+informed of why things happen.
+
+/Why:/ If they believe the adminstrators to be capricious, trust is
+lost. If it degenerates you'll have players holding conspiracy theories
+about you, believing you to be capable of any and every wrongdoing.
+
+*4. Establish duties, a chain of command, and appeal.* It may be there
+is no avenue of appeal, but it should be established and preferably
+documented.
+
+/Why:/ This prevents staff from trampling on each other's toes. It also
+keeps staff from being at a loss when unable to answer questions about
+policy by players.
+
+*5. Avoid the perception of undue favoritism.* This may mean sacrificing
+a bit and limiting one's actions as staff. Simply put, be sensitive to
+the perceptions of players.
+
+/Why:/ Due to rampant abuse on the net, players are sensitive to the
+phenomenon of adminstrators creating a place in order to steal the show,
+as it were, using the MUD as a vehicle for self-gratification. Don't
+think they won't recognize it if they see it.
+
+*6. Draft an Acceptable Use Policy (AUP).* Define what is allowable and
+what is not. This will minimize the likelihood of accidental
+transgressions.
+
+/Why:/ Sometimes players may simply be antisocial. A mechanism is
+required to preserve the atmosphere for the majority of players. Being
+able to point to an acceptable code of behavior is vital to being able
+to declare certain actions as transgressions while remaining objective
+as possible.
+
+*7. Be straightforward.* Do not hedge behind false pretenses. Tell both
+staff and players up front what you intend and why if there is room for
+doubt. White lies can be as destructive as malicious falsehoods.
+
+/Why:/ Doubt breeds distrust. If you give a false reason for an action,
+you may later be caught short if that reason is shown to be invalid or
+no longer applicable.
+
+*8. Choose staff carefully.* You want people who will work with you, and
+not subvert you nor play manipulative games among the staff. It helps to
+be a good judge of character. In particular, observe their faults under
+stress. Also, avoid having too many staff and not enough duties to go
+around; if a duty does not require full MUD security privileges, then
+they should not be granted.
+
+/Why:/ There are some people who have ambitions and will attempt to
+acquire varying degrees of power beyond their mandate. Don't expect
+people when given power not to use it.
+
+*9. Learn to delegate.* If you've picked a reliable staff, you can trust
+them and spread the work of running a server around. Minimize your own
+personal stress.
+
+/Why:/ If you truly think you can or have to do everything yourself, why
+bother having "useless" staff around? Use them or remove them. If they
+aren't helping, then they can only be a hindrance. Be careful about
+burnout, though.
+
+*10. Early access is risky.* If you decide to go beta (allow player
+access before the game is complete), be prepared for the consequences.
+
+/Why:/ Player expectations are often high; it would be prudent to manage
+them with news articles lest your staff be inundated with newbie
+questions. Expect complaints for things that are broken or haven't been
+even coded. Do not open up if you are in alpha stage with major chunks
+of functionality incomplete.
+

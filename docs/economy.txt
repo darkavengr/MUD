@@ -1,0 +1,222 @@
+Back to index <../imaginary.html>
+
+/The copyright situation for this article is unclear. It does not belong
+to the author of this site. Please see the copyright notice
+<../imaginary.html>. If you have information about the copyright contact
+me <mailto:puma@tharsis-gate.org>!/
+
+
+  The Model Economy
+
+by Scatter ///\oo/\\\
+<http://imaginaryrealities.imaginary.com:8080/article_author_index.html#scatter
+///\oo/\\\>
+
+One aspect of life that is rarely implemented well in a mud is the
+economy. Many mud designs don't take any steps to implement a workable
+economy at all, effectively just assigning values to objects and hoping
+for the best. Others make the attempt but fail due to unforeseen
+complications or unexpected playing methods. Either way, a sure sign of
+a failed economy is simple to spot - any player who has played for any
+length of time has a ridiculously massive amount of cash available. In
+the rare circumstance where they need more money than they have, an hour
+or so of 'harvesting' can easily fill in the needed amount. Usually this
+harvesting involves going to specific areas where NPCs can be
+slaughtered with minimal risk and cash can then collected direct from
+the corpses or obtained by selling off the unfortunate creature's
+equipment.
+Camelot! It's only a model
+
+Camelot! Not really, but it is not a model either.
+
+These super-rich players can afford anything they like in the game.
+Anything they want, they have the money for. This is a problem not only
+because it destroys any semblance of theme (if gold was that common that
+everyone can have millions of gold coins in the bank, it would never
+have been used as currency in the first place) but simply that it
+destroys the challenge of the game. Ironically, helpful rich players are
+a problem in this circumstance as they tend to give large sums of money
+to new players, to help them get started.
+
+There are several courses of action that the troubled mud's
+administrators usually take to try and combat this problem.
+
+The first is reducing or limiting bank accounts. The normal result of
+this is simply to annoy players (who naturally resent having their
+riches lost or limited) whilst doing nothing to solve the problem
+because players can still easily harvest cash when needed.
+
+The next is limiting harvesting, through reducing cash carried by NPCs
+and reducing the sale value of items carried. The problem with this
+approach is that all it really does is slow harvesting down. Players
+have to spend more time to make their gold mountains, but still end up
+just as rich in the end. It also has the effect of making life much more
+difficult for new, low level players who don't yet have the skills
+needed to go harvesting but still need to make money for training and
+equipment.
+
+The other common approach is to try to suck out these riches by creating
+desirable things that cost obscene amounts of money. A common example is
+personalized rooms, clan halls with customized features and so on. The
+costs are massive, often thousands of gold pieces just to construct one
+room. Unfortunately the very fact that these objects are desirable means
+that players simply go harvesting until they can afford them -
+effectively they encourage an unwanted behavior pattern.
+
+The key problem that none of these methods address is that there is no
+real /cost of living/ that can absorb the players' income. For low level
+players, their training costs can often match their income, but as soon
+as they are capable of going harvesting they have an income that
+massively outweighs their costs. What is needed is some form of ongoing
+time-based costs which are being incurred constantly. Thus when the
+player goes harvesting, they are accruing debts as well as collecting
+income. If the balance is right, the vast majority of the income is
+immediately forfeit due to the costs that have arisen over the time
+taken. The profit margin from harvesting can drop severely and make it
+no longer worth the time spent.
+
+Of course, care needs to be taken that the desirable methods of play,
+whatever they may be, can provide sufficient income to offset this cost
+of living.
+
+Some possible ways to implement a cost of living are:
+
+    * Taxes - where the land in which you live exacts a regular toll for
+      the upkeep of cities, payment of the army and so forth.
+    * Rent - not meaning the old inventory-rent idea that still crops up
+      occasionally but rather things like renting rooms or houses within
+      a city to personalize and live in.
+    * Wear and tear - weapons, amour, clothes, etc. all get damaged and
+      wear out and must be replaced or repaired.
+    * Followers - allow players to recruit mercenarys, bodyguards etc
+      whom must then be paid a salary. 
+
+Of course, this is by no means an exhaustive list and depending upon a
+particular mud's theme, many other possibilities undoubtedly exist.
+
+A carefully balanced cost of living can absorb most of the income that
+players would normally hoard. The remainder of the excess income can
+often be mopped up by desirables - things that players want (but don't
+need), and ideally that are either temporary and have to be replaced or
+cause more ongoing expenses. For example, a player that wants a horse to
+ride around upon needs to pay for stabling, food and services of a groom
+in addition to the cost of purchasing the animal.
+
+Another line of attack is to make hoarding itself difficult to do. For
+example, don't have a secure central bank. Without bank accounts to drop
+those thousands of coins into, building a massive cash reserve becomes a
+very tricky prospect. A player might have to buy or rent a room, install
+a safe, hire guards - and still risks the money being stolen.
+
+With luck, what you end up with is a carefully balanced economy
+following the "faucet/drain" model. The basic idea of this model is that
+/value/ constantly trickles into the world like water from a faucet (or
+a tap to us UK folk). This /value/ usually takes the form of objects
+being cloned into rooms or into NPC inventories. For example, an NPC
+that is killed and has its possessions taken will often be recreated
+after a delay period, creating a fresh set of possessions in the world -
+all of which are worth something.
+
+This /value/ then trickles out of the world when objects are destructed
+- like water running out of a drain. The trickiest part for muds is
+usually to make sure /value/ drains at the same rate as it trickles in.
+
+If /value/ trickles in faster than it drains, then the amount in the
+world constantly increases - triggering severe inflation with ever more
+wealth available in the world. Alternatively, if it drains faster than
+it fills, poverty sets in as there is less and less wealth in existence.
+In most cases problems at either end of the scale are made much worse by
+fixed price shops which sell objects at given prices regardless of
+prevailing economic conditions.
+
+There is an alternative economic model sometimes used in muds, which is
+referred to as the "loans standard" model. A key feature here is that
+there are no fixed prices - these are determined entirely by supply and
+demand. The idea is that in the real world, the amount of /value/ is
+fixed - it neither grows or shrinks. When an object is created, it isn't
+built from nothing - it is built by converting other existing objects -
+raw materials into product. This conversion results in no overall change
+in /value/ in the world. Prices are divorced from /value/ - simply a
+convenient agreed exchange rate of objects. In effect, prices are
+continuously chosen by players - a sword is worth whatever someone else
+is willing to give for it. All prices are relative.
+
+In a mud, there are problems with running an economy this way -
+especially if the mud wasn't designed with it in mind from the start. It
+means, for example, that you can't have that reappearing NPC described
+before - it can't be recreated with a fresh copy of its possessions
+because doing so would add /value/ to the world which is not allowed.
+You could allow it by treating it as a loan to the world which must be
+paid back but this generates the new problem of ensuring that the loan
+is paid back.
+
+The biggest problem with this kind of economy in the mud environment is
+that the mud world is neither static nor fully defined. In the real
+world, the amount of /value/ is a fixed amount - everything that is,
+already is. Things are made by converting raw materials into products
+and destroyed by reducing products into raw materials. In the mud the
+amount of /value/ is not fixed. The mud does not have a finite supply of
+raw materials that are put together to make objects - objects are
+generally created whole, 'as if by magic.' In addition, the size of the
+world is continuously increasing as more areas are coded.
+
+So, in order for this kind of economy to work in a mud there has to be
+needs to be global tracking for object creation and destruction -
+effectively a 'world bank' to make the loans and accept return payments
+to ensure that the overall sum is zero. If the sum is not zero, then
+inflation (or less likely, deflation) occurs. It also means that every
+single object created into the game world must be tracked and listed as
+a loan, and every single object destructed must be tracked and listed as
+a payment. New areas added to the game significantly affect the balance,
+which must then be compensated for as a special case. Not only does this
+significantly complicate the mud's basic object management, it also adds
+a cpu overhead to operations that occur very frequently.
+
+Further complications are added by the fact that huge chunks of the mud
+world are simply implied rather than simulated. For example, there may
+be a city with a population of over half a million people yet there will
+be nowhere near half a million NPCs wandering the city. Yet the economy
+needs to act as if they really do exist. The city may trade by sea and
+land with other cities that are unlikely to be coded for some time, but
+the economy needs to act as if they did exist. Players are the key
+'effectors' in the mud, but the economy must behave as though they are a
+tiny fraction of the world.
+
+My other main disagreement with the loans standard model is that of
+theme. In my own mud, I am aiming for a coherent, consistent, strong
+theme. I don't want prices to fluctuate arbitrarily depending on player
+actions, I want to be able to decide which areas are poorer, richer etc.
+I want to make sure the currency reflects a believable medieval system,
+with appropriate relative values and purchasing power.
+
+Therefore, I'm following the simpler faucet/drain model, where the idea
+is to prevent inflation/deflation by keeping the amount of value in the
+world roughly constant, with valuing flowing into the world as objects
+are created (faucet) and is removed from the world as objects are
+destructed (drain). If the world is made bigger, the amount of value in
+the world increases and then stays at this new level. The faucet is
+largely left alone, with objects created as needed by the game world.
+The management issues with this economic model are with the drain -
+effectively with making sure players spend money rather than hoarding,
+as described at the beginning of this article.
+
+This kind of economy management allows you to manage things like pricing
+at the area-design level and lets you address problems without being
+forced to revalue your silver coins. It lets you assess pricing based on
+object rarity, effort etc. taking the implied parts of the world into
+account.
+
+------------------------------------------------------------------------
+
+Scatter is the High Lord of Dawn Whispers - a new custom built LPmud
+hoping to open for beta-testing in the near future.
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+September 1999 Imaginary Realities
+<http://imaginaryrealities.imaginary.com:8080/volume2/issue9/first_page.shtml>,
+the magazine of your mind.
+ Copyright Information
+<http://imaginaryrealities.imaginary.com:8080//copyright.html>
+

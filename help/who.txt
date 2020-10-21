@@ -1,0 +1,8 @@
+who [name]
+
+Show who's playing.
+
+If you don't specify a name the everyone who's playing will be listed.
+
+
+

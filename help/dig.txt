@@ -1,0 +1,11 @@
+dig [direction]
+
+Creates a new room.
+
+If you specify a direction the room will be created there,
+otherwise the room will be created at the next free direction:
+
+[direction] can be north,south,east,west,northeast,northwest,southeast,southwest up or down.
+
+Wizards+ only.
+

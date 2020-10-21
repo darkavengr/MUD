@@ -1,0 +1,6 @@
+kill
+
+Kills a user.
+
+The user's profile will be deleted and they will disconnected.
+Wizards+ only.
