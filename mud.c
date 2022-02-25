@@ -272,23 +272,7 @@ for(count=0;count <= maxsocket && retval > 0;++count) {		/* search sockets */
 	  break;
 	 }
 
-/* hide output if password */
-		
-	 b=connections[count].temp;
-	 b += ((strlen(connections[count].temp)-strlen(enableoutput));
-
-         printf("buffer=%s\n",b);
-
-	 strcat(connections[count].buf,b);	/* add to buffer */
-
-         if((connections[count].connectionstate == STATE_GETPASSWORD)) {
-          send(count,suppressoutput,strlen(suppressoutput),0);          
-         }
-         else
-         {
-          send(count,enableoutput,strlen(enableoutput),0);
-  	 }
-
+	 strcat(connections[count].buf,connections[count].temp);	/* add to buffer */
 	 b=strpbrk(connections[count].buf,"\r");		/* if at end of line */
 	 if(b != NULL) {
 	  *b=0;

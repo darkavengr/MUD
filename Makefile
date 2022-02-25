@@ -1,17 +1,63 @@
-
 CC = gcc
+OBJFILES = attack.o command.o  database.o error.o getconfig.o help.o lookup.o monster.o mud.o password.o shutdown.o spell.o string.o  user.o
+OUTFILE=mud
 
-all:
-	$(CC) -w -omud attack.c command.c  database.c error.c getconfig.c help.c lookup.c monster.c mud.c password.c shutdown.c spell.c string.c  user.c -lcrypt
-	$(CC) -c genpass.c -o genpass.o -lcrypt
-	$(CC) -o genpass genpass.o -lcrypt
+ifeq ($(OS),Windows_NT)
+	FLAGS = -llibcrypt
+	OUTFILE += ".exe"
+else
+	FLAGS= -lcrypt
+endif
 
-win32:
-	$(CC) -w -o mud.exe attack.c error.c password.c shutdown.c spell.c command.c getconfig.c help.c mud.c lookup.c monster.c database.c user.c string.c -lws2_32 -llibcrypt
+mud: $(OBJFILES)
+	$(CC) $(OBJFILES) -o $(OUTFILE) $(FLAGS)
 
-	$(CC) -c crypt.c genpass.c
-	$(CC) -o genpass genpass.o  -llibcrypt
+attack.o:
+	$(CC) -c attack.c
+
+command.o:
+	$(CC) -c command.c
+
+database.o:
+	$(CC) -c database.c
+
+error.o:
+	$(CC) -c error.c
+
+getconfig.o:
+	$(CC) -c getconfig.c
+
+help.o:
+	$(CC) -c help.c
+
+lookup.o:
+	$(CC) -c lookup.c
+
+monster.o:
+	$(CC) -c monster.c
+
+mud.o:
+	$(CC) -c mud.c
+
+password.o:
+	$(CC) -c password.c
+
+shutdown.o:
+	$(CC) -c shutdown.c
+
+spell.o:
+	$(CC) -c spell.c
+
+string.o:
+	$(CC) -c string.c
+
+user.c:
+	$(CC) -c user.c
+
 clean:
-	rm mud genpass *.o
+	rm $(OUTFILE) *.o
+
+
+
 
 

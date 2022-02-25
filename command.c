@@ -208,6 +208,8 @@ int docommand(user *currentuser,char *s) {
 
  if(!*s) return;			/* no command */
 
+ printf("command=%s\n",s);
+
  currentroom=currentuser->roomptr;  
 
  memset(cb,0,10*BUF_SIZE);
@@ -314,6 +316,8 @@ int down_statement(user *currentuser,int tc,char *cb[BUF_SIZE][BUF_SIZE]) {
 }
 
 int look_statement(user *currentuser,int tc,char *cb[BUF_SIZE][BUF_SIZE]) {
+ printf("look=%s\n",cb[1]);
+
  look(currentuser,cb[1]);
  return;
 }

@@ -87,7 +87,6 @@ strcat(isconf,isrel);
 
   lc++;                                          /* line count */
 
-
   if(strcmp(ab[0],"server") == 0) {
    strcpy(config.mudserver,ab[1]);
    continue;
