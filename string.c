@@ -3,7 +3,9 @@
 #include <stdint.h>
 
 #include <time.h>
-#include "defines.h"
+
+#include "bool.h"
+#include "size.h"
 
 #define SECONDS_IN_YEAR		31557600 
 #define SECONDS_IN_MONTH 2629800

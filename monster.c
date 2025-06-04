@@ -18,7 +18,11 @@
 #include "winsock.h"
 #endif
 
-#include "defines.h"
+#include "errors.h"
+#include "user.h"
+#include "room.h"
+#include "monster.h"
+#include "config.h"
 
 char *monrel="/config/monsters.mud";
 monster *monsters=NULL;

@@ -15,8 +15,6 @@
 
 #include <string.h>
 
-#include "defines.h"
-
 char *errors[] = { "NO error\r\n","out of memory\r\n","Object not found\r\n","You can't do that yet\r\n",\
 		   "Username is required\r\n","That username already exists\r\n","Gender must be either male or female\r\n",\
 		   "Unknown player class\r\n","Unknown race\r\n","You must enter a password\r\n","User BANNED\r\n",\

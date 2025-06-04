@@ -24,7 +24,14 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "defines.h"
+#include "version.h"
+#include "bool.h"
+#include "state.h"
+#include "class.h"
+#include "race.h"
+#include "errors.h"
+#include "user.h"
+#include "config.h"
 
 #define  MAX_BACKLOG 14
 

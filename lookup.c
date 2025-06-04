@@ -38,8 +38,6 @@
  #include "winsock.h"
 #endif
 
-#include "defines.h"
-
 int address_lookup(char *address,char *buf) {
 struct hostent *he;
 struct in_addr **addr_list;

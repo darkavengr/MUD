@@ -29,7 +29,12 @@
 #include <crypt.h>
 #include <time.h>
 
-#include "defines.h"
+#include "bool.h"
+#include "directions.h"
+#include "errors.h"
+#include "user.h"
+#include "room.h"
+#include "config.h"
 
 extern user *users;
 extern char *maleusertitles[12];

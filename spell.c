@@ -19,7 +19,12 @@
 #include "winsock.h"
 #endif
 
-#include "defines.h"
+#include "bool.h"
+#include "spell.h"
+#include "race.h"
+#include "errors.h"
+#include "user.h"
+#include "config.h"
 
 extern user *users;
 extern char *maleusertitles[12];

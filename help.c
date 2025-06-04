@@ -37,7 +37,9 @@
 	#include "winsock.h"
 #endif
 
-#include "defines.h"
+#include "help.h"
+#include "errors.h"
+#include "user.h"
 
 char *helpprompt="-- Press any key to continue -- or type q to quit";
 

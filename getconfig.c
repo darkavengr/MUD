@@ -24,10 +24,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "defines.h"
+#include "bool.h"
+#include "errors.h"
+#include "config.h"
 
 CONFIG config;
-
 
 char *mudconf[BUF_SIZE];
 char *isconf[BUF_SIZE];

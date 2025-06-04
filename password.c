@@ -19,7 +19,9 @@
 #include "winsock.h"
 #endif
 
-#include "defines.h"
+#include "bool.h"
+#include "errors.h"
+#include "user.h"
 
 int changepassword(user *currentuser,char *u) {
 char *newpassprompt="Enter new password:";

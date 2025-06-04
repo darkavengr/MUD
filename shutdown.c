@@ -15,7 +15,8 @@
 #include "winsock.h"
 #endif
 
-#include "defines.h"
+#include "errors.h"
+#include "user.h"
 
 char *shutdownmsg="WARNING: server shutdown\r\n";
 

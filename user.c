@@ -25,7 +25,14 @@
 
 #include <crypt.h>
 
-#include "defines.h"
+#include "bool.h"
+#include "help.h"
+#include "ban.h"
+#include "class.h"
+#include "race.h"
+#include "errors.h"
+#include "user.h"
+#include "config.h"
 
 extern room *rooms;
 extern fd_set readset,currentset;

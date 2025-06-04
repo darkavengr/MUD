@@ -36,77 +36,17 @@
 #include "winsock.h"
 #endif
 
-#include "defines.h"
+#include "version.h"
+#include "bool.h"
+#include "directions.h"
+#include "class.h"
+#include "race.h"
+#include "errors.h"
+#include "room.h"
+#include "command.h"
+#include "config.h"
 
 extern char *roomnames[11];
-
-int docommand(user *currentuser,char *s);
-int north_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int south_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int east_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int west_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int northwest_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int southwest_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int southeast_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int northeast_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int up_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int down_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int look_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int who_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int say_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int whisper_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int pose_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int home_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int quit_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int version_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int describe_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int get_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int drop_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int help_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int password_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int spell_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int fight_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int score_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int inv_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int give_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int xyzzy_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setrace_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int set_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setgender_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int sethome_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setgender_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setlevel_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setclass_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setxp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setmp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setsp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int banip_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int unban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int ban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int kill_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int create_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int delete_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int rename_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int chown_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]); 
-int chmod_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int copy_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int move_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int dig_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int force_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int listban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int go_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int wall_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int take_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int reload_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int shutdown_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int addclass_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int addrace_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int dropdead_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int invisible_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int visible_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int gag_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int ungag_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setexit_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 
 struct {
 user *user;

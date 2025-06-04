@@ -39,7 +39,13 @@
 #include <winsock2.h>
 #endif
 
-#include "defines.h"
+#include "bool.h"
+#include "attack.h"
+#include "race.h"
+#include "errors.h"
+#include "user.h"
+#include "monster.h"
+#include "config.h"
 
 extern user *users;
 extern room *rooms;
@@ -67,7 +73,7 @@ getconfigurationinformation(&config);
 */
 if((currentroom->attr & ROOM_HAVEN) && currentuser->status < WIZARD) {
 	display_error(count,ATTACK_HAVEN);
-	return;
+	return(0);
 }
 
 /* find user */
