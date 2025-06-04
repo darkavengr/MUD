@@ -1,4 +1,5 @@
 CC = gcc
+CCFLAGS=-w
 OBJFILES = attack.o command.o  database.o error.o getconfig.o help.o lookup.o monster.o mud.o password.o shutdown.o spell.o string.o  user.o
 OUTFILE=mud
 
@@ -10,49 +11,49 @@ else
 endif
 
 mud: $(OBJFILES)
-	$(CC) $(OBJFILES) -o $(OUTFILE) $(FLAGS)
+	$(CC) $(CCFLAGS) $(OBJFILES) -o $(OUTFILE) $(FLAGS)
 
 attack.o:
-	$(CC) -c attack.c
+	$(CC) $(CCFLAGS) -c attack.c
 
 command.o:
-	$(CC) -c command.c
+	$(CC) $(CCFLAGS) -c command.c
 
 database.o:
-	$(CC) -c database.c
+	$(CC) $(CCFLAGS) -c database.c
 
 error.o:
-	$(CC) -c error.c
+	$(CC) $(CCFLAGS) -c error.c
 
 getconfig.o:
-	$(CC) -c getconfig.c
+	$(CC) $(CCFLAGS) -c getconfig.c
 
 help.o:
-	$(CC) -c help.c
+	$(CC) $(CCFLAGS) -c help.c
 
 lookup.o:
-	$(CC) -c lookup.c
+	$(CC) $(CCFLAGS) -c lookup.c
 
 monster.o:
-	$(CC) -c monster.c
+	$(CC) $(CCFLAGS) -c monster.c
 
 mud.o:
-	$(CC) -c mud.c
+	$(CC) $(CCFLAGS) -c mud.c
 
 password.o:
-	$(CC) -c password.c
+	$(CC) $(CCFLAGS) -c password.c
 
 shutdown.o:
-	$(CC) -c shutdown.c
+	$(CC) $(CCFLAGS) -c shutdown.c
 
 spell.o:
-	$(CC) -c spell.c
+	$(CC) $(CCFLAGS) -c spell.c
 
 string.o:
-	$(CC) -c string.c
+	$(CC) $(CCFLAGS) -c string.c
 
 user.c:
-	$(CC) -c user.c
+	$(CC) $(CCFLAGS) -c user.c
 
 clean:
 	rm $(OUTFILE) *.o

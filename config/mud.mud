@@ -1,7 +1,8 @@
-server=192.168.178.33
+server=192.168.178.66
 port=5000
+configsavetime=1h
 objectresettime=1h 
-databasesavetime=52y 625m 19035d 456863h 27411784m 1644707041s 
+databasesavetime=1h 
 databasebackup=true
 allowplayerkilling=true
 allownewaccounts=true

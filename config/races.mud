@@ -5,8 +5,7 @@ dexterity:12
 luck:6
 magic:0
 agility:8
-stamina:10t
-strength:100
+stamina:10
 end
 
 begin_race:Dwarf
@@ -17,7 +16,6 @@ luck:10
 magic:0
 agility:6
 stamina:12
-strength:100
 end
 
 begin_race:Elf
@@ -28,7 +26,6 @@ luck:12
 magic:12
 agility:18
 stamina:6
-strength:100
 end
 
 begin_race:Halfling
@@ -39,7 +36,6 @@ luck:6
 magic:0
 agility:6
 stamina:6
-strength:100
 end
 
 begin_race:Sprite
@@ -50,7 +46,6 @@ luck:10
 magic:10
 agility:12
 stamina:5
-strength:100
 end
 
 begin_race:Orc
@@ -61,7 +56,6 @@ luck:5
 magic:0
 agility:2
 stamina:20
-strength:100
 end
 
 begin_race:Centaur
@@ -72,7 +66,6 @@ luck:10
 magic:12
 agility:12
 stamina:10
-strength:100
 end
 
 begin_race:WolfMan
@@ -83,7 +76,6 @@ luck:7
 magic:0
 agility:8
 stamina:11
-strength:100
 end
 
 begin_race:Dwarf
@@ -94,7 +86,6 @@ luck:6
 magic:0
 agility:8
 stamina:10
-strength:100
 end
 
 begin_race:Halfling
@@ -105,7 +96,6 @@ luck:6
 magic:0
 agility:6
 stamina:6
-strength:100
 end
 
 begin_race:Gnome
@@ -116,7 +106,6 @@ luck:7
 magic:0
 agility:7
 stamina:7
-strength:100
 end
 
 begin_race:Half-Giant
@@ -127,6 +116,5 @@ luck:5
 magic:0
 agility:2
 stamina:14
-strength:100
 end
 

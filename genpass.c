@@ -13,9 +13,9 @@ int main(int argc,char **argv)
 char *buf[255];
 
 if(argc < 2) {			/* no arguments */
- printf("generate password for AdventureMUD\n\n");
- printf("\ngenpass [username] [password]\n");
- exit(0);
+	printf("generate password for AdventureMUD\n\n");
+	printf("\ngenpass [username] [password]\n");
+	exit(0);
 }
 
 strcpy(buf,argv[1]);
