@@ -1,4 +1,8 @@
 #include "size.h"
+#include "user.h"
+
+int castspell(user *currentuser,char *s,char *t);
+int loadspells(void);
 
 #ifndef SPELL_H
 #define SPELL_H

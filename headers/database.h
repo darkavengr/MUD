@@ -1,0 +1,26 @@
+int updatedatabase(void);
+int loaddatabase(void);
+int setexit(user *currentuser,int whichroom,int direction,int exit);
+int createroom(user *currentuser,char *r);
+int setobjectattributes(user *currentuser,char *object,char *attr);
+int setowner(user *currentuser,char *o,char *n);
+int copyobject(user *currentuser,char *o,int l);
+int resetobjects(void);
+int pickup(user *currentuser,char *o);
+int drop(user *currentuser,char *o);
+int createobject(user *currentuser,char *objname);
+int deletething(user *currentuser,char *o);
+int renameobject(user *currentuser,char *o,char *n);
+int look(user *currentuser,char *n);
+int copyfile(char *source,char *destination);
+int describe(user *currentuser,char *o,char *d);
+void setdatabaseupdatedflag(void);
+void cleardatabaseupdatedflag(void);
+char *GetDirectionName(int direction);
+char *GetRoomName(int roomnumber);
+int GetRoomFlags(int roomnumber);
+char *GetRoomPointer(int roomnumber);
+int GetRoomMonsterEvil(int roomnumber,int roommonster);
+char *GetRoomMonsterName(int roomnumber,int roommonster);
+int GetNumberOfMonstersInRoom(int roomnumber);
+

@@ -29,11 +29,9 @@
 #define ROOM_PRIVATE		128
 #define ROOM_DEAD		256
 
-#define MAXROOMOBJECTS	10
-
 #ifndef ROOM_H
 #define ROOM_H
-typedef struct {			/* objects */
+typedef struct roomobject {			/* objects */
  int room;
  char *owner[BUF_SIZE];
  char *name[BUF_SIZE];
@@ -53,9 +51,11 @@ typedef struct {				/* rooms */
  char *desc[BUF_SIZE];
  int attr;
  int exits[11];
- struct mudobject *roomobjects;
+ roomobject *roomobjects;
+ roomobject *roomobjects_last;
  int monstercount;
- monster roommonsters[ROOM_MONSTER_COUNT];
+ monster *roommonsters;
+ monster *roommonsters_last;
 } room;
 #endif
 

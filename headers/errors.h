@@ -18,24 +18,25 @@
 #define OBJECT_EXISTS		17
 #define ROOM_NOT_FOUND		18
 #define CANT_CREATE_ROOM 	19
-#define WEAK_PASSWORD		20
-#define SPELL_LEVEL_USER 	21
-#define SPELL_NO_TARGET		22
-#define SPELL_HAVEN		23
-#define INSUFFICIENT_MAGIC_POINTS 24
-#define SPELL_NOT_FOUND		25
-#define ALREADY_BANNED		26
-#define UNKNOWN_USER		27
-#define INVALID_LEVEL		28
-#define BAD_DIRECTION		31
-#define CANT_BE_KILLED		32
-#define GAME_OVER		33
-#define ATTACK_HAVEN		34
-#define BAD_ROOM		35
-#define ACCESS_DENIED		36
-#define NO_HELP_TOPIC		37
-#define NO_PASSWORD		38
-#define KILL_WIZARD		39
+#define PERMISSION_DENIED	20
+#define WEAK_PASSWORD		21
+#define SPELL_LEVEL_USER 	22
+#define SPELL_NO_TARGET		23
+#define SPELL_HAVEN		24
+#define INSUFFICIENT_MAGIC_POINTS 25
+#define SPELL_NOT_FOUND		26
+#define ALREADY_BANNED		27
+#define UNKNOWN_USER		28
+#define INVALID_LEVEL		29
+#define BAD_DIRECTION		30
+#define CANT_BE_KILLED		31
+#define GAME_OVER		32
+#define ATTACK_HAVEN		33
+#define INVALID_HELP_TOPIC	34
+#define KILL_WIZARD		35
+#define NO_PASSWORD		36
+#define ACCESS_DENIED		37
+#define BAD_ROOM		38
 
 #define NOCONFIGFILE  1
 #define BADCONFIG     2
@@ -46,4 +47,10 @@
 #define NO_THREAD     7
 #define	NO_RESOLVE    8
 #define CONFIG_ERROR  10
+
+#include "user.h"
+
+void SetLastError(user *user,int error);
+int GetLastError(user *user);
+void PrintError(int socket,int error);
 

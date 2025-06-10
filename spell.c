@@ -25,10 +25,6 @@
 #include "errors.h"
 #include "user.h"
 #include "config.h"
-
-extern user *users;
-extern char *maleusertitles[12];
-extern char *femaleusertitles[12];
 		
 spell *spells=NULL;
 char *spellconf[BUF_SIZE];
@@ -48,9 +44,8 @@ int count;
 CONFIG config;
 
 if(t == NULL) {
-display_error(currentuser->handle,NO_PARAMS);
-
-return;
+	SetLastError(currentuser,NO_PARAMS);
+	return(-1);
 }
 
 getconfigurationinformation(&config);
@@ -68,8 +63,8 @@ while(spellnext != NULL) {
 	if(strcmp(spellnext->name,s) == 0) {			/* found spell */
 
 	if((currentuser->status < spellnext->level) && currentuser->status < WIZARD) {		/* spell required a higher level user */
-		display_error(currentuser->handle,SPELL_LEVEL_USER);
-		return;
+		SetLastError(currentuser,SPELL_LEVEL_USER);
+		return(-1);
 	}
 
 /*
@@ -79,8 +74,8 @@ while(spellnext != NULL) {
 	if(currentuser->magicpoints-spellnext->spellpoints <= 0) {
 
 		if(currentuser->status < WIZARD) {
-			display_error(currentuser->handle,INSUFFICIENT_MAGIC_POINTS);
-			return;
+			SetLastError(currentuser,INSUFFICIENT_MAGIC_POINTS);
+			return(-1);
 		}
 	}
 	
@@ -92,8 +87,8 @@ spellnext=spellnext->next;
 }
 
 if(spellfound == FALSE) {	/* no spell */
-	display_error(currentuser->handle,SPELL_NOT_FOUND);
-	return;
+	SetLastError(currentuser,SPELL_NOT_FOUND);
+	return(-1);
 }
 
 /*
@@ -101,30 +96,31 @@ if(spellfound == FALSE) {	/* no spell */
 */
 
 if((currentroom->attr & ROOM_HAVEN) == TRUE && currentuser->status < WIZARD) {		/* can't put spells on users in haven rooms */
-	display_error(currentuser->handle,SPELL_HAVEN);
-	return;
+	SetLastError(currentuser,SPELL_HAVEN);
+	return(-1);
 }
 
-usernext=users;
+usernext=FindFirstUser();		/* find first user */
+
+usernext=FindFirstUser();		/* find first user */
 
 while(usernext != NULL) {
-	if(regexp(usernext->name,t) == TRUE) {		/* found target */
-
+	if((regexp(usernext->name,t) == TRUE) && (usernext->loggedin == TRUE) && (usernext->room == currentuser->room)) {
 		if(config.allowplayerkilling == FALSE) {		/* can't kill player */
-			display_error(currentuser->handle,SPELL_HAVEN);
+			SetLastError(currentuser,SPELL_HAVEN);
 		}
 
 		if(usernext->status > WIZARD) {		/* if not user, cast spell */
 			if(usernext->gender == MALE) {
-				sprintf(buf,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->name,maleusertitles[currentuser->status]);
+				sprintf(buf,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->name,GetPointerToMaleTitles(currentuser->status));
 				send(currentuser->handle,buf,strlen(buf),0);
-				return;
+				return(0);
 			} 
 			else
 			{
-				sprintf(buf,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->name,femaleusertitles[currentuser->status]);
+				sprintf(buf,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->name,GetPointerToFemaleTitles(currentuser->status));
 				send(currentuser->handle,buf,strlen(buf),0);
-				return;
+				return(0);
 			}
 
 		}
@@ -136,17 +132,16 @@ while(usernext != NULL) {
 
 		sprintf(buf,"%s casts a %s on %s causing %d points of damage\r\n",currentuser->name,spellnext->message,usernext->name,spellnext->damage);
 		send(currentuser->handle,buf,strlen(buf),0);
+
 	}
 
-	usernext=usernext->next;
+	usernext=FindNextUser(usernext);		/* find next user */
 }
+
 
 /*
 * cast spell on monster
 */
-
-/* find monster */
-
 
 for(count=0;count<currentroom->monstercount;count++) {
 	if(regexp(t,currentroom->roommonsters[count].name) == TRUE) {		/* found object */
@@ -174,17 +169,15 @@ for(count=0;count<currentroom->monstercount;count++) {
 
 }
 
-return;
+return(0);
 }
 
 int loadspells(void) {
 spell *spellnext;
 FILE *handle;
-char *b;
-char c;
 int lc;
 char *configuration_line[BUF_SIZE][BUF_SIZE];
-char *z[BUF_SIZE];
+char *linebuffer[BUF_SIZE];
 int errorcount=0;
 char *currentdirectory[BUF_SIZE];
 
@@ -197,30 +190,22 @@ lc=0;
 handle=fopen(spellconf,"rb");
 if(handle == NULL) {																						/* couldn't open file */
 	printf("\nmud: Can't open configuration file %s\n",spellconf);
-	exit(NOCONFIGFILE);
+	return(-1);
 }
 
 while(!feof(handle)) {
-	fgets(z,BUF_SIZE,handle);		/* get and parse line */
+	fgets(linebuffer,BUF_SIZE,handle);		/* get and parse line */
 
-	b=z;
-	c=*b;
-	if(c == '#')	continue;		/* skip comments */
-	if(c == '\n')	continue;		/* skip newline */
+	if((char) *linebuffer == '#')  continue;		/* skip comments */
+	if((char) *linebuffer == '\n')  continue;		/* skip newline */
 
-	b=z;
-	b=b+strlen(z);
-	b--;
-
-	if(*b == '\n') *b=0;
-	b--;
-	if(*b == '\r') *b=0;
+	removenewline(linebuffer);		/* remove newline character */
 
 	lc++;
 
-	if(strlen(z) < 2) continue;		/* skip blank line */
+	if(strlen(linebuffer) < 2) continue;		/* skip blank line */
 
-	tokenize_line(z,configuration_line,":\n");				/* tokenize line */
+	tokenize_line(linebuffer,configuration_line,":\n");				/* tokenize line */
 
 	if(strcmp(configuration_line[0],"begin_spell") == 0) {	/* end */
 

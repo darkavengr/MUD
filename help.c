@@ -48,32 +48,31 @@ char *buf[BUF_SIZE];
 char *b;
 int count=0;
 FILE *handle;
+char *helpfile[BUF_SIZE];
 
-getcwd(buf,BUF_SIZE);				/* get directory */
+getcwd(buf,BUF_SIZE);
 
 if(!*ht) {		                      /* get help file */
-	strcat(buf,"/help/help.txt");
+	sprintf(helpfile,"%s/%s",buf,"/help/help.txt");
 }
 else
 {
-	strcat(buf,"/help/");
-	strcat(buf,ht);
-	strcat(buf,".txt");
+	sprintf(helpfile,"%s/help/%s.txt",buf,ht);
 }
 
-handle=fopen(buf,"rb");
-if(handle == NULL) {                 /* can't open file */
-	display_error(currentuser->handle,NO_HELP_TOPIC);  
+handle=fopen(helpfile,"rb");
+if(!handle) {                 /* can't open file */
+	SetLastError(currentuser,NO_PARAMS);  
 	free(buf);
-	return;
+	return(-1);
 }
 
-while(!feof(handle)) {                /* display text until end of file */
+do {
 	fgets(buf,BUF_SIZE,handle);
 	send(currentuser->handle,buf,strlen(buf),0);
-}
+} while(!feof(handle));
 
 fclose(handle);
-return;
+return(0);
 }
 

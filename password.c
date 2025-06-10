@@ -36,8 +36,8 @@ if(!*u) {
 else
 {
 	if(currentuser->status < WIZARD) {		/* can't set other password unless a wizard */
-		display_error(currentuser->handle,NOT_YET);
-		return;
+		SetLastError(currentuser,NOT_YET);
+		return(-1);
 	}
 
 	strcpy(userx,u);		/* use default user and password */
@@ -47,15 +47,14 @@ send(currentuser->handle,newpassprompt,strlen(newpassprompt),0);		/* get new pas
 getpassword(currentuser->handle,newpass);
 
 if(checkpasswordstrength(newpass) == FALSE) {	/* weak password */
-	display_error(currentuser->handle,WEAK_PASSWORD);  
-	return;
+	SetLastError(currentuser,WEAK_PASSWORD);  
+	return(-1);
 }
 
 strcpy(buf,userx);
 strcpy(encryptedpassword,crypt(newpass,buf));
 
-updateuser(currentuser,userx,encryptedpassword,0,0,"",0,currentuser->staminapoints,0,0,"","",0);
-return;
+return(updateuser(currentuser,userx,encryptedpassword,0,0,"",0,currentuser->staminapoints,0,0,"","",0));
 }
 
 int checkpasswordstrength(char *pass) {
@@ -89,14 +88,15 @@ while(1) {
 	send(msgsocket,"\b \b",3,0);
 
 	 if(*b == '\n') {
-	  if(strlen(buf) > 0) *b=0;
-	  return(count);
+	 	if(strlen(buf) > 0) *b=0;
+
+	 	return(count);
 	 }
 	
 	 *x++=*b++;
 	 count++;
 	}
 
-return;
+return(0);
 }
 

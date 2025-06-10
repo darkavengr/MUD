@@ -26,4 +26,5 @@ typedef struct {
  char *isbuf;
  int issuecount;
  int roomcount;
+ int roomobjectnumber;
 } CONFIG;

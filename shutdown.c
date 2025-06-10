@@ -20,17 +20,14 @@
 
 char *shutdownmsg="WARNING: server shutdown\r\n";
 
-extern user *users;
-
 int mudshutdown(user *currentuser,char *shutdownmessage) {
 room *currentroom;
-user *usernext;
 
 currentroom=currentuser->roomptr;
 
 if(currentuser->status < ARCHWIZARD) {		/* not yet */
- display_error(currentuser->handle,NOT_YET);
- return;
+	SetLastError(currentuser,NOT_YET);
+	return(-1);
 }
 
 if(!*shutdownmessage) {			/* use default message */
@@ -41,18 +38,13 @@ else
 	wall(currentuser,shutdownmessage);	/* send warning */
 }
 
-usernext=users;
-
-while(usernext != NULL) {
-	close(usernext->handle);		/* close tcp connections */
-	usernext=usernext->next;
-}
+DisconnectAllUsers();		/* disconnect all user */
 
 #ifdef _WIN32
 WSACleanup();			/* windoze needs wsacleanup */
 #endif
 
 exit(0);				/* terminate server */
-return;
 }
+
 

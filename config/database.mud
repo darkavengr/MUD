@@ -1,7 +1,7 @@
 begin_room:1
 name:Outside ruined cottage
 owner:dungeonmaster
-attr:0
+attr:64
 description:You are standing outsbegin_roome a ruined cottage, surrounded by dense thickets. Bones are strewn around your feet.rk castle looming forbodingly across the sky.ÿ
 north:0
 south:6

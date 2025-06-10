@@ -46,8 +46,8 @@
 #include "user.h"
 #include "monster.h"
 #include "config.h"
+#include "getconfig.h"
 
-extern user *users;
 extern room *rooms;
 
 int attack(user *currentuser,char *target) {
@@ -72,27 +72,19 @@ getconfigurationinformation(&config);
 * can't attack in haven rooms or attack wizards
 */
 if((currentroom->attr & ROOM_HAVEN) && currentuser->status < WIZARD) {
-	display_error(count,ATTACK_HAVEN);
-	return(0);
+	SetLastError(currentuser,ATTACK_HAVEN);
+	return(-1);
 }
 
 /* find user */
-usernext=users;
-
-while(usernext != NULL) {		/* find user  */
-	if(strcmp(usernext->name,target) == 0 && usernext->loggedin == TRUE) {
-		found=TRUE;
-		break;	/* if object matches */
-	}
-
-	usernext=usernext->next;
-}
+usernext=GetUserPointerByName(target);		/* find user */
+if(usernext != NULL) found=TRUE;			/* found user */
 
 if(found == TRUE) {
 	if(config.allowplayerkilling == FALSE) {	/* no player on player killing */
 		sprintf(buf,"Can't attack %s because player versus player combat is not allowed\r\n",usernext->name);
 		send(currentuser->handle,buf,strlen(buf),0);
-		return;
+		return(-1);
 	}
 
 	while(usernext->staminapoints > 0 && currentuser->staminapoints > 0) {
@@ -175,8 +167,8 @@ for(count=0;count != rooms[currentroom->room].monstercount;count++) {
 
 				currentuser->experiencepoints += (savestamina*currentuser->status);
 
-				deletemonster(currentuser->room,count);
-				return;
+				DeleteMonster(currentuser->room,count);
+				return(0);
 			}
 
 			/* monster attacks user */
@@ -194,7 +186,10 @@ for(count=0;count != rooms[currentroom->room].monstercount;count++) {
 	}
 }
 
-if(found == FALSE) display_error(count,UNKNOWN_USER);		/* missing player */
-return;
+if(found == FALSE) {
+	SetLastError(currentuser,UNKNOWN_USER);		/* missing player */
+	return(-1);
 }
 
+return(0);
+}

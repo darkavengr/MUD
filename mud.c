@@ -35,7 +35,6 @@
 
 #define  MAX_BACKLOG 14
 
-extern user *users;
 extern race *races;
 extern class *classes;
 
@@ -156,6 +155,9 @@ u=u+config.userresettime;
 time(&c);
 c=c+config.configsavetime;
 
+
+resetobjects();		/* create new objects */
+CreateMonster();	/* create monsters */
 	
 /*
  * The main event loop, this resets the object, saves the configuration information
@@ -204,7 +206,7 @@ while(1) {
 		c=c+config.configsavetime;
 	}
 
-	movemonster();		/* move a monster */
+	MoveMonster();		/* move a monster */
 
 	/* check for data on sockets */
 
@@ -245,7 +247,7 @@ while(1) {
 	     			strcpy(ipaddress,inet_ntoa(clientip.sin_addr));
 	
 	     			if(checkban(ipaddress) == TRUE) { /* check if banned */
-					display_error(as,USER_BANNED);
+					PrintError(currentuser->handle,USER_BANNED);
 
 					FD_CLR(as,&currentset);
 	        			close(as);
@@ -277,13 +279,12 @@ while(1) {
 
 				strcat(connections[count].buf,connections[count].temp);	/* add to buffer */
 
-				b=strpbrk(connections[count].buf,"\r");		/* if at end of line */
-				if(b != NULL) *b=0;
+				removenewline(connections[count].buf);		/* remove newline character */
 
 				 /* state machine for determing what to do for each step */
 	
 				switch(connections[count].connectionstate) {
-
+					
 	     	 			case STATE_GETUSER:			/* prompt for user name */
 						if(config.allownewaccounts == TRUE) {
 							send(count,promptnewaccount,strlen(promptnewaccount),0);  	
@@ -309,37 +310,40 @@ while(1) {
 						{
 							send(count,passprompt,strlen(passprompt),0);
 							connections[count].connectionstate=STATE_CHECKLOGIN; /* next */
+
+							printf("continuing to login\n");
 						}
 	
 						break;
 
 					case STATE_CHECKLOGIN:			/* check username and password */	
-						if(login(count,connections[count].uname,connections[count].uname,connections[count].upass) == 0) {
+						strcpy(connections[count].upass,connections[count].buf);
+
+						if(login(count,connections[count].uname,connections[count].upass) == 0) {
 							connections[count].connectionstate=STATE_GETCOMMAND;
-						}
+						}	
 						else
 						{
-							display_error(count,INVALID_LOGIN);
+							PrintError(count,INVALID_LOGIN);
 
 							connections[count].connectionstate=STATE_GETUSER;
 							break;
 						}
 
- 						usernext=users;
-
-				        	while(usernext != NULL) {		/* check username */
-					 		if(strcmp(usernext->name,connections[count].uname) == 0) {
-								connections[count].user=usernext;
-					 			break;
-				 		}
-                        
-						usernext=usernext->next;
-				
-
+						usernext=GetUserPointerByName(connections[count].uname); /* find user */
+						if(usernext != NULL) connections[count].user=usernext;
+			
 						/* send welcome message */
 
 						sprintf(temp,"Welcome %s\r\n",usernext->name);
 						send(count,temp,strlen(temp),0);
+
+						usernext->handle=count;
+						usernext->loggedin=TRUE;
+
+						if(go(usernext,usernext->homeroom) == -1) {	/* go to room */
+							PrintError(usernext->handle,GetLastError(connections[count].user));
+						}
 
 						memset(connections[count].buf,0,BUF_SIZE);
 
@@ -350,19 +354,20 @@ while(1) {
 						/* these states are for creating a new user */
 
 					case STATE_GETNEWPASS:			/* get new password */
-	 					usernext=users;
-	
-			        		while(usernext != NULL) {		/* check if name exists */
+						usernext=FindFirstUser();		/* find first user */
+
+						while(usernext != NULL) {
+
 							if(strcmp(usernext->name,connections[count].buf) == 0) {
-								display_error(count,USERNAME_EXISTS);
+								PrintError(currentuser->handle,USERNAME_EXISTS);
 
 								send(count,newuserprompt,strlen(newuserprompt),0);
 								connections[count].connectionstate=STATE_GETNEWPASS; /* stay in state */	
 
 								goto badbreak;
 				 			}
-                        
-	                         			usernext=usernext->next;
+
+							usernext=FindNextUser(usernext);		/* find next user */
 						}
 
 						strcpy(connections[count].uname,connections[count].buf);
@@ -375,7 +380,7 @@ while(1) {
 
 					case STATE_GETGENDER:			/* get gender */
 						if(!*connections[count].buf) {
-							display_error(count,NO_PASSWORD);
+							PrintError(currentuser->handle,NO_PASSWORD);
 
 							send(count,newpassprompt,strlen(newpassprompt),0);
 
@@ -394,7 +399,7 @@ while(1) {
 						if(strcmp(connections[count].buf,"female") == 0) connections[count].gender=FEMALE;
 				
 						if(connections[count].gender != MALE  && connections[count].gender != FEMALE) {
-							display_error(count,BAD_GENDER);
+							PrintError(currentuser->handle,BAD_GENDER);
 
 							send(count,genderprompt,strlen(genderprompt),0);
 
@@ -412,7 +417,7 @@ while(1) {
 
 						/* show list of races */
 
-						racenext=races;				/* check if race exists */
+						racenext=FindFirstRace();
 
 						while(racenext != NULL) {
 							sprintf(temp,"%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\r\n",racenext->name,\	
@@ -420,7 +425,8 @@ while(1) {
 							racenext->luck,racenext->wisdom,racenext->intelligence,racenext->stamina);
 
 							send(count,temp,strlen(temp),0);
-							racenext=racenext->next;
+							
+							racenext=FindNextRace(racenext);
 						}
 			
 						send(count,raceprompt,strlen(raceprompt),0);
@@ -445,7 +451,7 @@ while(1) {
 						}
 	
 						if(racenext == NULL) {
-							display_error(count,BAD_RACE);
+							PrintError(currentuser->handle,BAD_RACE);
 	
 							send(count,raceprompt,strlen(raceprompt),0);
 							connections[count].connectionstate=STATE_GETCLASS; /* go to current state */
@@ -484,7 +490,7 @@ while(1) {
 						if(classnext == NULL) {		/* class not found, go back to state #14 */
 							connections[count].connectionstate=STATE_CREATEUSER;
 
-							display_error(count,BAD_CLASS);
+							PrintError(count,BAD_CLASS);
 							send(count,classprompt,strlen(classprompt),0);
 
 							break;
@@ -502,30 +508,26 @@ while(1) {
 							close(count);
 					 	}
 
-						usernext=users;
+						usernext=FindFirstUser();		/* find first user */
 
-					        while(usernext != NULL) {
+						while(usernext != NULL) {
+
 							if(strcmp(usernext->name,connections[count].uname) == 0) {
 								connections[count].user=usernext;
 								break;
-						 	}
-                        
-							usernext=usernext->next;
+							}
+
+							usernext=FindNextUser(usernext);		/* find next user */
 						}
 
-						sprintf(temp,"Welcome %s\r\n",usernext->name);	/* send welcome message */
-						send(count,temp,strlen(temp),0);
-
-						go(connections[count].user,usernext->homeroom);	/* go to room */
-						connections[count].connectionstate=STATE_GETCOMMAND;	/* next state */
-
-						memset(connections[count].buf,0,BUF_SIZE);
-						send(count,">",1,0);
-
-					/* fall through */
+						connections[count].connectionstate=STATE_CHECKLOGIN;
+						break;
 
 					case STATE_GETCOMMAND:		/* processing command */
-			           		docommand(connections[count].user,connections[count].buf);
+			           		if(docommand(usernext,connections[count].buf) == -1) {
+							PrintError(usernext->handle,GetLastError(connections[count].user));
+						}
+
 						connections[count].connectionstate=STATE_GETCOMMAND;	/* loop in state STATE_GETCOMMAND */
 
 						send(count,">",1,0);
@@ -536,8 +538,11 @@ while(1) {
 			}
 		}
        	}
-}
 
 }
 
+void DisconnectUser(user *currentuser) {
+FD_CLR(currentuser->handle,&currentset);
+close(currentuser->handle);
+}
 

@@ -1,11 +1,13 @@
-#include "string.h"
+#include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>
-
+#include <string.h>
+#include <stdlib.h>
 #include <time.h>
 
 #include "bool.h"
 #include "size.h"
+#include "string.h"
 
 #define SECONDS_IN_YEAR		31557600 
 #define SECONDS_IN_MONTH 2629800
@@ -13,16 +15,8 @@
 #define SECONDS_IN_HOUR	3600
 #define SECONDS_IN_MINUTE 60
 
-unsigned int itoa(unsigned int n, char s[]);
-void reverse(char s[]);
-unsigned int touppercase(char *string);
-unsigned int wildcard_rename(char *name,char *mask,char *out);
-uint32_t tohex(uint32_t hex,char *buf);
-int tokenize_line(char *linebuf,char *tokens[BUF_SIZE][BUF_SIZE],char *split);
-
-
 /* itoa:  convert n to characters in s */
-unsigned int itoa(unsigned int n, char s[]) {
+void itoa(unsigned int n, char s[]) {
 unsigned int i, sign;
 
 //     if ((sign = n) < 0) n = -n;          /* make n positive */
@@ -102,7 +96,7 @@ for(count=0;count<strlen(mmask);count++) {
 return(0);
 }
 
-unsigned int touppercase(char *string) {
+void touppercase(char *string) {
 char *s;
 
 s=string;
@@ -115,7 +109,7 @@ while(*s != 0) {			/* until end */
 return;
 }
 
-unsigned int wildcard_rename(char *name,char *mask,char *out) {
+void wildcard_rename(char *name,char *mask,char *out) {
 unsigned int count;
 char *m;
 char *n;
@@ -177,7 +171,7 @@ for(count=0;count<strlen(newmask);count++) {
 return;
 }			
 
-uint32_t tohex(uint32_t hex,char *buf) {
+void tohex(uint32_t hex,char *buf) {
 unsigned int count;
 uint32_t h;
 uint32_t shiftamount;
@@ -201,24 +195,47 @@ for(count=1;count<9;count++) {
 
 return;
 }
+
 int tokenize_line(char *linebuf,char *tokens[][BUF_SIZE],char *split) {
-char *tok;
-char *b[BUF_SIZE];
-int count=0;
+char *token;
+int tc=0;
+int count;
+char *d;
+char *splitptr;
 
-strcpy(b,linebuf);		/* get copy */
+memset(tokens,0,BUF_SIZE);
 
-tok=strtok(b,split);		/* get token */
+token=linebuf;
 
-while(tok != NULL) {
-strcpy(tokens[count],tok);
-count++;
+d=tokens[0];
 
-tok=strtok(NULL,split);
+while(*token != 0) {
+	splitptr=split;			/* point to split characters */
+
+	while(*splitptr != 0) {
+
+		if(*token == *splitptr++) {	/* end of token */
+			token++;
+			tc++;
+
+			*d=0;		/* put null at end of token */
+
+			memset(tokens[tc],0,BUF_SIZE);
+
+			d=tokens[tc];
+			break;
+   		}
+ 	 }	
+
+	 *d++=*token++;
+ }
+
+tc++;
+*tokens[tc]=0;
+
+return(tc);
 }
 
-return(count);
-}
 
 
 unsigned int regexp(char *filename,char *mask) {
@@ -342,7 +359,7 @@ total += (month * SECONDS_IN_YEAR);
 return(total);
 }
 
-int createtimestring(int time,char *b) {
+void createtimestring(int time,char *b) {
 char *z[10];
 char *buf[255];
 
@@ -383,5 +400,13 @@ if(time > SECONDS_IN_DAY) {
 }
 
 return;
+}
+
+void removenewline(char *line) {
+char *lineptr=line+(strlen(line)-1);
+
+if(*lineptr == '\n') *lineptr=0;
+lineptr--;
+if(*lineptr == '\r') *lineptr=0;
 }
 
