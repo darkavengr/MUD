@@ -24,74 +24,66 @@
 #include "monster.h"
 #include "config.h"
 
-char *monrel="/config/monsters.mud";
+char *MonstersConfigurationFile="config/monsters.mud";
 monster *monsters=NULL;
-int monstercount=0;
+int MonsterCount=0;
 
 extern room *rooms;
 
 int MoveMonster(void) {
-user *usernext;
-char *buf[BUF_SIZE];
-int move;
-int damage;
-int roomnumber;
-int roommonster;
-int attack;
-int sta;
-int newroom;
-CONFIG config;
-
-GetConfigurationInformation(&config);
+int MoveProbability;
+int RoomNumber;
+int WhichMonster;
+int AttackProbability;
+int MoveDirection;
 
 srand(time(NULL));
-roomnumber=1+rand() % GetNumberOfRooms();		/* which room */
+RoomNumber=1+rand() % GetNumberOfRooms();		/* which room */
 
-if(GetNumberOfMonstersInRoom(roomnumber) == 0) return(0);	/* no monsters in room */
+if(GetNumberOfMonstersInRoom(RoomNumber) == 0) return(0);	/* no monsters in room */
 
-if(GetNumberOfMonstersInRoom(roomnumber) > 0) roommonster=1+rand() % GetNumberOfMonstersInRoom(roomnumber);	/* which monster */
+if(GetNumberOfMonstersInRoom(RoomNumber) > 0) WhichMonster=1+rand() % GetNumberOfMonstersInRoom(RoomNumber);	/* which monster */
 
 /* attack user */
-attack=rand() % (GetRoomMonsterEvil(roomnumber,roommonster) + 1)+1;
-if(attack == 1) AttackUser(roomnumber,roommonster);
-
-move=rand() % 11;
-newroom=rooms[roomnumber].exits[move];
+AttackProbability=rand() % (GetRoomMonsterEvil(RoomNumber,WhichMonster) + 1)+1;
+if(AttackProbability == 1) AttackUser(RoomNumber,WhichMonster);
 
 /* move monster */
-if(rooms[roomnumber].exits[move] != 0 && (rooms[newroom].attr & ROOM_HAVEN) == 0) {
-	CopyMonsterToRoom(roomnumber,rooms[roomnumber].exits[move],roommonster);
+
+MoveProbability=rand() % (GetRoomMonsterEvil(RoomNumber,WhichMonster) + 1)+1;
+
+if(MoveProbability == 1) {
+	MoveDirection=rand() % 11;
+
+	if(rooms[RoomNumber].exits[MoveDirection] != 0 && (rooms[MoveDirection].attr & ROOM_HAVEN) == 0) {
+		CopyMonsterToRoom(RoomNumber,rooms[RoomNumber].exits[MoveDirection],WhichMonster);
+	}
 }
 
 return(0);
 }
 		
-int CreateMonster(void) {
+int GenerateMonsters(void) {
 monster *monsterlist;
-int randx;
-int r;
-int roomnumber;
-int countx;
-int monsterno;
-int gencount;
-CONFIG config;
-
-GetConfigurationInformation(&config);
+int RandomMonsterNumber;
+int RoomNumber;
+int MonsterGenerateCount;
+int MonsterGenerateLoop;
 					
-for(roomnumber=0;roomnumber<config.roomcount;roomnumber++) {
-	if((rooms[roomnumber].attr & ROOM_HAVEN)) continue;		/* skip haven rooms */
+for(RoomNumber=0;RoomNumber<GetNumberOfRooms();RoomNumber++) {
+	if((rooms[RoomNumber].attr & ROOM_HAVEN)) continue;		/* skip haven rooms */
 
-	gencount=rand() % ROOM_MONSTER_COUNT; /* get numbers */
+	MonsterGenerateCount=rand() % ROOM_MONSTER_COUNT; /* get numbers */
 
-	for(countx=0;countx<gencount;countx++) {
+	for(MonsterGenerateLoop=0;MonsterGenerateLoop<MonsterGenerateCount;MonsterGenerateLoop++) {
 		/* copy monsters from monster list to monster list in room */
 
 		monsterlist=monsters;
-		randx=rand() % monstercount; /* get numbers */
+		RandomMonsterNumber=rand() % MonsterCount; /* get numbers */
 
-		AddMonsterToRoom(&monsters[randx],roomnumber);	/* add monster to room */
+		AddMonsterToRoom(&monsters[RandomMonsterNumber],RoomNumber);	/* add monster to room */
 
-		SendMessageToAllInRoom(rooms[roomnumber].room,rooms[roomnumber].roommonsters_last->createmessage);			      
+		SendMessageToAllInRoom(rooms[RoomNumber].room,rooms[RoomNumber].roommonsters_last->createmessage);			      
 	}
 }
 
@@ -113,9 +105,6 @@ return(0);
 }
 
 int DeleteMonster(int room,int monsterno) {
-int countx;
-monster *montemp[ROOM_MONSTER_COUNT];
-
 if(rooms[room].monstercount == 0) return(-1);	/* no monsters */
 
 rooms[room].monstercount--;
@@ -125,37 +114,32 @@ return(0);
 int LoadMonsters(void) {
 monster *monsternext;
 FILE *handle;
-int lc;
+int LineCount;
 char *linetokens[10][BUF_SIZE];
-char *linebuffer[BUF_SIZE];
-int errorcount=0;
-char *monsterconf[BUF_SIZE];
+char *LineBuffer[BUF_SIZE];
+int ErrorCount=0;
 
-monstercount=0;
-
-getcwd(linebuffer,BUF_SIZE);
-
-sprintf(monsterconf,"%s%s",linebuffer,monrel);		/* get absolute path of configuration file */
+MonsterCount=0;
 
 monsternext=monsters;
 
-handle=fopen(monsterconf,"rb");
+handle=fopen(MonstersConfigurationFile,"rb");
 if(handle == NULL) {                                           /* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",monsterconf);
+	printf("\nmud: Can't open configuration file %s\n",MonstersConfigurationFile);
 	exit(NOCONFIGFILE);
 }
 
 while(!feof(handle)) {
-	fgets(linebuffer,BUF_SIZE,handle);		/* get and parse line */
+	fgets(LineBuffer,BUF_SIZE,handle);		/* get and parse line */
 
 	if(feof(handle)) break;		/* return if at end */
 
-	if((char) *linebuffer == '#')  continue;		/* skip comments */
-	if((char) *linebuffer == '\n')  continue;		/* skip newline */
+	if((char) *LineBuffer == '#')  continue;		/* skip comments */
+	if((char) *LineBuffer == '\n')  continue;		/* skip newline */
 
-	RemoveNewLine(linebuffer);		/* remove newline character */
+	RemoveNewLine(LineBuffer);		/* remove newline character */
 
-	TokenizeLine(linebuffer,linetokens,":\n");				/* tokenize line */
+	TokenizeLine(LineBuffer,linetokens,":\n");				/* tokenize line */
 
 	if(strcmp(linetokens[0],"begin_monster") == 0) {
 		/* monster list is an array, not a linked list because it is randomly accessed */
@@ -169,86 +153,89 @@ while(!feof(handle)) {
 		}
 		else
 		{
-			monstercount++;
-			monsters=realloc(monsters,sizeof(monster)*(monstercount+1));
+			MonsterCount++;
+			monsters=realloc(monsters,sizeof(monster)*(MonsterCount+1));
 			if(monsters == NULL) {
 				perror("\nmud:");
 				exit(NOMEM);
 			}
 		}
 
-		strcpy(monsters[monstercount].name,linetokens[1]);			
+		strcpy(monsters[MonsterCount].name,linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"description") == 0) {
-		sprintf(monsters[monstercount].desc,"%s\r\n",linetokens[1]);			
+		sprintf(monsters[MonsterCount].desc,"%s\r\n",linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"stamina") == 0) {
-		monsters[monstercount].stamina=atoi(linetokens[1]);	
+		monsters[MonsterCount].stamina=atoi(linetokens[1]);	
 	}
 	else if(strcmp(linetokens[0],"evil") == 0) {
-		monsters[monstercount].evil=atoi(linetokens[1]);		
+		monsters[MonsterCount].evil=atoi(linetokens[1]);		
 	}
 	else if(strcmp(linetokens[0],"arrive") == 0) {
-		sprintf(monsters[monstercount].arrivemessage,"%s\r\n",linetokens[1]);			
+		sprintf(monsters[MonsterCount].arrivemessage,"%s\r\n",linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"die") == 0) {
-		sprintf(monsters[monstercount].diemessage,"%s\r\n",linetokens[1]);			
+		sprintf(monsters[MonsterCount].diemessage,"%s\r\n",linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"damage") == 0) {
-		monsters[monstercount].damage=atoi(linetokens[1]);			
+		monsters[MonsterCount].damage=atoi(linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"moveodds") == 0) {
-		monsters[monstercount].moveodds=atoi(linetokens[1]);			
+		monsters[MonsterCount].moveodds=atoi(linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"genodds") == 0) {
-		monsters[monstercount].genodds=atoi(linetokens[1]);			
+		monsters[MonsterCount].genodds=atoi(linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"leave") == 0) {
-		sprintf(monsters[monstercount].leavemessage,"%s\r\n",linetokens[1]);			
+		sprintf(monsters[MonsterCount].leavemessage,"%s\r\n",linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"create") == 0) {
-		sprintf(monsters[monstercount].createmessage,"%s\r\n",linetokens[1]);			
+		sprintf(monsters[MonsterCount].createmessage,"%s\r\n",linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"sleep") == 0) {
-		monsters[monstercount].sleep=atoi(linetokens[1]);			
+		monsters[MonsterCount].sleep=atoi(linetokens[1]);			
 	}
 	else if(strcmp(linetokens[0],"end") == 0) {
 		;;
 	}
 	else
 	{
-		printf("\nmud: %d: Unknown configuration option %s in %s\n",lc,linetokens[0],monsterconf);		/* unknown configuration option */
-		errorcount++;
+		printf("\nmud: %d: Unknown configuration option %s in %s\n",LineCount,linetokens[0],MonstersConfigurationFile);		/* unknown configuration option */
+		ErrorCount++;
 	}
 }
 
 fclose(handle); 
 
-return(errorcount);
+return(ErrorCount);
 }
 
-int AddMonsterToRoom(monster *sourcemonster,int roomnumber) {
-if(rooms[roomnumber].roommonsters == NULL) {
-	rooms[roomnumber].roommonsters=calloc(1,sizeof(monster));	/* allocate objects */
-	if(rooms[roomnumber].roommonsters == NULL) return(-1);		/* can't allocate */
+int AddMonsterToRoom(monster *sourcemonster,int RoomNumber) {
+if(rooms[RoomNumber].roommonsters == NULL) {
+	rooms[RoomNumber].roommonsters=calloc(1,sizeof(monster));	/* allocate objects */
+	if(rooms[RoomNumber].roommonsters == NULL) return(-1);		/* can't allocate */
 
-	rooms[roomnumber].roommonsters_last=rooms[roomnumber].roommonsters;
+	rooms[RoomNumber].roommonsters_last=rooms[RoomNumber].roommonsters;
 }
 else
 {
-	rooms[roomnumber].roommonsters_last->next=calloc(1,sizeof(monster));	/* allocate objects */
-	if(rooms[roomnumber].roommonsters_last->next == NULL) return(-1);		/* can't allocate */
+	rooms[RoomNumber].roommonsters_last->next=calloc(1,sizeof(monster));	/* allocate objects */
+	if(rooms[RoomNumber].roommonsters_last->next == NULL) return(-1);		/* can't allocate */
 	
-	rooms[roomnumber].roommonsters_last=rooms[roomnumber].roommonsters_last->next;
+	rooms[RoomNumber].roommonsters_last=rooms[RoomNumber].roommonsters_last->next;
 }
 
-memcpy(rooms[roomnumber].roommonsters_last,sourcemonster,sizeof(monster));	/* copy monster data */
+memcpy(rooms[RoomNumber].roommonsters_last,sourcemonster,sizeof(monster));	/* copy monster data */
 
+rooms[RoomNumber].roommonsters_last->next=NULL;
+
+printf("Created monster %s\n",rooms[RoomNumber].roommonsters_last->name);
 return(0);
 }
 
-monster *FindFirstMonsterInRoom(int roomnumber) {
-return(rooms[roomnumber].roommonsters);
+monster *FindFirstMonsterInRoom(int RoomNumber) {
+return(rooms[RoomNumber].roommonsters);
 }
 
 monster *FindNextMonsterInRoom(monster *previous) {

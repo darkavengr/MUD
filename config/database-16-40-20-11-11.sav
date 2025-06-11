@@ -366,3 +366,51 @@ northeast:0
 up:0
 down:0
 end
+begin_room:28
+name:The labyrinth
+owner:dungeonmaster
+attr:21
+description:Yet another dead end.
+north:0
+south:21
+east:30
+west:27
+northeast:0
+southeast:0
+northwest:0
+northeast:0
+up:0
+down:0
+end
+begin_room:29
+name:Deeper into the labyrinth
+owner:dungeonmaster
+attr:21
+description:The passage falls even steeper here,branching east and west into deep passages.
+north:26
+south:21
+east:11
+west:21
+northeast:0
+southeast:0
+northwest:0
+northeast:0
+up:0
+down:0
+end
+begin_room:30
+name:Dead end.
+owner:dungeonmaster
+attr:21
+description:Another dead end.
+north:0
+south:16
+east:0
+west:28
+northeast:0
+southeast:0
+northwest:0
+northeast:0
+up:0
+down:0
+end

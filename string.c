@@ -345,8 +345,7 @@ while(*TimeStringPtr++ != 0) {		/* until end */
 return(total);
 }
 
-void CreateTimeString(int time,char *b) {
-char *TimeStringBuffer[BUF_SIZE];
+void CreateTimeString(int time,char *TimeStringBuffer) {
 char *TemporaryBuffer[BUF_SIZE];
 
 if(time >= SECONDS_IN_YEAR) {

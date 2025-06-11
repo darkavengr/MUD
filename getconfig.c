@@ -30,12 +30,8 @@
 #include "config.h"
 
 CONFIG config;
-
-char *mudconf[BUF_SIZE];
-char *isconf[BUF_SIZE];
-
-char *isrel="/config/issue.mud";
-char *mudrel="/config/mud.mud";
+char *BannerFile="config/issue.mud";
+char *ConfigurationFile="config/mud.mud";
 char *MustBeTrueOrFalse="mud: %d: value must be true or false\n";
 
 int GetConfiguration(void) {
@@ -45,16 +41,14 @@ int LineCount;
 char *LineTokens[BUF_SIZE][BUF_SIZE];
 int ErrorCount=0;
 
-sprintf(mudconf,"%s/%s",getcwd(LineBuffer,BUF_SIZE),mudrel);		/* get absolute path of configuration files */
-sprintf(isconf,"%s/%s",getcwd(LineBuffer,BUF_SIZE),isrel);
 
 /* load general configuration */
 
 printf("Loading configuration...");
 
-handle=fopen(mudconf,"rb");
+handle=fopen(ConfigurationFile,"rb");
 if(handle == NULL) {                                           /* couldn't open file */
-	printf("mud: Can't open configuration file %s\n",mudconf);
+	printf("mud: Can't open configuration file %s\n",ConfigurationFile);
 	exit(NOCONFIGFILE);
 }
 
@@ -121,7 +115,7 @@ while(!feof(handle)) {
 	 else if(strcmp(LineTokens[0],"banresettime") == 0) {		/* how often to reset monsters */
 		config.banresettime=GetValueFromTimeString(LineTokens[1]);
 	 }
-	 else if(strcmp(LineTokens[0],"maxobjectsperroom") == 0) {		/* how often to reset monsters */
+	 else if(strcmp(LineTokens[0],"maxobjectsperroom") == 0) {
 		config.roomobjectnumber=atoi(LineTokens[1]);
 	 }
 	 else if(strcmp(LineTokens[0],"pointsforwarrior") == 0) {
@@ -152,7 +146,7 @@ while(!feof(handle)) {
 		config.pointsforwizard=atoi(LineTokens[1]);
 	 }
 	 else {
-		 printf("\nmud: %d: unknown configuration option %s in %s\n",LineCount,LineTokens[0],mudconf);		/* unknown configuration option */
+		 printf("\nmud: %d: unknown configuration option %s in %s\n",LineCount,LineTokens[0],ConfigurationFile);		/* unknown configuration option */
 		 ErrorCount++;	
 	}
 }
@@ -239,12 +233,12 @@ else
 	printf("\n");
 }
 
-printf("Loading message...");
+printf("Loading banner message...");
 
 /* LOAD issue message */
-handle=fopen(isconf,"rb");
+handle=fopen(BannerFile,"rb");
 if(handle == NULL) {                                           /* couldn't open file */
-	printf("mud: Can't open configuration file %s\n",isconf);
+	printf("mud: Can't open configuration file %s\n",BannerFile);
 	exit(NOCONFIGFILE);
 }
 
@@ -276,8 +270,8 @@ else
 	printf("\n");
 }
 
-printf("Creating monsters...");
-CreateMonster();
+printf("Generating monsters...");
+GenerateMonsters();
 printf("ok\n");
 
 
@@ -306,7 +300,7 @@ int updateconfiguration(void) {
 FILE *handle;
 char *buf[BUF_SIZE];
 
-handle=fopen(mudconf,"w");
+handle=fopen(ConfigurationFile,"w");
 if(handle == NULL) return(-1);                                        /* couldn't open file */
 
 

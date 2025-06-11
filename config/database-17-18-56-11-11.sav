@@ -366,3 +366,19 @@ northeast:0
 up:0
 down:0
 end
+begin_room:28
+name:The labyrinth
+owner:dungeonmaster
+attr:21
+description:Yet another dead end.
+north:0
+south:21
+east:30
+west:27
+northeast:0
+southeast:0
+northwest:0
+northeast:0
+up:0
+down:0
+end

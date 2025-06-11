@@ -56,6 +56,9 @@ char *errors[] = {
 	"You can't kill wizards\r\n",\
 	"Access denied\r\n",\
 	"Invalid room number\r\n",\
+	"You have this object in your inventory\r\n",\
+	"Race already exists\r\n",\
+	"Class already exists\r\n",\
 };
 
 
@@ -68,9 +71,6 @@ return(user->lasterror);
 }
 
 void PrintError(int socket,int error) {
-printf("socket=%d\n",socket);
-printf("error=%d %s\n",error,errors[error]);
-
 send(socket,errors[error],strlen(errors[error]),0);
 }
 

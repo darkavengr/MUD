@@ -49,264 +49,244 @@
 struct {
 user *user;
 char *statement;
-unsigned int (*call_statement)(user *,int,void *);		/* function pointer */
-} statements[] = { {  NULL,"NORTH",&north_statement },\
-		 {  NULL,"N",&north_statement },\
-		 {  NULL,"NORTHWEST",&northwest_statement },\
-		 {  NULL,"NW",&northwest_statement },\
-		 {  NULL,"SOUTH",&south_statement },\
-		 {  NULL,"S",&south_statement },\
-		 {  NULL,"SOUTHEAST",&southeast_statement },\
-		 {  NULL,"SE",&southeast_statement },\
-		 {  NULL,"EAST",&east_statement },\
-		 {  NULL,"E",&east_statement },\
-		 {  NULL,"WEST",&west_statement },\
-		 {  NULL,"W",&west_statement },\
-		 {  NULL,"SOUTHWEST",&southwest_statement },\
-		 {  NULL,"SW",&southwest_statement },\
-		 {  NULL,"UP",&up_statement },\
-		 {  NULL,"U",&up_statement },\
-		 {  NULL,"DOWN",&down_statement },\
-		 {  NULL,"D",&down_statement },\
-		 {  NULL,"LOOK",&look_statement },\
-		 {  NULL,"WHO",&who_statement },\
-		 {  NULL,"SAY",&say_statement },\
-		 {  NULL,"WHISPER",&whisper_statement },\
-		 {  NULL,":",&pose_statement },\
-		 {  NULL,"POSE",&pose_statement },\
-		 {  NULL,"HOME",&home_statement },\
-		 {  NULL,"QUIT",&quit_statement },\
-		 {  NULL,"VERSION",&version_statement },\
-		 {  NULL,"DESCRIBE",&describe_statement },\
-		 {  NULL,"GET",&get_statement },\
-		 {  NULL,"DropObject",&drop_statement },\
-		 {  NULL,"HELP",&help_statement },\
-		 {  NULL,"PASSWORD",&password_statement },\
-		 {  NULL,"SPELL",&spell_statement },\
-		 {  NULL,"F",&fight_statement },\
-		 {  NULL,"SCORE",&score_statement },\
-		 {  NULL,"INV",&inv_statement },\
-		 {  NULL,"GIVE",give_statement },\
-		 {  NULL,"XYZZY",&xyzzy_statement },\
-		 {  NULL,"SETRACE",&setrace_statement },\
-		 {  NULL,"SET",&set_statement },\
-		 {  NULL,"SETHOME",&sethome_statement },\
-		 {  NULL,"SETGENDER",&setgender_statement },\
-		 {  NULL,"SETLEVEL",&setlevel_statement },\
-		 {  NULL,"SETCLASSS",&setclass_statement },\
-		 {  NULL,"SETXP",&setxp_statement },\
-		 {  NULL,"SETMP",&setmp_statement },\
-		 {  NULL,"SETSP",&setsp_statement },\
-		 {  NULL,"BANIP",&ban_statement },\
-		 {  NULL,"UNBAN",&unban_statement },\
-		 {  NULL,"BAN",&ban_statement },\
-		 {  NULL,"KILL",&kill_statement },\
-		 {  NULL,"CREATE",&create_statement },\
-		 {  NULL,"DELETE",&delete_statement },\
-		 {  NULL,"RENAME",&rename_statement },\
-		 {  NULL,"CHOWN",&chown_statement },\
-		 {  NULL,"CHMOD",&chmod_statement },\
-		 {  NULL,"COPY",&copy_statement },\
-		 {  NULL,"MOVE",&move_statement },\
-		 {  NULL,"DIG",&dig_statement },\
-		 {  NULL,"FORCE",&force_statement },\
-		 {  NULL,"LISTBAN",&listban_statement },\
-		 {  NULL,"GO",&go_statement },\
-		 {  NULL,"WALL",&wall_statement },\
-		 {  NULL,"TAKE",&take_statement },\
-		 {  NULL,"RELOAD",&reload_statement },\
-		 {  NULL,"SHUTDOWN",&shutdown_statement },\
-		 {  NULL,"ADDCLASS",&addclass_statement },\
-		 {  NULL,"ADDRACE",&addrace_statement },\
-		 {  NULL,"DROPDEAD",&dropdead_statement },\
-		 {  NULL,"VISIBLE",&visible_statement },\
-		 {  NULL,"INVISIBLE",&invisible_statement },\
-		 {  NULL,"GAG",&gag_statement },\
-		 {  NULL,"UNGAG",&ungag_statement },\
-		 {  NULL,"SETEXIT",&setexit_statement },\
+unsigned int (*call_command)(user *,int,void *);		/* function pointer */
+} statements[] = { {  NULL,"NORTH",&north_command },\
+		 {  NULL,"N",&north_command },\
+		 {  NULL,"NORTHWEST",&northwest_command },\
+		 {  NULL,"NW",&northwest_command },\
+		 {  NULL,"SOUTH",&south_command },\
+		 {  NULL,"S",&south_command },\
+		 {  NULL,"SOUTHEAST",&southeast_command },\
+		 {  NULL,"SE",&southeast_command },\
+		 {  NULL,"EAST",&east_command },\
+		 {  NULL,"E",&east_command },\
+		 {  NULL,"WEST",&west_command },\
+		 {  NULL,"W",&west_command },\
+		 {  NULL,"SOUTHWEST",&southwest_command },\
+		 {  NULL,"SW",&southwest_command },\
+		 {  NULL,"UP",&up_command },\
+		 {  NULL,"U",&up_command },\
+		 {  NULL,"DOWN",&down_command },\
+		 {  NULL,"D",&down_command },\
+		 {  NULL,"LOOK",&look_command },\
+		 {  NULL,"WHO",&who_command },\
+		 {  NULL,"SAY",&say_command },\
+		 {  NULL,"WHISPER",&whisper_command },\
+		 {  NULL,":",&pose_command },\
+		 {  NULL,"POSE",&pose_command },\
+		 {  NULL,"HOME",&home_command },\
+		 {  NULL,"QUIT",&quit_command },\
+		 {  NULL,"VERSION",&version_command },\
+		 {  NULL,"DESCRIBE",&describe_command },\
+		 {  NULL,"GET",&get_command },\
+		 {  NULL,"DropObject",&drop_command },\
+		 {  NULL,"HELP",&help_command },\
+		 {  NULL,"PASSWORD",&password_command },\
+		 {  NULL,"SPELL",&spell_command },\
+		 {  NULL,"F",&fight_command },\
+		 {  NULL,"SCORE",&score_command },\
+		 {  NULL,"INV",&inv_command },\
+		 {  NULL,"GIVE",give_command },\
+		 {  NULL,"XYZZY",&xyzzy_command },\
+		 {  NULL,"SETRACE",&setrace_command },\
+		 {  NULL,"SET",&set_command },\
+		 {  NULL,"SETHOME",&sethome_command },\
+		 {  NULL,"SETGENDER",&setgender_command },\
+		 {  NULL,"SETLEVEL",&setlevel_command },\
+		 {  NULL,"SETCLASSS",&setclass_command },\
+		 {  NULL,"SETXP",&setxp_command },\
+		 {  NULL,"SETMP",&setmp_command },\
+		 {  NULL,"SETSP",&setsp_command },\
+		 {  NULL,"BANIP",&ban_command },\
+		 {  NULL,"UNBAN",&unban_command },\
+		 {  NULL,"BAN",&ban_command },\
+		 {  NULL,"KILL",&kill_command },\
+		 {  NULL,"CREATE",&create_command },\
+		 {  NULL,"DELETE",&delete_command },\
+		 {  NULL,"RENAME",&rename_command },\
+		 {  NULL,"CHOWN",&chown_command },\
+		 {  NULL,"CHMOD",&chmod_command },\
+		 {  NULL,"COPY",&copy_command },\
+		 {  NULL,"MOVE",&move_command },\
+		 {  NULL,"DIG",&dig_command },\
+		 {  NULL,"FORCE",&force_command },\
+		 {  NULL,"LISTBAN",&listban_command },\
+		 {  NULL,"GO",&go_command },\
+		 {  NULL,"WALL",&wall_command },\
+		 {  NULL,"TAKE",&take_command },\
+		 {  NULL,"RELOAD",&reload_command },\
+		 {  NULL,"SHUTDOWN",&shutdown_command },\
+		 {  NULL,"ADDCLASS",&addclass_command },\
+		 {  NULL,"ADDRACE",&addrace_command },\
+		 {  NULL,"DROPDEAD",&dropdead_command },\
+		 {  NULL,"VISIBLE",&visible_command },\
+		 {  NULL,"INVISIBLE",&invisible_command },\
+		 {  NULL,"GAG",&gag_command },\
+		 {  NULL,"UNGAG",&ungag_command },\
+		 {  NULL,"SETEXIT",&setexit_command },\
 	         { NULL,NULL } };
 
-int docommand(user *currentuser,char *s) {
-char *command_tokens[BUF_SIZE][BUF_SIZE];
-char *param[BUF_SIZE];
-char *buf[BUF_SIZE];
-int countx;
-int count;
-int x;
-int tc;
-int r;
-char *b;
-room *currentroom;
-race race;
-class class;
-int whichroom;
-int statementcount;
+int ExecuteCommand(user *currentuser,char *command) {
+char *CommandTokens[BUF_SIZE][BUF_SIZE];
+int TokenCount;
+int RoomLoop;
+int StatementCount;
 
-if(!*s) return(0);			/* no command */
+if(!*command) return(0);			/* no command */
 
-printf("command=%s\n",s);
+printf("command=%command\n",command);
 
-currentroom=currentuser->roomptr;  
+memset(CommandTokens,0,10*BUF_SIZE);
+TokenCount=TokenizeLine(command,CommandTokens," ");			/* tokenize line */
 
-memset(command_tokens,0,10*BUF_SIZE);
-tc=TokenizeLine(s,command_tokens," ");			/* tokenize line */
-
-strcpy(param,command_tokens[2]);
-strcat(param," ");
-
-for(count=3;count<tc;count++) {
-	strcat(param,command_tokens[count]);
-	strcat(param," ");
-}
-
-statementcount=0;
+StatementCount=0;
 
 /* do statement */
 
 do {
-	if(statements[statementcount].statement == NULL) break;
+	if(statements[StatementCount].statement == NULL) break;
 
-	ToUppercase(command_tokens[0]);
+	ToUppercase(CommandTokens[0]);
 
-	if(strcmp(statements[statementcount].statement,command_tokens[0]) == 0) return(statements[statementcount].call_statement(currentuser,tc,command_tokens));
+	if(strcmp(statements[StatementCount].statement,CommandTokens[0]) == 0) return(statements[StatementCount].call_command(currentuser,TokenCount,CommandTokens));
 
-	statementcount++;
+	StatementCount++;
 
-} while(statements[statementcount].statement != NULL);
+} while(statements[StatementCount].statement != NULL);
 
 SetLastError(currentuser,BAD_COMMAND);
 return(-1);
 }
 
-int north_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int north_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[NORTH]));
 }
 
-int south_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int south_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[SOUTH]));
 }
 
-int east_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int east_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[EAST]));
 }
 
-int west_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int west_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[NORTH]));
 }
 
-int northwest_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int northwest_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[NORTHWEST]));
 }
 
-int southwest_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int southwest_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[SOUTHWEST]));
 }
 
-int southeast_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int southeast_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[SOUTHEAST]));
 }
 
-int northeast_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int northeast_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[NORTHEAST]));
 }
 
-int up_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int up_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[UP]));
 }
 
-int down_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int down_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 room *currentroom=currentuser->roomptr;
 
 return(go(currentuser,currentroom->exits[DOWN]));
 }
 
-int look_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int look_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 
-return(look(currentuser,command_tokens[1]));
+return(look(currentuser,CommandTokens[1]));
 }
 
-int who_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int who_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 
-return(who(currentuser,command_tokens[1]));
+return(who(currentuser,CommandTokens[1]));
 }
 
-int say_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int say_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 int count;
 char *param[BUF_SIZE];
 char *buf[BUF_SIZE];
 
-if(tc < 2) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-for(count=1;count<tc;count++) {
-	strcat(param,command_tokens[count]);
+for(count=1;count<TokenCount;count++) {
+	strcat(param,CommandTokens[count]);
 	strcat(param," ");
 }
 
 if((currentuser->flags & USER_INVISIBLE) == 0) {
-	sprintf(buf,"%s Says, \042%s\042\r\n",currentuser->name,param);
+	sprintf(buf,"%command Says, \042%command\042\r\n",currentuser->name,param);
 }
 else
 {
-	sprintf(buf,"Somebody Says, \042%s\042\r\n",param);
+	sprintf(buf,"Somebody Says, \042%command\042\r\n",param);
 }
 	
 return(SendMessageToAllInRoom(currentuser->room,buf));
 }
 
-int whisper_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-char *param_notfirsttwotokens[255];
+int whisper_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+char *param_notfirsttwotokens[BUF_SIZE];
 int count;
 
-strcpy(param_notfirsttwotokens,command_tokens[2]);
+strcpy(param_notfirsttwotokens,CommandTokens[2]);
 
-for(count=3;count<tc;count++) {
-	strcat(param_notfirsttwotokens,command_tokens[count]);
+for(count=3;count<TokenCount;count++) {
+	strcat(param_notfirsttwotokens,CommandTokens[count]);
 	strcat(param_notfirsttwotokens," ");
 }
 
-if(tc < 2) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SendMessage(currentuser,command_tokens[1],param_notfirsttwotokens));
+return(SendMessage(currentuser,CommandTokens[1],param_notfirsttwotokens));
 }
 
-int pose_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int pose_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 char *param[BUF_SIZE];
 int count;
 
-if(tc < 2) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-strcpy(param,command_tokens[1]);
+strcpy(param,CommandTokens[1]);
 strcat(param," ");
 
-for(count=2;count<tc;count++) {
-	strcat(param,command_tokens[count]);
+for(count=2;count<TokenCount;count++) {
+	strcat(param,CommandTokens[count]);
 	strcat(param," ");
 }
 
@@ -314,98 +294,98 @@ pose(currentuser,param);
 return(0);
 }
 
-int home_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int home_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 return(go(currentuser,currentuser->homeroom));
 }
 
-int quit_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int quit_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 quit(currentuser);
 }
 
-int version_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-char *buf[BUF_SIZE];
+int version_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+char *OutputMessage[BUF_SIZE];
 
-sprintf(buf,"%s %d.%d\r\n",MUD_NAME,MAJOR_VERSION,MINOR_VERSION);
-send(currentuser->handle,buf,strlen(buf),0);
+sprintf(OutputMessage,"%command %d.%d\r\n",MUD_NAME,MAJOR_VERSION,MINOR_VERSION);
+send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
 return(0);
 }
 
-int describe_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-char *param_notfirsttwotokens[255];
+int describe_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+char *param_notfirsttwotokens[BUF_SIZE];
 int count;
 
-if(tc < 2) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-strcpy(param_notfirsttwotokens,command_tokens[2]);
+strcpy(param_notfirsttwotokens,CommandTokens[2]);
 
-for(count=3;count<tc;count++) {
-	strcat(param_notfirsttwotokens,command_tokens[count]);
+for(count=3;count<TokenCount;count++) {
+	strcat(param_notfirsttwotokens,CommandTokens[count]);
 	strcat(param_notfirsttwotokens," ");
 }
 
-return(describe(currentuser,command_tokens[1],param_notfirsttwotokens));
+return(describe(currentuser,CommandTokens[1],param_notfirsttwotokens));
 }
 
-int get_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int get_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);  
 	return(-1);
 }
 
-return(PickUpObject(currentuser,command_tokens[1]));
+return(PickUpObject(currentuser,CommandTokens[1]));
 }
 
-int drop_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int drop_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(DropObject(currentuser,command_tokens[1]));
+return(DropObject(currentuser,CommandTokens[1]));
 }
 
-int help_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(ShowHelp(currentuser,command_tokens[1]));
+int help_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(ShowHelp(currentuser,CommandTokens[1]));
 }
 
-int password_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(ChangePassword(currentuser,command_tokens[1]));
+int password_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(ChangePassword(currentuser,CommandTokens[1]));
 }
 
-int spell_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int spell_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(CastSpell(currentuser,command_tokens[1],command_tokens[2]));
+return(CastSpell(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
-int fight_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(attack(currentuser,command_tokens[1]));
+int fight_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(attack(currentuser,CommandTokens[1]));
 }
 
-int score_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(DisplayScore(currentuser,command_tokens[1]));
+int score_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(DisplayScore(currentuser,CommandTokens[1]));
 }
 
-int inv_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(DisplayInventory(currentuser,command_tokens[1]));
+int inv_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(DisplayInventory(currentuser,CommandTokens[1]));
 }
 
-int give_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int give_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(GiveObjectToUser(currentuser,command_tokens[1],command_tokens[2]));
+return(GiveObjectToUser(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
-int xyzzy_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int xyzzy_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 send(currentuser->handle,"Nothing happens\r\n",17,0);
 return(0);
 }
@@ -415,25 +395,25 @@ return(0);
 ********************************
 */
 
-int setrace_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int setrace_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 if(currentuser->status < WIZARD) {		/* can't do this yet */
 	SetLastError(currentuser,NOT_YET);
 	return(-1);
 }
 
-if(tc < 2) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-UpdateUser(currentuser,command_tokens[1],"",0,0,"",0,0,0,0,command_tokens[1],"",0);
+UpdateUser(currentuser,CommandTokens[1],"",0,0,"",0,0,0,0,CommandTokens[1],"",0);
 return(0);
 }
 
 /*
 * set configuration options */
 
-int set_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int set_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 char *buf[BUF_SIZE];
 CONFIG config;
 
@@ -444,336 +424,336 @@ if(currentuser->status < ARCHWIZARD) {		/* can't do this yet */
 	return(-1);
 }
 
-if(strcmp(command_tokens[1],"port") == 0) {	
-	config.mudport=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"port") == 0) {	
+	config.mudport=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"server") == 0) {	
-	strcpy(config.mudserver,command_tokens[2]);
+if(strcmp(CommandTokens[1],"server") == 0) {	
+	strcpy(config.mudserver,CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"object_reset_time") == 0) {	
-	config.objectresettime=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"object_reset_time") == 0) {	
+	config.objectresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"database_save_time") == 0) {	
-	config.databaseresettime=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"database_save_time") == 0) {	
+	config.databaseresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"user_reset_time") == 0) {	
-	config.userresettime=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"user_reset_time") == 0) {	
+	config.userresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"database_save_time") == 0) {	
-	config.databaseresettime=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"database_save_time") == 0) {	
+	config.databaseresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
 
-if(strcmp(command_tokens[1],"config_save_time") == 0) {	
-	config.configsavetime=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"config_save_time") == 0) {	
+	config.configsavetime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"allow_player_killing") == 0) {	
-	if(strcmp(command_tokens[2],"true") == 0) config.allowplayerkilling=TRUE;
-	if(strcmp(command_tokens[2],"false") == 0) config.allowplayerkilling=FALSE;
+if(strcmp(CommandTokens[1],"allow_player_killing") == 0) {	
+	if(strcmp(CommandTokens[2],"true") == 0) config.allowplayerkilling=TRUE;
+	if(strcmp(CommandTokens[2],"false") == 0) config.allowplayerkilling=FALSE;
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"allow_new_accounts_") == 0) {	
-	if(strcmp(command_tokens[2],"true") == 0) config.allownewaccounts=TRUE;
-	if(strcmp(command_tokens[2],"false") == 0) config.allownewaccounts=FALSE;
+if(strcmp(CommandTokens[1],"allow_new_accounts_") == 0) {	
+	if(strcmp(CommandTokens[2],"true") == 0) config.allownewaccounts=TRUE;
+	if(strcmp(CommandTokens[2],"false") == 0) config.allownewaccounts=FALSE;
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"monster_reset_time") == 0) {	
-	config.monsterresettime=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"monster_reset_time") == 0) {	
+	config.monsterresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"ban_reset_time") == 0) {	
-	config.banresettime=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"ban_reset_time") == 0) {	
+	config.banresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_warrior") == 0) {	
-	config.pointsforwarrior=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_warrior") == 0) {	
+	config.pointsforwarrior=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_hero") == 0) {	
-	config.pointsforhero=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_hero") == 0) {	
+	config.pointsforhero=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_warrior") == 0) {	
-	config.pointsforwarrior=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_warrior") == 0) {	
+	config.pointsforwarrior=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_champion") == 0) {	
-	config.pointsforchampion=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_champion") == 0) {	
+	config.pointsforchampion=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_superhero") == 0) {	
-	config.pointsforsuperhero=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_superhero") == 0) {	
+	config.pointsforsuperhero=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_enchanter") == 0) {	
-	config.pointsforenchanter=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_enchanter") == 0) {	
+	config.pointsforenchanter=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_sorceror") == 0) {	
-	config.pointsforsorceror=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_sorceror") == 0) {	
+	config.pointsforsorceror=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_necromancer") == 0) {	
-	config.pointsfornecromancer=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_necromancer") == 0) {	
+	config.pointsfornecromancer=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_legend") == 0) {	
-	config.pointsforlegend=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_legend") == 0) {	
+	config.pointsforlegend=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-if(strcmp(command_tokens[1],"points_for_wizard") == 0) {	
-	config.pointsforwizard=atoi(command_tokens[2]);
+if(strcmp(CommandTokens[1],"points_for_wizard") == 0) {	
+	config.pointsforwizard=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-sprintf(buf,"Bad option %s\r\n",command_tokens[2]);
+sprintf(buf,"Bad option %command\r\n",CommandTokens[2]);
 send(currentuser->handle,buf,strlen(buf),0);
 return(-1);
 }
 
-int sethome_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int sethome_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-if(!*command_tokens[1] && currentuser->status < WIZARD) {			/* can't do this yet */
+if(!*CommandTokens[1] && currentuser->status < WIZARD) {			/* can't do this yet */
 	SetLastError(currentuser,NOT_YET);
 	return(-1);
 }
 
-return(UpdateUser(currentuser,command_tokens[0],"",atoi(command_tokens[1]),0,"",0,0,0,0,"","",0));
+return(UpdateUser(currentuser,CommandTokens[0],"",atoi(CommandTokens[1]),0,"",0,0,0,0,"","",0));
 }
 
-int setgender_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int setgender_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserGender(currentuser,command_tokens[1],command_tokens[2]));
+return(SetUserGender(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
-int setlevel_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int setlevel_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserLevel(currentuser,command_tokens[1],command_tokens[2]));
+return(SetUserLevel(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
-int setclass_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int setclass_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(UpdateUser(currentuser,command_tokens[1],"",0,0,"",0,0,0,0,"",command_tokens[2],0));
+return(UpdateUser(currentuser,CommandTokens[1],"",0,0,"",0,0,0,0,"",CommandTokens[2],0));
 }
 
-int setxp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int setxp_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserPoints(currentuser,command_tokens[1],command_tokens[2],EXPERIENCEPOINTS));
+return(SetUserPoints(currentuser,CommandTokens[1],CommandTokens[2],EXPERIENCEPOINTS));
 }
 
-int setmp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int setmp_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserPoints(currentuser,command_tokens[1],command_tokens[2],MAGICPOINTS));
+return(SetUserPoints(currentuser,CommandTokens[1],CommandTokens[2],MAGICPOINTS));
 }
 
-int setsp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int setsp_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserPoints(currentuser,command_tokens[1],command_tokens[2],STAMINAPOINTS));
+return(SetUserPoints(currentuser,CommandTokens[1],CommandTokens[2],STAMINAPOINTS));
 }
 
-int BanUserByIPAddress_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int BanUserByIPAddress_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(BanUserByIPAddress(currentuser,command_tokens[1]));
+return(BanUserByIPAddress(currentuser,CommandTokens[1]));
 }
 
-int unban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int unban_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(UnBanUserByIPAddress(currentuser,command_tokens[1]));
+return(UnBanUserByIPAddress(currentuser,CommandTokens[1]));
 }
 
-int ban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(BanUserByName(currentuser,command_tokens[1]));
+int ban_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(BanUserByName(currentuser,CommandTokens[1]));
 }
 
-int kill_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int kill_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(KillUser(currentuser,command_tokens[1]));
+return(KillUser(currentuser,CommandTokens[1]));
 }
 
-int create_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int create_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(CreateObject(currentuser,command_tokens[1]));
+return(CreateObject(currentuser,CommandTokens[1]));
 }
 
-int delete_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int delete_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(DeleteObject(currentuser,command_tokens[1]));
+return(DeleteObject(currentuser,CommandTokens[1]));
 }
 
-int rename_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int rename_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(RenameObject(currentuser,command_tokens[1],command_tokens[2]));
+return(RenameObject(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
-int chown_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {		/* set object owner */
-if(tc < 2) {
+int chown_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {		/* set object owner */
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetOwner(currentuser,command_tokens[1],command_tokens[2]));
+return(SetOwner(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
-int chmod_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int chmod_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetObjectAttributes(currentuser,command_tokens[1],command_tokens[2]));
+return(SetObjectAttributes(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
-int copy_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int copy_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(CopyObject(currentuser,command_tokens[1],atoi(command_tokens[2])));
+return(CopyObject(currentuser,CommandTokens[1],atoi(CommandTokens[2])));
 }
 
-int move_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int move_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-if(CopyObject(currentuser,command_tokens[1],atoi(command_tokens[2])) == -1) return(-1);
+if(CopyObject(currentuser,CommandTokens[1],atoi(CommandTokens[2])) == -1) return(-1);
 
-if(DeleteObject(currentuser,command_tokens[1]) == -1) return(-1);
+if(DeleteObject(currentuser,CommandTokens[1]) == -1) return(-1);
 
 return(0);
 }
 
-int dig_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(CreateRoom(currentuser,command_tokens[1]));
+int dig_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(CreateRoom(currentuser,CommandTokens[1]));
 }
 
-int force_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int force_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 char *param[BUF_SIZE];
 int count;
 
-if(tc < 2) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-strcpy(param,command_tokens[1]);
+strcpy(param,CommandTokens[1]);
 strcat(param," ");
 
-for(count=2;count<tc;count++) {
-	strcat(param,command_tokens[count]);
+for(count=2;count<TokenCount;count++) {
+	strcat(param,CommandTokens[count]);
 	strcat(param," ");
 }
 
-return(ForceUser(currentuser,command_tokens[1],param));
+return(ForceUser(currentuser,CommandTokens[1],param));
 }
 
-int listban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(ListBans(currentuser,command_tokens[1]));
+int listban_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(ListBans(currentuser,CommandTokens[1]));
 }
 
-int go_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int go_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
@@ -783,28 +763,28 @@ if(currentuser->status < WIZARD) {		/* can't do that */
 	return(-1);
 }
 
-return(go(currentuser,atoi(command_tokens[1])));
+return(go(currentuser,atoi(CommandTokens[1])));
 }
 
-int wall_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int wall_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(wall(currentuser,command_tokens[1]));
+return(wall(currentuser,CommandTokens[1]));
 }
 
-int take_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-if(tc < 2) {
+int take_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(TakeObject(currentuser,command_tokens[1],command_tokens[2]));
+return(TakeObject(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
-int reload_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int reload_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 if(currentuser->status < ARCHWIZARD) {		/* can't do this yet */
 	SetLastError(currentuser,NOT_YET);  
 	return(-1);
@@ -813,19 +793,19 @@ if(currentuser->status < ARCHWIZARD) {		/* can't do this yet */
 return(GetConfiguration());
 }
 
-int shutdown_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(ShutdownServer(currentuser,command_tokens[1]));
+int shutdown_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(ShutdownServer(currentuser,CommandTokens[1]));
 }
 
-int addclass_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int addclass_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 class class;
 
-if(tc < 2) {
+if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-strcpy(class.name,command_tokens[1]);
+strcpy(class.name,CommandTokens[1]);
 	
 if(AddNewClass(currentuser,&class) == -1) {
 	SetLastError(currentuser,NO_MEM);  
@@ -835,22 +815,22 @@ if(AddNewClass(currentuser,&class) == -1) {
 return(0);
 }
 
-int addrace_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int addrace_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 race race;
 
-if(tc < 9) {
+if(TokenCount < 9) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-strcpy(race.name,command_tokens[1]);
-race.magic=atoi(command_tokens[2]);
-race.strength=atoi(command_tokens[3]);
-race.agility=atoi(command_tokens[4]);
-race.luck=atoi(command_tokens[5]);
-race.wisdom=atoi(command_tokens[6]);
-race.intelligence=atoi(command_tokens[7]);
-race.stamina=atoi(command_tokens[8]);
+strcpy(race.name,CommandTokens[1]);
+race.magic=atoi(CommandTokens[2]);
+race.strength=atoi(CommandTokens[3]);
+race.agility=atoi(CommandTokens[4]);
+race.luck=atoi(CommandTokens[5]);
+race.wisdom=atoi(CommandTokens[6]);
+race.intelligence=atoi(CommandTokens[7]);
+race.stamina=atoi(CommandTokens[8]);
 
 if(AddNewRace(&race) == -1) {
 	SetLastError(currentuser,NO_MEM);
@@ -860,51 +840,51 @@ if(AddNewRace(&race) == -1) {
 return(0);
 }
 
-int dropdead_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int dropdead_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 return(UpdateUser(currentuser,currentuser->name,"",0,0,"",0,0,0,0,"","",0));
 }
 
-int invisible_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(SetVisibleMode(currentuser,command_tokens[1],FALSE));
+int invisible_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(SetVisibleMode(currentuser,CommandTokens[1],FALSE));
 }
 
-int visible_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(SetVisibleMode(currentuser,command_tokens[1],TRUE));
+int visible_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(SetVisibleMode(currentuser,CommandTokens[1],TRUE));
 }
 
-int gag_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(GagUser(currentuser,command_tokens[1],TRUE));
+int gag_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(GagUser(currentuser,CommandTokens[1],TRUE));
 }
 
-int ungag_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(GagUser(currentuser,command_tokens[1],FALSE));
+int ungag_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+return(GagUser(currentuser,CommandTokens[1],FALSE));
 }
 
-int setexit_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int setexit_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 int room;
 int r;
-int whichroom;
+int RoomLoop;
 
-if(strcmp(command_tokens[1],"here") == 0) {
+if(strcmp(CommandTokens[1],"here") == 0) {
 	room=currentuser->room;
 }
 else
 {
-	room=atoi(command_tokens[1]);
+	room=atoi(CommandTokens[1]);
 }
 
-if(strcmp(command_tokens[3],"here") == 0) {
+if(strcmp(CommandTokens[3],"here") == 0) {
 	r=currentuser->room;
 }
 else
 {
-	r=atoi(command_tokens[3]);
+	r=atoi(CommandTokens[3]);
 }
 
-for(whichroom=0;whichroom<11;whichroom++) {
-	if(strcmp(GetDirectionName(whichroom),command_tokens[4]) == 0) break;
+for(RoomLoop=0;RoomLoop<11;RoomLoop++) {
+	if(strcmp(GetDirectionName(RoomLoop),CommandTokens[4]) == 0) break;
 }
 
-return(SetExit(currentuser,room,atoi(command_tokens[2]),whichroom));
+return(SetExit(currentuser,room,atoi(CommandTokens[2]),RoomLoop));
 }
 

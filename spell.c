@@ -27,8 +27,7 @@
 #include "config.h"
 		
 spell *spells=NULL;
-char *SpellsConfigurationFile[BUF_SIZE];
-char *SpellsRelativePath="/config/spells.mud";
+char *SpellsConfigurationFile="config/spells.mud";
 char *SpellHasKilled="and have killed it";
 
 int CastSpell(user *currentuser,char *spellname,char *target) {
@@ -40,7 +39,6 @@ int SpellFound;
 int HitPoints;
 int MonsterCount;
 CONFIG config;
-char *CurrentDirectory[BUF_SIZE];
 spell *spellnext;
 
 GetConfigurationInformation(&config);
@@ -176,9 +174,6 @@ char *ConfigurationTokens[BUF_SIZE][BUF_SIZE];
 char *LineBuffer[BUF_SIZE];
 int ErrorCount=0;
 char *CurrentDirectory[BUF_SIZE];
-
-getcwd(CurrentDirectory,BUF_SIZE);
-sprintf(SpellsConfigurationFile,"%s/%s",CurrentDirectory,SpellsRelativePath);
 
 spellnext=spells;
 LineCount=0;

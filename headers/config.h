@@ -21,9 +21,7 @@ typedef struct {
 	int pointsfornecromancer;
 	int pointsforlegend;
 	int pointsforwizard;
-	int lastroom;
 	char *isbuf;
 	int issuecount;
-	int roomcount;
 	int roomobjectnumber;
 } CONFIG;

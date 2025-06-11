@@ -28,11 +28,10 @@ typedef struct monster {			/* monsters */
 #endif
 
 int MoveMonster(void);
-int CreateMonster(void);
-int CopymonsterToRoom(int room,int destroom,int monsterno);
+int GenerateMonsters(void);
 int DeleteMonster(int room,int monsterno);
 int LoadMonsters(void);
-int AddMonsterToRoom(monster *sourcemonster,int roomnumber);
+int CopyMonsterToRoom(int room,int destroom,monster *monster);
 monster *FindFirstMonsterInRoom(int roomnumber);
 monster *FindNextMonsterInRoom(monster *previous);
 

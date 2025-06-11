@@ -38,22 +38,22 @@
 extern race *races;
 extern class *classes;
 
-char *newpassprompt="Enter a password:";
-char *genderprompt="Gender [enter 'male' or 'female']:";
-char *descprompt="Enter a description for yourself:";
-char *chooserace="Choose a player race\r\n\r\n";
-char *chooseclass="Choose a player class\r\n\r\n";
-char *classprompt="Enter player class:";
-char *chooseplayerclass="Choose a player class\r\n";
-char *chooseplayerrace="Choose a player race:\r\nName\t\Magic\t\nStrength\t\nAgility\tDexterity\tLuck\tWisdon\tIntelligence\tStamina\r\n";
-char *raceprompt="Enter player race:";
-char *newuserprompt="Enter new username:";
-char *promptnewaccount="Enter username [type 'new' to create a new account]:";
-char *userprompt="Enter username:";
-char *passprompt="Enter password:";
+char *NewPasswordPrompt="Enter a password:";
+char *GenderPrompt="Gender [enter 'male' or 'female']:";
+char *DescriptionPrompt="Enter a description for yourself:";
+char *ChooseRace="Choose a player race\r\n\r\n";
+char *ChooseClass="Choose a player class\r\n\r\n";
+char *ClassPrompt="Enter player class:";
+char *ChoosePlayerClass="Choose a player class\r\n";
+char *ChoosePlayerRace="Choose a player race:\r\nName\t\Magic\t\nStrength\t\nAgility\tDexterity\tLuck\tWisdon\tIntelligence\tStamina\r\n";
+char *RacePrompt="Enter player race:";
+char *NewUsernamePrompt="Enter new username:";
+char *NewUserAccountPrompt="Enter username [type 'new' to create a new account]:";
+char *UsernamePrompt="Enter username:";
+char *PasswordPrompt="Enter password:";
 
 struct {
-	char *temp[BUF_SIZE];
+	char *OutputBuffer[BUF_SIZE];
 	char *buf[BUF_SIZE];
 	char *race[BUF_SIZE];
 	char *uname[BUF_SIZE];
@@ -68,24 +68,23 @@ struct {
 fd_set readset,currentset;
 
 int main(int argc,char *argv[]) {
-int as;
-int ls;
+int AcceptSocket;
+int ListenSocket;
 struct sockaddr_in service;
 int size;
-int maxsocket;
+int MaxSocket;
 int retval;
-int count;
-char *b;
+int SocketCount;
 user *currentuser;
 race *racenext;
 class *classnext;
 struct sockaddr_in clientip;
 socklen_t clientiplen;
-char *ipaddress[BUF_SIZE];
+char *IPAddress[BUF_SIZE];
 user *usernext;
-char *temp[BUF_SIZE];
-struct timeval tv;
-time_t o,d,u,c,currenttime;
+char *OutputBuffer[BUF_SIZE];
+struct timeval TimeoutValue;
+time_t ObjectResetTime,DatabaseResetTime,UserResetTime,ConfigResetTime,currenttime;
 CONFIG config;
 
 #ifdef WIN32
@@ -105,18 +104,18 @@ if(WSAStartup(MAKEWORD(2,2), &wsadata) != 0) {
 }
 #endif
 
-ls=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);		/* create socket  */
+ListenSocket=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);		/* create socket  */
 
-if(ls == -1) {		
+if(ListenSocket == -1) {		
 	printf("mud: Error creating socket \n");
 	exit(-1);				 	
 }
 
 #ifdef _LINUX
-	fcntl(ls,O_NONBLOCK);		/* make the socket nonblocking */
+	fcntl(ListenSocket,O_NONBLOCK);		/* make the socket nonblocking */
 #endif
 
-setsockopt(ls,SOL_SOCKET,SO_REUSEADDR,&(int){ 1 }, sizeof(int));		/* reuse socket */
+setsockopt(ListenSocket,SOL_SOCKET,SO_REUSEADDR,&(int){ 1 }, sizeof(int));		/* reuse socket */
 
 memset(&service, 0, sizeof(service));
 
@@ -124,9 +123,9 @@ service.sin_addr.s_addr=htonl(htonl(INADDR_ANY));
 service.sin_family=AF_INET;				
 service.sin_port=htons(config.mudport);
 						
-if(bind(ls,&service,sizeof(service)) == -1) { 		/* bind to socket  */
+if(bind(ListenSocket,&service,sizeof(service)) == -1) { 		/* bind to socket  */
 	printf("mud: Unable to bind to socket\n");
-	close(ls);
+	close(ListenSocket);
 	exit(-1);
 }
 
@@ -134,30 +133,29 @@ if(bind(ls,&service,sizeof(service)) == -1) { 		/* bind to socket  */
 
 printf("Waiting for connections on %s port %d\n",config.mudserver,config.mudport);
 
-if(listen(ls,MAX_BACKLOG) == -1) {			/* listen on socket  */
+if(listen(ListenSocket,MAX_BACKLOG) == -1) {			/* listen on socket  */
 	printf("mud: Unable to listen on socket\n");
 	exit(-1);
 }
 
 FD_ZERO(&currentset);
 
-maxsocket=ls;			/* maximum socket */
+MaxSocket=ListenSocket;			/* maximum socket */
 
-time(&o);			/* update reset time */
-o=o+config.objectresettime;
+time(&ObjectResetTime);			/* update reset time */
+ObjectResetTime += config.objectresettime;
 
-time(&d);
-d=d+config.databaseresettime;
+time(&DatabaseResetTime);
+DatabaseResetTime += config.databaseresettime;
 
-time(&u);
-u=u+config.userresettime;
+time(&UserResetTime);
+UserResetTime += config.userresettime;
 
-time(&c);
-c=c+config.configsavetime;
-
+time(&ConfigResetTime);
+ConfigResetTime += config.configsavetime;
 
 GenerateObjects();		/* create new objects */
-CreateMonster();	/* create monsters */
+GenerateMonsters();	/* create monsters */
 	
 /*
  * The main event loop, this resets the object, saves the configuration information
@@ -166,189 +164,185 @@ CreateMonster();	/* create monsters */
  */
 
 while(1) {
-/* check if mud needs updating */
- 
 	 time(&currenttime);		/* get time */
 
-	 if(currenttime > o) {		/* update objects */
+	 if(currenttime > ObjectResetTime) {		/* update objects */
 		 printf("mud: Updating objects\n");
 
 		  GenerateObjects();		/* create new objects */
 
-		time(&o);			/* update reset time */
-  		o=o+config.objectresettime;
+		time(&ObjectResetTime);			/* update reset time */
+  		ObjectResetTime += config.objectresettime;
  	}
 
-	 if(currenttime > d) {		/* update database */
+	 if(currenttime > DatabaseResetTime) {		/* update database */
   	 	printf("mud: Saving database\n");
 
 		UpdateDatabase();
 	
-		time(&d);			/* update reset time */
-		d=d+config.databaseresettime;
+		time(&DatabaseResetTime);			/* update reset time */
+		DatabaseResetTime += config.databaseresettime;
 	 }
 
-	 if(currenttime > u) {	/* update users */
+	 if(currenttime > UserResetTime) {	/* update users */
 		printf("mud: Saving users\n");
 
   		UpdateUsersFile();
 
-  		time(&u);			/* update reset time */
-		u=u+config.userresettime;
+  		time(&UserResetTime);			/* update reset time */
+		UserResetTime += config.userresettime;
  	}
 
-	if(currenttime > c) {		/* update config */
+	if(currenttime > ConfigResetTime) {		/* update config */
 		printf("mud: Updating configuration\n");
 
 		updateconfiguration(config);
 
-		time(&c);			/* update reset time */
-		c=c+config.configsavetime;
+		time(&ConfigResetTime);			/* update reset time */
+		ConfigResetTime += config.configsavetime;
 	}
 
 	MoveMonster();		/* move a monster */
 
 	/* check for data on sockets */
 
-	FD_SET(ls,&currentset);		
+	FD_SET(ListenSocket,&currentset);		
 
 	readset=currentset;
-	tv.tv_sec=5;			/* set timeout */
+	TimeoutValue.tv_sec=5;			/* set timeout */
 
 	/* wait until there is data ready to be read, or it times out */
 
-	retval=select(maxsocket+1,&readset,NULL,NULL,&tv);	
+	retval=select(MaxSocket+1,&readset,NULL,NULL,&TimeoutValue);	
 	if(retval == -1) {
 		perror("mud:");
 		exit(1);
 	}
 
-	for(count=0;count <= maxsocket && retval > 0;++count) {		/* search sockets */
+	for(SocketCount=0;SocketCount <= MaxSocket && retval > 0;++SocketCount) {		/* search sockets */
 	
-		if(FD_ISSET(count,&readset)) { 	/* there is data ready to read */
+		if(FD_ISSET(SocketCount,&readset)) { 	/* there is data ready to read */
 
-			if(count == ls) {		/* new connection */
-				as=accept(ls,(struct sockaddr*)NULL, NULL); 
+			if(SocketCount == ListenSocket) {		/* new connection */
+				AcceptSocket=accept(ListenSocket,(struct sockaddr*)NULL, NULL); 
 
 				#ifdef _LINUX
- 					fcntl(as,O_NONBLOCK);		/* make the socket nonblocking */
+ 					fcntl(AcceptSocket,O_NONBLOCK);		/* make the socket nonblocking */
 				#endif
 	
-	     			FD_SET(as,&currentset);		/* add connection */
+	     			FD_SET(AcceptSocket,&currentset);		/* add connection */
 	
-	        		if(maxsocket < as) maxsocket=as;	/* new maximum */
+	        		if(MaxSocket < AcceptSocket) MaxSocket=AcceptSocket;	/* new maximum */
 				
-
-	   			/* check if they're banned */
+	   			/* check if the user is banned */
 
 	        		clientiplen=sizeof(struct sockaddr_in);			/* get ip address */
-  	     			getpeername(as,(struct sockaddr*)&clientip,&clientiplen);
+  	     			getpeername(AcceptSocket,(struct sockaddr*)&clientip,&clientiplen);
  
-	     			strcpy(ipaddress,inet_ntoa(clientip.sin_addr));
+	     			strcpy(IPAddress,inet_ntoa(clientip.sin_addr));
 	
-	     			if(CheckIfBanned(ipaddress) == TRUE) { /* check if banned */
+	     			if(CheckIfBanned(IPAddress) == TRUE) { /* check if banned */
 					PrintError(currentuser->handle,USER_BANNED);
 
-					FD_CLR(as,&currentset);
-	        			close(as);
+					FD_CLR(AcceptSocket,&currentset);
+	        			close(AcceptSocket);
 			        }
 
 				/* send username prompt */
-			        send(as,config.isbuf,config.issuecount,0);  	
+			        send(AcceptSocket,config.isbuf,config.issuecount,0);  	
 
 		       		if(config.allownewaccounts == TRUE) {
-                      			send(as,promptnewaccount,strlen(promptnewaccount),0);  	
+                      			send(AcceptSocket,NewUserAccountPrompt,strlen(NewUserAccountPrompt),0);  	
 				}
 				else
 				{
-			               send(as,userprompt,strlen(userprompt),0);  	
+			               send(AcceptSocket,UsernamePrompt,strlen(UsernamePrompt),0);  	
 				}
 
-				connections[as].connectionstate=STATE_GETPASSWORD;
+				connections[AcceptSocket].connectionstate=STATE_GETPASSWORD;
 	 		}
 	 		else
          		{				/* existing connection */
-	  			memset(connections[count].temp,0,BUF_SIZE);
+	  			memset(connections[SocketCount].OutputBuffer,0,BUF_SIZE);
 
 				/* get line from connection */
 		
-			        if(recv(count,connections[count].temp,BUF_SIZE,0) == -1) {	/* get data */
-					FD_CLR(count,&currentset);
+
+			        if(recv(SocketCount,connections[SocketCount].OutputBuffer,BUF_SIZE,0) == -1) {	/* get data */
+					FD_CLR(SocketCount,&currentset);
 	  				break;
 	 			}
 
-				strcat(connections[count].buf,connections[count].temp);	/* add to buffer */
+				strcat(connections[SocketCount].buf,connections[SocketCount].OutputBuffer);	/* add to buffer */
 
-				RemoveNewLine(connections[count].buf);		/* remove newline character */
+				RemoveNewLine(connections[SocketCount].buf);		/* remove newline character */
 
-				 /* state machine for determing what to do for each step */
+				 /* state machine to determine what to do for each step */
 	
-				switch(connections[count].connectionstate) {
+				switch(connections[SocketCount].connectionstate) {
 					
 	     	 			case STATE_GETUSER:			/* prompt for user name */
 						if(config.allownewaccounts == TRUE) {
-							send(count,promptnewaccount,strlen(promptnewaccount),0);  	
+							send(SocketCount,NewUserAccountPrompt,strlen(NewUserAccountPrompt),0);  	
 						}
 						else
 						{
-			        		       send(count,userprompt,strlen(userprompt),0);  	
+			        		       send(SocketCount,UsernamePrompt,strlen(UsernamePrompt),0);  	
 						}
 
-	   		       			connections[count].connectionstate=STATE_GETPASSWORD;
+	   		       			connections[SocketCount].connectionstate=STATE_GETPASSWORD;
 
-			       			strcpy(connections[count].upass,connections[count].buf);
+			       			strcpy(connections[SocketCount].upass,connections[SocketCount].buf);
 				       		break;
 
 					case STATE_GETPASSWORD:			/* prompt for password */
-						strcpy(connections[count].uname,connections[count].buf);
+						strcpy(connections[SocketCount].uname,connections[SocketCount].buf);
 	
-						if(strcmp(connections[count].uname,"new") == 0 && config.allownewaccounts == TRUE) {   /* create new account if allowed */
-					       		send(count,newuserprompt,strlen(newuserprompt),0);
-					       		connections[count].connectionstate=STATE_GETNEWPASS; 
+						if(strcmp(connections[SocketCount].uname,"new") == 0 && config.allownewaccounts == TRUE) {   /* create new account if allowed */
+					       		send(SocketCount,NewUsernamePrompt,strlen(NewUsernamePrompt),0);
+					       		connections[SocketCount].connectionstate=STATE_GETNEWPASS; 
 						}
 						else
 						{
-							send(count,passprompt,strlen(passprompt),0);
-							connections[count].connectionstate=STATE_CHECKLOGIN; /* next */
-
-							printf("continuing to login\n");
+							send(SocketCount,PasswordPrompt,strlen(PasswordPrompt),0);
+							connections[SocketCount].connectionstate=STATE_CHECKLOGIN; /* next */
 						}
 	
 						break;
 
 					case STATE_CHECKLOGIN:			/* check username and password */	
-						strcpy(connections[count].upass,connections[count].buf);
+						strcpy(connections[SocketCount].upass,connections[SocketCount].buf);
 
-						if(LoginUser(count,connections[count].uname,connections[count].upass) == 0) {
-							connections[count].connectionstate=STATE_GETCOMMAND;
+						if(LoginUser(SocketCount,connections[SocketCount].uname,connections[SocketCount].upass) == 0) {
+							connections[SocketCount].connectionstate=STATE_GETCOMMAND;
 						}	
 						else
 						{
-							PrintError(count,INVALID_LOGIN);
+							PrintError(SocketCount,INVALID_LOGIN);
 
-							connections[count].connectionstate=STATE_GETUSER;
+							connections[SocketCount].connectionstate=STATE_GETUSER;
 							break;
 						}
 
-						usernext=GetUserPointerByName(connections[count].uname); /* find user */
-						if(usernext != NULL) connections[count].user=usernext;
+						usernext=GetUserPointerByName(connections[SocketCount].uname); /* find user */
+						if(usernext != NULL) connections[SocketCount].user=usernext;
 			
 						/* send welcome message */
 
-						sprintf(temp,"Welcome %s\r\n",usernext->name);
-						send(count,temp,strlen(temp),0);
+						sprintf(OutputBuffer,"Welcome %s\r\n",usernext->name);
+						send(SocketCount,OutputBuffer,strlen(OutputBuffer),0);
 
-						usernext->handle=count;
+						usernext->handle=SocketCount;
 						usernext->loggedin=TRUE;
 
 						if(go(usernext,usernext->homeroom) == -1) {	/* go to room */
-							PrintError(usernext->handle,GetLastError(connections[count].user));
+							PrintError(usernext->handle,GetLastError(connections[SocketCount].user));
 						}
 
-						memset(connections[count].buf,0,BUF_SIZE);
+						memset(connections[SocketCount].buf,0,BUF_SIZE);
 
-					 	connections[count].connectionstate=STATE_GETCOMMAND;
-						send(count,">",1,0);
+					 	connections[SocketCount].connectionstate=STATE_GETCOMMAND;
+						send(SocketCount,">",1,0);
 						break;
 
 						/* these states are for creating a new user */
@@ -358,11 +352,11 @@ while(1) {
 
 						while(usernext != NULL) {
 
-							if(strcmp(usernext->name,connections[count].buf) == 0) {
+							if(strcmp(usernext->name,connections[SocketCount].buf) == 0) {
 								PrintError(currentuser->handle,USERNAME_EXISTS);
 
-								send(count,newuserprompt,strlen(newuserprompt),0);
-								connections[count].connectionstate=STATE_GETNEWPASS; /* stay in state */	
+								send(SocketCount,NewUsernamePrompt,strlen(NewUsernamePrompt),0);
+								connections[SocketCount].connectionstate=STATE_GETNEWPASS; /* stay in state */	
 
 								goto badbreak;
 				 			}
@@ -370,80 +364,80 @@ while(1) {
 							usernext=FindNextUser(usernext);		/* find next user */
 						}
 
-						strcpy(connections[count].uname,connections[count].buf);
+						strcpy(connections[SocketCount].uname,connections[SocketCount].buf);
 
-						send(count,newpassprompt,strlen(newpassprompt),0);
-						connections[count].connectionstate=STATE_GETGENDER; /* next state */
+						send(SocketCount,NewPasswordPrompt,strlen(NewPasswordPrompt),0);
+						connections[SocketCount].connectionstate=STATE_GETGENDER; /* next state */
 
 						badbreak:
 						break;
 
 					case STATE_GETGENDER:			/* get gender */
-						if(!*connections[count].buf) {
+						if(!*connections[SocketCount].buf) {
 							PrintError(currentuser->handle,NO_PASSWORD);
 
-							send(count,newpassprompt,strlen(newpassprompt),0);
+							send(SocketCount,NewPasswordPrompt,strlen(NewPasswordPrompt),0);
 
-			         			connections[count].connectionstate=STATE_GETGENDER; /* loop state */
+			         			connections[SocketCount].connectionstate=STATE_GETGENDER; /* loop state */
 							break;
 	                        		}
 
-						strcpy(connections[count].upass,connections[count].buf);
+						strcpy(connections[SocketCount].upass,connections[SocketCount].buf);
 		
-						send(count,genderprompt,strlen(genderprompt),0);
-	 			 		connections[count].connectionstate=STATE_GETDESC; /* next state */
+						send(SocketCount,GenderPrompt,strlen(GenderPrompt),0);
+	 			 		connections[SocketCount].connectionstate=STATE_GETDESC; /* next state */
 						break;
 
 					case STATE_GETDESC:				/* check gender and prompt get description */				
-						if(strcmp(connections[count].buf,"male") == 0) connections[count].gender=MALE;
-						if(strcmp(connections[count].buf,"female") == 0) connections[count].gender=FEMALE;
+						if(strcmp(connections[SocketCount].buf,"male") == 0) connections[SocketCount].gender=MALE;
+						if(strcmp(connections[SocketCount].buf,"female") == 0) connections[SocketCount].gender=FEMALE;
 				
-						if(connections[count].gender != MALE  && connections[count].gender != FEMALE) {
+						if(connections[SocketCount].gender != MALE  && connections[SocketCount].gender != FEMALE) {
 							PrintError(currentuser->handle,BAD_GENDER);
 
-							send(count,genderprompt,strlen(genderprompt),0);
+							send(SocketCount,GenderPrompt,strlen(GenderPrompt),0);
 
-							connections[count].connectionstate=STATE_GETDESC; /* stay on current */
+							connections[SocketCount].connectionstate=STATE_GETDESC; /* stay on current */
 							break;
 						}
 
-						send(count,descprompt,strlen(descprompt),0);
-						connections[count].connectionstate=STATE_GETRACE; /* next state */
+						send(SocketCount,DescriptionPrompt,strlen(DescriptionPrompt),0);
+						connections[SocketCount].connectionstate=STATE_GETRACE; /* next state */
 						break;
 
 					case STATE_GETRACE:				/* get description and prompt for race */
-						strcpy(connections[count].description,connections[count].buf);
-						send(count,chooseplayerrace,strlen(chooseplayerrace),0);
+						strcpy(connections[SocketCount].description,connections[SocketCount].buf);
+						send(SocketCount,ChoosePlayerRace,strlen(ChoosePlayerRace),0);
 
 						/* show list of races */
 
 						racenext=FindFirstRace();
 
 						while(racenext != NULL) {
-							sprintf(temp,"%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\r\n",racenext->name,\	
+							sprintf(OutputBuffer,"%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\r\n",racenext->name,\	
 							racenext->magic,racenext->strength,racenext->agility,racenext->dexterity,\
 							racenext->luck,racenext->wisdom,racenext->intelligence,racenext->stamina);
 
-							send(count,temp,strlen(temp),0);
+							send(SocketCount,OutputBuffer,strlen(OutputBuffer),0);
 							
 							racenext=FindNextRace(racenext);
 						}
 			
-						send(count,raceprompt,strlen(raceprompt),0);
-						connections[count].connectionstate=STATE_GETCLASS; /* next state */
+						send(SocketCount,RacePrompt,strlen(RacePrompt),0);
+						connections[SocketCount].connectionstate=STATE_GETCLASS; /* next state */
 						break;
 
 					case STATE_GETCLASS:					/* get race and prompt for class */
-						strcpy(connections[count].race,connections[count].buf);
+						strcpy(connections[SocketCount].race,connections[SocketCount].buf);
 	
 						racenext=races;				/* check if race exists */
 
 						while(racenext != NULL) {
-							ToUppercase(connections[count].buf);
+							ToUppercase(connections[SocketCount].buf);
 							ToUppercase(racenext->name);
 
-							if(strcmp(racenext->name,connections[count].buf) == 0) { 
-								connections[count].connectionstate=STATE_CREATEUSER; /* next state */
+							if(strcmp(racenext->name,connections[SocketCount].buf) == 0) { 
+								connections[SocketCount].connectionstate=STATE_CREATEUSER; /* next state */
 					  			break;
 					 		}
 
@@ -453,87 +447,87 @@ while(1) {
 						if(racenext == NULL) {
 							PrintError(currentuser->handle,BAD_RACE);
 	
-							send(count,raceprompt,strlen(raceprompt),0);
-							connections[count].connectionstate=STATE_GETCLASS; /* go to current state */
+							send(SocketCount,RacePrompt,strlen(RacePrompt),0);
+							connections[SocketCount].connectionstate=STATE_GETCLASS; /* go to current state */
 							break;
 						}
 	
-						send(count,chooseplayerclass,strlen(chooseplayerclass),0);
+						send(SocketCount,ChoosePlayerClass,strlen(ChoosePlayerClass),0);
 
 						classnext=classes;
 
 						while(classnext != NULL) {
-							sprintf(temp,"%s\r\n",classnext->name);
+							sprintf(OutputBuffer,"%s\r\n",classnext->name);
 
-							send(count,temp,strlen(temp),0);
+							send(SocketCount,OutputBuffer,strlen(OutputBuffer),0);
 							classnext=classnext->next;
 						}
 
-						send(count,classprompt,strlen(classprompt),0);
-						connections[count].connectionstate=STATE_CREATEUSER;			
+						send(SocketCount,ClassPrompt,strlen(ClassPrompt),0);
+						connections[SocketCount].connectionstate=STATE_CREATEUSER;			
 						break;
 
 					case STATE_CREATEUSER:					/* check class and create user */
-						strcpy(connections[count].class,connections[count].buf);
+						strcpy(connections[SocketCount].class,connections[SocketCount].buf);
 
 						classnext=classes;
 	
 						while(classnext != NULL) {
-							ToUppercase(connections[count].class);
+							ToUppercase(connections[SocketCount].class);
 							ToUppercase(classnext->name);
 	
-							if(strcmp(connections[count].class,classnext->name) == 0) break;
+							if(strcmp(connections[SocketCount].class,classnext->name) == 0) break;
                              
 							classnext=classnext->next;
 						}
 			
-						if(classnext == NULL) {		/* class not found, go back to state #14 */
-							connections[count].connectionstate=STATE_CREATEUSER;
+						if(classnext == NULL) {		/* class not found, go back to state STATE_CREATEUSER */
+							connections[SocketCount].connectionstate=STATE_CREATEUSER;
 
-							PrintError(count,BAD_CLASS);
-							send(count,classprompt,strlen(classprompt),0);
+							PrintError(SocketCount,BAD_CLASS);
+							send(SocketCount,ClassPrompt,strlen(ClassPrompt),0);
 
 							break;
 		                	        }
 
 				
-						if(CreateUser(count,connections[count].uname,connections[count].upass,\
-							connections[count].gender,connections[count].description,connections[count].race,\
-							connections[count].class) == -1) {	/* can't create account */
+						if(CreateUser(SocketCount,connections[SocketCount].uname,connections[SocketCount].upass,\
+							connections[SocketCount].gender,connections[SocketCount].description,connections[SocketCount].race,\
+							connections[SocketCount].class) == -1) {	/* can't create account */
 
-							sprintf(temp,"Unable to create user (%s) connection terminated\r\n",strerror(errno));
-							send(count,temp,strlen(temp),0);
+							sprintf(OutputBuffer,"Unable to create user (%s) connection terminated\r\n",strerror(errno));
+							send(SocketCount,OutputBuffer,strlen(OutputBuffer),0);
 
-							FD_CLR(count,&readset);
-							close(count);
+							FD_CLR(SocketCount,&readset);
+							close(SocketCount);
 					 	}
 
 						usernext=FindFirstUser();		/* find first user */
 
 						while(usernext != NULL) {
 
-							if(strcmp(usernext->name,connections[count].uname) == 0) {
-								connections[count].user=usernext;
+							if(strcmp(usernext->name,connections[SocketCount].uname) == 0) {
+								connections[SocketCount].user=usernext;
 								break;
 							}
 
 							usernext=FindNextUser(usernext);		/* find next user */
 						}
 
-						connections[count].connectionstate=STATE_CHECKLOGIN;
+						connections[SocketCount].connectionstate=STATE_CHECKLOGIN;
 						break;
 
 					case STATE_GETCOMMAND:		/* processing command */
-			           		if(docommand(usernext,connections[count].buf) == -1) {
-							PrintError(usernext->handle,GetLastError(connections[count].user));
+			           		if(ExecuteCommand(usernext,connections[SocketCount].buf) == -1) {
+							PrintError(usernext->handle,GetLastError(connections[SocketCount].user));
 						}
 
-						connections[count].connectionstate=STATE_GETCOMMAND;	/* loop in state STATE_GETCOMMAND */
+						connections[SocketCount].connectionstate=STATE_GETCOMMAND;	/* loop in state STATE_GETCOMMAND */
 
-						send(count,">",1,0);
+						send(SocketCount,">",1,0);
 					}
 	
-					memset(connections[count].buf,0,BUF_SIZE);   
+					memset(connections[SocketCount].buf,0,BUF_SIZE);   
 				}
 			}
 		}

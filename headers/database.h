@@ -19,7 +19,7 @@ void ClearDatabaseUpdateFlag(void);
 char *GetDirectionName(int direction);
 int GetRoomFlags(int RoomNumber);
 char *GetRoomName(int RoomNumber);
-char *GetRoomPointer(int RoomNumber);
+room *GetRoomPointer(int RoomNumber);
 int GetRoomMonsterEvil(int RoomNumber,int RoomMonster);
 char *GetRoomMonsterName(int RoomNumber,int RoomMonster);
 int GetNumberOfMonstersInRoom(int RoomNumber);

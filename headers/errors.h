@@ -37,6 +37,9 @@
 #define NO_PASSWORD		36
 #define ACCESS_DENIED		37
 #define BAD_ROOM		38
+#define ALREADY_HAVE_OBJECT	39
+#define RACE_EXISTS		40
+#define CLASS_EXISTS		41
 
 #define NOCONFIGFILE  1
 #define BADCONFIG     2

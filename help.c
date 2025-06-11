@@ -46,14 +46,12 @@ char *ReadBuffer[BUF_SIZE];
 FILE *handle;
 char *HelpFile[BUF_SIZE];
 
-getcwd(ReadBuffer,BUF_SIZE);
-
 if(!*HelpTopic) {		                      /* get help file */
-	sprintf(HelpFile,"%s/%s",ReadBuffer,"/help/help.txt");
+	sprintf(HelpFile,"%s/%s",ReadBuffer,"help/help.txt");
 }
 else
 {
-	sprintf(HelpFile,"%s/help/%s.txt",ReadBuffer,HelpTopic);
+	sprintf(HelpFile,"help/%s.txt",HelpTopic);
 }
 
 handle=fopen(HelpFile,"rb");

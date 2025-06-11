@@ -37,7 +37,6 @@
 #include "database.h"
 
 user *users=NULL;
-char *BanListConfigurationFile[BUF_SIZE];
 ban *bans=NULL;
 ban *bans_last=NULL;
 race *races=NULL;
@@ -50,15 +49,12 @@ char *MaleUserLevelNames[] = {"","Novice","Warrior","Hero","Champion","Superhero
 char *FemaleUserLevelNames[] = {"","Novice","Warrior","Heroine","Champion","Superheroine","Enchanteress","Sorceroress", \
 			"Legend","Witch","Arch Witch","Dungeon Master" };
 
-char *BanListConfigurationFile[BUF_SIZE];
 char *BanListPrompt="Press ENTER to see more bans or q to quit:";
-char *BanListRelativePath="/config/ban.mud";
-char *ClassConfigurationFile[BUF_SIZE];
-char *ClassFileRelativePath="/config/classes.mud";
-char *UserListRelativePath="/config/users.mud";
-char *RaceListRelativePath="/config/races.mud";
-char *UserListConfigurationFile[BUF_SIZE];
-char *ObjectListConfigurationFile[BUF_SIZE];
+char *BanConfigurationFile="config/ban.mud";
+char *ClassConfigurationFile="config/classes.mud";
+char *UserConfigurationFile="config/users.mud";
+char *RaceConfigurationFile="config/races.mud";
+char *ObjectConfigurationFile[BUF_SIZE];
 int UserUpdated;
 
 int BanUserByName(user *currentuser,char *username) {
@@ -86,7 +82,7 @@ SetLastError(currentuser,UNKNOWN_USER);
 return(-1);
 }
 
-int BanUserByIPAddress(user *currentuser,char *ipaddr) {
+int BanUserByIPAddress(user *currentuser,char *ipaddress) {
 ban *banlist;
 
 if(currentuser->status < WIZARD) {		/* not yet */
@@ -97,7 +93,7 @@ if(currentuser->status < WIZARD) {		/* not yet */
 banlist=bans;
 
 while(banlist != NULL) {
-	if(*banlist->ipaddress && strcmp(banlist->ipaddress,ipaddr) == 0) {		/* ip address already banned */
+	if(*banlist->ipaddress && strcmp(banlist->ipaddress,ipaddress) == 0) {		/* ip address already banned */
 		SetLastError(currentuser,ALREADY_BANNED);
 		return(-1);
 	}
@@ -125,7 +121,7 @@ else
 	bans_last=bans_last->next;
 }
 
-strcpy(bans_last->ipaddress,ipaddr);
+strcpy(bans_last->ipaddress,ipaddress);
 bans_last->next=NULL;
 
 return(0);
@@ -135,7 +131,7 @@ int UpdateBanFile(void) {
 FILE *handle;
 ban *bannext;
 
-handle=fopen(BanListConfigurationFile,"w");
+handle=fopen(BanConfigurationFile,"w");
 if(handle == NULL) return(-1);		/* can't open */
 
 bannext=bans;
@@ -183,7 +179,7 @@ while(bannext != NULL) {
 return(0);
 }
 
-int UnBanUserByIPAddress(user *currentuser,char *ipaddr) {
+int UnBanUserByIPAddress(user *currentuser,char *ipaddress) {
 ban *next;
 ban *last;
 
@@ -192,7 +188,7 @@ next=bans;
 while(next != NULL) {
 	last=next;
 
-	if(*next->ipaddress && strcmp(next->ipaddress,ipaddr) == 0) {		/* ip address already banned */
+	if(*next->ipaddress && strcmp(next->ipaddress,ipaddress) == 0) {		/* ip address already banned */
 
 		if(next == bans) {		/* first in list */
 			bans=bans->next;
@@ -225,13 +221,9 @@ FILE *handle;
 bannext=bans;
 LineCount=0;
 
-getcwd(LineBuffer,BUF_SIZE);
-sprintf(BanListConfigurationFile,"%s/%s",LineBuffer,BanListRelativePath);		/* get absolute path of configuration file */
-
-
-handle=fopen(BanListConfigurationFile,"rb");
+handle=fopen(BanConfigurationFile,"rb");
 if(handle == NULL) {                                           /* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",BanListConfigurationFile);
+	printf("\nmud: Can't open configuration file %s\n",BanConfigurationFile);
 	return(-1);
 }
 
@@ -311,7 +303,7 @@ if(currentuser->status < WIZARD) {             /* can't do this unless wizard of
 usernext=users;
 
 while(usernext != NULL) {
-	if(regexp(u,usernext->name) == TRUE && usernext->loggedin == TRUE) return(docommand(usernext,c));    /* do command */ 
+	if(regexp(u,usernext->name) == TRUE && usernext->loggedin == TRUE) return(ExecuteCommand(usernext,c));    /* do command */ 
 		
 	usernext=usernext->next;
 }
@@ -325,11 +317,11 @@ return(0);
 
 int GiveObjectToUser(user *currentuser,char *u,char *o) {
 user *usernext;
-roomobject *objnext;
+roomobject *RoomObjectPtr;
 roomobject *ourobjectlast;
 roomobject *temp;
 int found=0;
-int  objfound=0;
+int  ObjectFound=0;
 roomobject *ourobject;
 char *buf[BUF_SIZE];
 
@@ -363,32 +355,32 @@ ourobjectlast=ourobject;
 while(ourobject != NULL) {
 	if(regexp(ourobject->name,o) == TRUE) {		/* found object */
 
-		objnext=usernext->carryobjects;
+		RoomObjectPtr=usernext->carryobjects;
 	
-		if(objnext != NULL) {				/* find end */				
-			while(objnext->next != NULL) objnext=objnext->next; 
+		if(RoomObjectPtr != NULL) {				/* find end */				
+			while(RoomObjectPtr->next != NULL) RoomObjectPtr=RoomObjectPtr->next; 
 
-			objnext->next=calloc(1,sizeof(roomobject));
-			if(objnext->next == NULL) {		/* can't allocate */
+			RoomObjectPtr->next=calloc(1,sizeof(roomobject));
+			if(RoomObjectPtr->next == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);
 				return(-1);	
 			}
 
-			objnext=objnext->next;
+			RoomObjectPtr=RoomObjectPtr->next;
 		}
 		else
 		{						
 			usernext->carryobjects=calloc(1,sizeof(roomobject));	/* allocate objects */ 
-			objnext=usernext->carryobjects;
+			RoomObjectPtr=usernext->carryobjects;
 
-			if(objnext == NULL) {		/* can't allocate */
+			if(RoomObjectPtr == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);
 				return(-1);
 			}
 		}    
 
 
-		memcpy(objnext,ourobject,sizeof(roomobject));	/* copy data */
+		memcpy(RoomObjectPtr,ourobject,sizeof(roomobject));	/* copy data */
 	
 		if(ourobject == currentuser->carryobjects) {		/* first object */
 			ourobject=ourobject->next;
@@ -406,14 +398,14 @@ while(ourobject != NULL) {
 			free(ourobject);
 		}
 
-		objfound=TRUE;
+		ObjectFound=TRUE;
 	}
 
 	ourobjectlast=ourobject;
 	ourobject=ourobject->next;
 }
 
-if(objfound == FALSE) {
+if(ObjectFound == FALSE) {
 	SetLastError(currentuser,UNKNOWN_USER); /* no object found */
 	return(-1);
 }
@@ -425,14 +417,14 @@ return(0);
 * display inventory
 */
 
-int DisplayInventory(user *currentuser,char *u) {
+int DisplayInventory(user *currentuser,char *username) {
 char *whichuser[BUF_SIZE];
 char *buf[BUF_SIZE];
 roomobject *roomnext;
 user *usernext;
-roomobject *objnext;
+roomobject *RoomObjectPtr;
 
-if(!*u) {
+if(!*username) {
 	strcpy(whichuser,currentuser->name);   /* use default user */
 
 }
@@ -444,7 +436,7 @@ else
 		return(0);
 	}
 
-	strcpy(whichuser,u);
+	strcpy(whichuser,username);
 }
 
 usernext=users;
@@ -463,13 +455,13 @@ while(usernext != NULL) {
 		sprintf(buf,"%s is carrying: ",usernext->name);
 		send(currentuser->handle,buf,strlen(buf),0);
 
-		objnext=usernext->carryobjects;
+		RoomObjectPtr=usernext->carryobjects;
 
-		while(objnext != NULL) {
-			send(currentuser->handle,objnext->name,strlen(objnext->name),0);	/* display objects in inventory */
+		while(RoomObjectPtr != NULL) {
+			send(currentuser->handle,RoomObjectPtr->name,strlen(RoomObjectPtr->name),0);	/* display objects in inventory */
 			send(currentuser->handle," ",1,0);
 	
-			objnext=objnext->next;
+			RoomObjectPtr=RoomObjectPtr->next;
 		}
 	
 		send(currentuser->handle,"\r\n",2,0);
@@ -485,18 +477,15 @@ return(0);
 /*
 * kill user
 */
-int KillUser(user *currentuser,char *u) {
+int KillUser(user *currentuser,char *username) {
 room *roomnext;
 user *usernext;
 monster *monsternext;
-char *buf[BUF_SIZE];
+char *OutputMessage[BUF_SIZE];
 int found=FALSE;
 int count;
 room *currentroom;
-char *userinventoryfile[BUF_SIZE];
-char *cwd[BUF_SIZE];
-
-getcwd(cwd,BUF_SIZE);			/* get current directory */
+char *UserInventoryFile[BUF_SIZE];
 
 currentroom=currentuser->roomptr;
 
@@ -507,7 +496,7 @@ if(currentuser->status < WIZARD) {             /* can't do this unless wizard of
 
 usernext=users;
 while(usernext != NULL) {
-	if(regexp(usernext->name,u) == TRUE && usernext->loggedin == TRUE) {		/* found user */
+	if(regexp(usernext->name,username) == TRUE && usernext->loggedin == TRUE) {		/* found user */
 		found=TRUE;
 
 		if(currentuser->status < usernext->status ) {  /* wizards can't be killed */
@@ -516,26 +505,24 @@ while(usernext != NULL) {
 		}
 
 		if(usernext->gender == MALE) {
-			sprintf(buf,"You were given the finger of death by %s the %s\r\n",currentuser->name,MaleUserLevelNames[currentuser->status]);
+			sprintf(OutputMessage,"You were given the finger of death by %s the %s\r\n",currentuser->name,MaleUserLevelNames[currentuser->status]);
 		}
 		else
 		{
-			sprintf(buf,"You were given the finger of death by %s the %s\r\n",currentuser->name,FemaleUserLevelNames[currentuser->status]);
+			sprintf(OutputMessage,"You were given the finger of death by %s the %s\r\n",currentuser->name,FemaleUserLevelNames[currentuser->status]);
 		}
 
-		send(usernext->handle,buf,strlen(buf),0);
+		send(usernext->handle,OutputMessage,strlen(OutputMessage),0);
 		close(usernext->handle);
 
 		usernext->next=usernext->last;
 		free(usernext);
 
-		UpdateUser(usernext,u,"",0,0,"",0,0,0,0,"","",0);          /* remove user */
+		UpdateUser(usernext,username,"",0,0,"",0,0,0,0,"","",0);          /* remove user */
 
-		sprintf(userinventoryfile,"%s/config/%s.inv",cwd,usernext->name);		/* get absolute path of user inventory */
+		sprintf(UserInventoryFile,"%config/%s.inv",usernext->name);		/* get absolute path of user inventory */
+		unlink(UserInventoryFile);		/* delete inventory file */
 
-		unlink(userinventoryfile);		/* delete inventory file */
-
-		free(buf);
 		return(-1);		
 	}
 
@@ -549,7 +536,7 @@ while(usernext != NULL) {
 found=FALSE;
 
 for(count=0;count<currentroom->monstercount;count++) {
-	if(regexp(u,currentroom->roommonsters[count].name) == TRUE) {		/* found monster */
+	if(regexp(username,currentroom->roommonsters[count].name) == TRUE) {		/* found monster */
 		DeleteMonster(currentroom->room,count);
 		found=TRUE;
 	}
@@ -568,18 +555,18 @@ return(0);
 * send "emote" message
 */
 
-int pose(user *currentuser,char *msg) {
+int pose(user *currentuser,char *message) {
 user *usernext;
-char *buf[BUF_SIZE];
+char *OutputMessage[BUF_SIZE];
 
 usernext=users;
 
 while(usernext != NULL) {
 
 	if(usernext->room == currentuser->room) {	/* in same room */
-		sprintf(buf,"*%s %s\r\n",currentuser->name,msg);
+		sprintf(OutputMessage,"*%s %s\r\n",currentuser->name,message);
 
-		SendMessageToAllInRoom(usernext->room,buf);	/* send message */
+		SendMessageToAllInRoom(usernext->room,OutputMessage);	/* send message */
 	}
 
 	usernext=usernext->next;
@@ -604,7 +591,7 @@ currentuser->loggedin=FALSE; /* mark as logged out */
 DisconnectUser(currentuser);		/* disconnect user */
 }
 
-int DisplayScore(user *currentuser,char *u) {
+int DisplayScore(user *currentuser,char *username) {
 user *usernext;
 char *buf[BUF_SIZE];
 char *name[BUF_SIZE];
@@ -613,7 +600,7 @@ void *titleptr;
 
 found=FALSE;
 
-if(!*u) {			/* find score for current user */
+if(!*username) {			/* find score for current user */
 	strcpy(name,currentuser->name);
 }
 else
@@ -623,7 +610,7 @@ else
 		return(-1);
 	}
 
-	strcpy(name,u);
+	strcpy(name,username);
 }
 
 if(currentuser->gender == MALE) {		/* which user title */
@@ -665,13 +652,13 @@ return(0);
 * send private message to someone
 */
 
-int SendMessageToAllInRoom(int room,char *msg) {
+int SendMessageToAllInRoom(int room,char *message) {
 user *usernext;
 
 usernext=users;
 
 while(usernext != NULL) {
-	if(usernext->room == room && usernext->loggedin == TRUE) send(usernext->handle,msg,strlen(msg),0);	/* found user */
+	if(usernext->room == room && usernext->loggedin == TRUE) send(usernext->handle,message,strlen(message),0);	/* found user */
 
 	usernext=usernext->next;
 }
@@ -683,7 +670,7 @@ return(0);
 * send private message to someone
 */
 
-int SendMessage(user *currentuser,char *nick,char *msg) {
+int SendMessage(user *currentuser,char *username,char *message) {
 int count=0;
 char *buf[BUF_SIZE];
 user *usernext;
@@ -691,16 +678,16 @@ user *usernext;
 usernext=users;
 
 while(usernext != NULL) {
-	if(regexp(nick,usernext->name) == TRUE) {		/* found user */
+	if(regexp(username,usernext->name) == TRUE) {		/* found user */
 
 		if(currentuser->flags & USER_INVISIBLE) {
 			count++;
-			sprintf(buf,"Somebody whispers, %s\r\n",nick,msg);
+			sprintf(buf,"Somebody whispers, %s\r\n",username,message);
 		}
 		else
 		{
 			count++;
-			sprintf(buf,"[%s] %s\r\n",nick,msg);
+			sprintf(buf,"[%s] %s\r\n",username,message);
 		}
 
 		send(currentuser->handle,buf,strlen(buf),0);
@@ -723,11 +710,11 @@ return(0);
 
 int TakeObject(user *currentuser,char *username,char *object) {
 user *usernext;
-roomobject *objnext;
-roomobject *objlast;
+roomobject *RoomObjectPtr;
+roomobject *RoomObjectLast;
 roomobject *myobj;
 int found=0;
-int  objfound=0;
+int  ObjectFound=0;
 char *buf[BUF_SIZE];
 
 if(currentuser->status < WIZARD) {             /* can't do this unless wizard of higher level */
@@ -759,12 +746,13 @@ if(found == FALSE) {
 * find object
 */
 
-objnext=usernext->carryobjects;
-objlast=objnext;
+RoomObjectPtr=usernext->carryobjects;
 
-while(objnext != NULL) {
+while(RoomObjectPtr != NULL) {
 
-	if(regexp(objnext->name,object) == TRUE) {		/* found object */
+	RoomObjectLast=RoomObjectPtr;
+
+	if(regexp(RoomObjectPtr->name,object) == TRUE) {		/* found object */
 
 		if(currentuser->carryobjects == NULL) {				/* find end */				
 			
@@ -787,33 +775,29 @@ while(objnext != NULL) {
 			currentuser->carryobjects=currentuser->carryobjects_last->next;
 		}    
 	
-		memcpy(currentuser->carryobjects_last,objnext,sizeof(roomobject));	/* copy data */
+		memcpy(currentuser->carryobjects_last,RoomObjectPtr,sizeof(roomobject));	/* copy data */
 	
-		if(objnext == usernext->carryobjects) {		/* first object */
-			objnext=objnext->next;
+		if(RoomObjectPtr == usernext->carryobjects) {		/* first object */
+			RoomObjectPtr=RoomObjectPtr->next;
 	
 			free(usernext->carryobjects);   
-			usernext->carryobjects=objnext;
+			usernext->carryobjects=RoomObjectPtr;
 		}
-
-		if(objnext != usernext->carryobjects && objnext->next != NULL) {      
-			objlast->next=objnext->next;	/* skip over over object */        
-			free(objnext);
+		else if(RoomObjectPtr != usernext->carryobjects && RoomObjectPtr->next != NULL) {      
+			RoomObjectLast->next=RoomObjectPtr->next;	/* skip over over object */        
+			free(RoomObjectPtr);
 		}
-
-
-		if(objnext == usernext->carryobjects && objnext->next != NULL) {		/* last object */          
-			 free(objnext);	
+		else if(RoomObjectPtr == usernext->carryobjects && RoomObjectPtr->next != NULL) {		/* last object */          
+			 free(RoomObjectPtr);	
 		}
 	
-		objfound=TRUE;
+		ObjectFound=TRUE;
 	}
 
-	objlast=objnext;
-	objnext=objnext->next;
+	RoomObjectPtr=RoomObjectPtr->next;
 }
 
-if(objfound == FALSE) {
+if(ObjectFound == FALSE) {
 	SetLastError(currentuser,UNKNOWN_USER); /* no object found */
 	return(-1);
 }
@@ -825,24 +809,23 @@ return(0);
 * update user info
 */
 
-int UpdateUser(user *currentuser,char *uname,char *upass,int uhome,int ulevel,char *udesc,int umpoints,int ustapoints,int uexpoints,int ugender,char *racex,char *classx,int uflags) {
+int UpdateUser(user *currentuser,char *username,char *password,int homeroom,int userlevel,char *description,int magicpoints,int staminapoints,int experiencepoints,int gender,char *racex,char *classx,int flags) {
 int dead=0;
 int count;
-char *tokens[14][255];
+char *tokens[BUF_SIZE][BUF_SIZE];
 user *usernext;
-roomobject *objnext;
-char *buf[BUF_SIZE];
+roomobject *RoomObjectPtr;
+char *OutputMessage[BUF_SIZE];
 int newlevel;
 race *racenext;
 class *classnext;
-char c;
 CONFIG config;
 
-if(uhome < 0) uhome=0;			/* sanity check */
-if(ulevel < 0) ulevel=0;
-if(umpoints < 0) umpoints=0;
-if(ustapoints < 0) ustapoints=0;
-if(uexpoints < 0) uexpoints=0;
+if(homeroom < 0) homeroom=0;			/* sanity check */
+if(userlevel < 0) userlevel=0;
+if(magicpoints < 0) magicpoints=0;
+if(staminapoints < 0) staminapoints=0;
+if(experiencepoints < 0) experiencepoints=0;
 
 GetConfigurationInformation(&config);
 
@@ -854,18 +837,18 @@ while(usernext != NULL) {
 if the stamina points are 0 the user is killed and will not be included in the updated file
 */
 
-	if(regexp(usernext->name,uname) == TRUE) {			/* found user */
+	if(regexp(usernext->name,username) == TRUE) {			/* found user */
 
-		strcpy(usernext->name,uname);
-		if(*upass) strcpy(usernext->password,upass);
+		strcpy(usernext->name,username);
+		if(*password) strcpy(usernext->password,password);
 	
-		if(uhome > 0) usernext->homeroom=uhome;
-		if(ulevel > 0) usernext->status=ulevel;
-		if(umpoints > 0) usernext->magicpoints=umpoints;
+		if(homeroom > 0) usernext->homeroom=homeroom;
+		if(userlevel > 0) usernext->status=userlevel;
+		if(magicpoints > 0) usernext->magicpoints=magicpoints;
 
-		if(uflags > 0) usernext->flags=uflags;
+		if(flags > 0) usernext->flags=flags;
 
-		usernext->staminapoints=ustapoints;
+		usernext->staminapoints=staminapoints;
 
 		/*
 		* the user is dead, long live the user
@@ -874,16 +857,14 @@ if the stamina points are 0 the user is killed and will not be included in the u
 		if(usernext->staminapoints <= 0 && (usernext->status < WIZARD)) {
 
 			usernext->loggedin=FALSE;
-			SetLastError(currentuser,GAME_OVER);
-
 			usernext->staminapoints=DEFAULT_STAMINAPOINTS;		/* reset user */
 			usernext->magicpoints=DEFAULT_MAGICPOINTS;
 			usernext->experiencepoints=0;
 			usernext->status=NOVICE;
 			usernext->homeroom=1;
 
-			sprintf(buf,"%s is dead\n",usernext->name);
-			SendMessageToAllInRoom(usernext->room,buf);
+			sprintf(OutputMessage,"%s is dead\n",usernext->name);
+			SendMessageToAllInRoom(usernext->room,OutputMessage);
 
 			DropObject(usernext,"*"); 		/* drop objects carried by user */
 
@@ -893,37 +874,37 @@ if the stamina points are 0 the user is killed and will not be included in the u
 
 		/* adjust new level */
 
-		 if(uexpoints > 0) {
-			if(uexpoints < config.pointsforwarrior) newlevel=NOVICE;
-			if((uexpoints >= config.pointsforwarrior) && (uexpoints < config.pointsforhero)) newlevel=WARRIOR;
-			if((uexpoints >= config.pointsforhero) && (uexpoints < config.pointsforchampion)) newlevel=HERO;
-			if((uexpoints >= config.pointsforchampion) && (uexpoints < config.pointsforsuperhero)) newlevel=CHAMPION;
-			if((uexpoints >= config.pointsforsuperhero) && (uexpoints < config.pointsforenchanter)) newlevel=SUPERHERO;
-			if((uexpoints >= config.pointsforenchanter) && (uexpoints < config.pointsforsorceror)) newlevel=ENCHANTER;
-			if((uexpoints >= config.pointsforsorceror) && (uexpoints < config.pointsfornecromancer)) newlevel=SORCEROR;
-			if((uexpoints >= config.pointsfornecromancer) && (uexpoints < config.pointsforlegend)) newlevel=NECROMANCER;
-			if((uexpoints >= config.pointsforlegend) && (uexpoints < config.pointsforwizard)) newlevel=LEGEND;
-			if((uexpoints >= config.pointsforwizard)) newlevel=WIZARD;
+		 if(experiencepoints > 0) {
+			if(experiencepoints < config.pointsforwarrior) newlevel=NOVICE;
+			if((experiencepoints >= config.pointsforwarrior) && (experiencepoints < config.pointsforhero)) newlevel=WARRIOR;
+			if((experiencepoints >= config.pointsforhero) && (experiencepoints < config.pointsforchampion)) newlevel=HERO;
+			if((experiencepoints >= config.pointsforchampion) && (experiencepoints < config.pointsforsuperhero)) newlevel=CHAMPION;
+			if((experiencepoints >= config.pointsforsuperhero) && (experiencepoints < config.pointsforenchanter)) newlevel=SUPERHERO;
+			if((experiencepoints >= config.pointsforenchanter) && (experiencepoints < config.pointsforsorceror)) newlevel=ENCHANTER;
+			if((experiencepoints >= config.pointsforsorceror) && (experiencepoints < config.pointsfornecromancer)) newlevel=SORCEROR;
+			if((experiencepoints >= config.pointsfornecromancer) && (experiencepoints < config.pointsforlegend)) newlevel=NECROMANCER;
+			if((experiencepoints >= config.pointsforlegend) && (experiencepoints < config.pointsforwizard)) newlevel=LEGEND;
+			if((experiencepoints >= config.pointsforwizard)) newlevel=WIZARD;
 
 			if(newlevel > usernext->status || newlevel < usernext->status) {		/* new level */
 				usernext->status=newlevel;
 	
 				if(usernext->gender == MALE) {
-					sprintf(buf,"You are now a %s!\n",MaleUserLevelNames[newlevel]);
+					sprintf(OutputMessage,"You are now a %s!\n",MaleUserLevelNames[newlevel]);
 				}
 				else
 				{
-					sprintf(buf,"You are now a %s!\n",FemaleUserLevelNames[newlevel]);
+					sprintf(OutputMessage,"You are now a %s!\n",FemaleUserLevelNames[newlevel]);
 				}
 			}
 
-			send(usernext->handle,buf,strlen(buf),0);
+			send(usernext->handle,OutputMessage,strlen(OutputMessage),0);
 		}
 		
 
-		usernext->experiencepoints=uexpoints;
+		usernext->experiencepoints=experiencepoints;
 
-		if(ugender > 0) usernext->gender=ugender;
+		if(gender > 0) usernext->gender=gender;
 
 		if(*racex) {
 			racenext=races;				/* find race */
@@ -951,7 +932,7 @@ if the stamina points are 0 the user is killed and will not be included in the u
 			}
 		}
 
-		if(*udesc) strcpy(usernext->desc,udesc);
+		if(*description) strcpy(usernext->desc,description);
 
 		UserUpdated=TRUE;
 	}
@@ -970,15 +951,14 @@ return(0);
 int UpdateUsersFile(void) {
 FILE *handle;
 FILE *handleinv;
-char *buf[BUF_SIZE];
 user *usernext;
-roomobject *objnext;
+roomobject *RoomObjectPtr;
 race *racenext;
 class *classnext;
+char *InventoryFile[BUF_SIZE];
+char *GenderString[BUF_SIZE];
 
-char *LineBuffer[10];
-
-handle=fopen(UserListConfigurationFile,"w");
+handle=fopen(UserConfigurationFile,"w");
 if(handle == NULL) return(-1);
 
 usernext=users;
@@ -989,33 +969,31 @@ while(usernext != NULL) {
 	classnext=usernext->userclass;
 
 	if(usernext->gender == MALE) {		/* gender */
-		strcpy(buf,"male");
+		strcpy(GenderString,"male");
 	}
 	else
 	{
-		strcpy(buf,"female");
+		strcpy(GenderString,"female");
 	}
 
 	fprintf(handle,"%s:%s:%d:%d:%s:%d:%d:%d:%s:%s:%s:%d\n",usernext->name,usernext->password,usernext->homeroom,usernext->status,\
 						usernext->desc,usernext->magicpoints,usernext->staminapoints,usernext->experiencepoints, \
-						buf,racenext->name,classnext->name,usernext->flags);
+						GenderString,racenext->name,classnext->name,usernext->flags);
 
 	/* update inventory file */
 
-	getcwd(buf,BUF_SIZE);
+	sprintf(InventoryFile,"/config/%s.inv",usernext->name);			/* get path */
 
-	sprintf(buf,"/config/%s.inv",usernext->name);			/* get path */
-
-	handleinv=fopen(buf,"w");
+	handleinv=fopen(InventoryFile,"w");
 	if(handleinv != NULL) {		/* can't open */
-		objnext=usernext->carryobjects;
+		RoomObjectPtr=usernext->carryobjects;
 
-		while(objnext != NULL) {
-			fprintf(handleinv,"%s:%d:%d:%d:%d:%s\n",objnext->name,objnext->staminapoints,objnext->magicpoints,\
+		while(RoomObjectPtr != NULL) {
+			fprintf(handleinv,"%s:%d:%d:%d:%d:%s\n",RoomObjectPtr->name,RoomObjectPtr->staminapoints,RoomObjectPtr->magicpoints,\
 
-			objnext->attackpoints,objnext->generateprob,objnext->desc);			
+			RoomObjectPtr->attackpoints,RoomObjectPtr->generateprob,RoomObjectPtr->desc);			
 
-			objnext=objnext->next;
+			RoomObjectPtr=RoomObjectPtr->next;
 		}
 
 		fclose(handleinv);
@@ -1032,50 +1010,36 @@ return(0);
 * set user points (magic/stamina/experience)
 */
 
-int SetUserPoints(user *currentuser,char *u,char *amountstr,int which) {
+int SetUserPoints(user *currentuser,char *username,char *amountstr,int which) {
 user *usernext;
-char c;
-char *buf[BUF_SIZE];
 int amount;
 
 usernext=users;
 
 while(usernext != NULL) {
 
-	if(regexp(usernext->name,u) == TRUE) {	/* if user found */
-		c=*amountstr;
+	if(regexp(usernext->name,username) == TRUE) {	/* if user found */
 
+		/* adding/subtracting/setting points */
 
-		if(c == '+' || c == '-') {				/* adding/subtracting/setting points */
-			strncpy(buf,amountstr+1,strlen(amountstr)-1);
-
-			if(c == '+') {
-				if(which == MAGICPOINTS) amount=usernext->magicpoints+atoi(buf);
-				if(which == STAMINAPOINTS) amount=usernext->staminapoints+atoi(buf);
-				if(which == EXPERIENCEPOINTS) amount=usernext->experiencepoints+atoi(buf);
-			}
-
-			if(c == '-') {
-				if(which == MAGICPOINTS) amount=usernext->magicpoints-atoi(buf);
-				if(which == STAMINAPOINTS) amount=usernext->staminapoints-atoi(buf);
-				if(which == EXPERIENCEPOINTS) amount=usernext->experiencepoints-atoi(buf);
-			}
+		if((char) *amountstr == '+') {
+			sscanf(amountstr,"+%d",&amount);
 		}
-
-		if(c != '+' && c != '-') {				/* adding/subtracting/setting points */
-			strcpy(buf,amountstr);
-			amount=atoi(buf);
+		else if((char) *amountstr == '-') {
+			sscanf(amountstr,"-%d",&amount);
+		}
+		else {			
+			amount=atoi(amountstr);
 		}
 	
-		switch(which) {
-			case MAGICPOINTS:
-				return(UpdateUser(currentuser,usernext->name,"",0,0,"",amount,0,0,0,"","",0));
-
-			case STAMINAPOINTS:
-				return(UpdateUser(currentuser,usernext->name,"",0,0,"",0,amount,0,0,"","",0));
-
-			case EXPERIENCEPOINTS:
-				return(UpdateUser(currentuser,usernext->name,"",0,0,"",0,0,amount,0,"","",0));
+		if(which == MAGICPOINTS) {
+			return(UpdateUser(currentuser,usernext->name,"",0,0,"",usernext->magicpoints+amount,0,0,0,"","",0));
+		}
+		else if(which == STAMINAPOINTS) {
+			return(UpdateUser(currentuser,usernext->name,"",0,0,"",0,usernext->staminapoints+amount,0,0,"","",0));
+		}
+		else if(which == EXPERIENCEPOINTS) {
+			return(UpdateUser(currentuser,usernext->name,"",0,0,"",0,0,usernext->experiencepoints+amount,0,"","",0));
 		}
 	}
 
@@ -1089,12 +1053,9 @@ return(-1);
 /*
 * set user level */
 
-int SetUserLevel(user *currentuser,char *u,char *level) {
-char c;
-int count;
+int SetUserLevel(user *currentuser,char *username,char *levelstr) {
 user *usernext;
-char *buf[BUF_SIZE];
-int newlevel;
+int level;
 
 if(currentuser->status < WIZARD) {     /* not wizard */
 	SetLastError(currentuser,NOT_YET);
@@ -1104,53 +1065,47 @@ if(currentuser->status < WIZARD) {     /* not wizard */
 usernext=users;
 while(usernext != NULL) {
 
-	if(regexp(usernext->name,u) == TRUE) {		/* found user */
-		c=*level;
+	if(regexp(usernext->name,username) == TRUE) {		/* found user */
 	
-		if(c == '+') {			/* add points */
-			level++;
-			strcpy(buf,level);
-			newlevel=atoi(buf);
+		if((char) *levelstr == '+') {			/* add points */
+			sscanf(levelstr,"+%d",&level);
 
-			if(newlevel > 12) {
+			if(usernext->status+level > 12) {
 				SetLastError(currentuser,INVALID_LEVEL);
 				return(-1);
 			}
 	
-			 if(newlevel > currentuser->status) {		/* can't set level above own level */
-				SetLastError(currentuser,INVALID_LEVEL);
+			 if(usernext->status+level > currentuser->status) {		/* can't set level above own level */
+				SetLastError(currentuser,NOT_YET);
 				return(-1);
 			 }
 
-			UpdateUser(currentuser,u,"",0,usernext->status+newlevel,"",0,0,0,0,"","",0);   /* set level */
+			UpdateUser(currentuser,username,"",0,usernext->status+level,"",0,0,0,0,"","",0);   /* set level */
 			return(0);
 		}
+		else if((char) *levelstr == '-') {			/* subtract points */
+			sscanf(levelstr,"-%d",&level);
 
-		if(c == '-') {			/* add points */
-			level++;
-			strcpy(buf,level);
-			newlevel=atoi(buf);
+			if((usernext->status-level <= 0) || (usernext->status+level <= 0)) {
+				SetLastError(currentuser,INVALID_LEVEL);
+				return(-1);
+			}
+	
+			UpdateUser(currentuser,username,"",0,usernext->status-level,"",0,0,0,0,"","",0);   /* set level */
+			return(0);
+		}
+		else {
+			level=atoi(levelstr);
 
-			if(newlevel < 0) {
-				SetLastError(currentuser,NO_MEM);
+			if((level > 12) || (level <= 0)) {
+				SetLastError(currentuser,INVALID_LEVEL);
 				return(-1);
 			}
 
-			return(UpdateUser(currentuser,u,"",0,usernext->status-newlevel,"",0,0,0,0,"","",0));   /* set level */
+			UpdateUser(currentuser,username,"",0,level,"",0,0,0,0,"","",0);   /* set level */
+			return(0);
 		}
-
-		if(c != '+' && c != '-') {
-			for(count=1;count<12;count++) {		/* descriptive levels */
-				if(strcasecmp(MaleUserLevelNames[count],level) == 0) {
-					return(UpdateUser(currentuser,u,"",0,count,"",0,0,0,0,"","",0));   /* set level */
-				}
-			 }
-		}
-
-		newlevel=atoi(level);
-		return(UpdateUser(currentuser,u,"",0,newlevel,"",0,0,0,0,"","",0));   /* set level */
-	}		
-
+	}
 
 	usernext=usernext->next;
 }
@@ -1183,15 +1138,9 @@ int LoadRaces(void) {
 race *racenext;
 FILE *handle;
 int LineCount;
-char *RaceTokens[10][BUF_SIZE];
+char *RaceTokens[BUF_SIZE][BUF_SIZE];
 char *LineBuffer[BUF_SIZE];
 int ErrorCount=0;
-char *RaceConfigurationFile[BUF_SIZE];
-char *RaceListRelativePath="/config/races.mud";
-
-getcwd(LineBuffer,BUF_SIZE);
-
-sprintf(RaceConfigurationFile,"%s%s",LineBuffer,RaceListRelativePath);		/* get absolute path of configuration file */
 
 racenext=races;
 LineCount=0;
@@ -1301,10 +1250,6 @@ char *RaceTokens[10][BUF_SIZE];
 char *LineBuffer[BUF_SIZE];
 int ErrorCount=0;
 
-getcwd(LineBuffer,BUF_SIZE);
-
-sprintf(ClassConfigurationFile,"%s/%s",LineBuffer,ClassFileRelativePath);		/* get absolute path of configuration file */
-
 classnext=classes;
 LineCount=0;
 
@@ -1362,12 +1307,9 @@ class *classlast;
 race *racelast;
 race *userrace;
 
-getcwd(LineBuffer,BUF_SIZE);
-sprintf(UserListConfigurationFile,"%s/%s",LineBuffer,UserListRelativePath);		/* get absolute path of configuration file */
-
-handle=fopen(UserListConfigurationFile,"rb");
+handle=fopen(UserConfigurationFile,"rb");
 if(handle == NULL) {                                           /* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",UserListConfigurationFile);
+	printf("\nmud: Can't open configuration file %s\n",UserConfigurationFile);
 	exit(NOCONFIGFILE);
 }
 
@@ -1551,20 +1493,17 @@ return(0);
 */
 
 int who(user *currentuser,char *username) {
-char *buf[BUF_SIZE];
-char *namebuf[BUF_SIZE];
-char *LineBuffer[10];
+char *OutputMessage[BUF_SIZE];
+char *NameBuffer[BUF_SIZE];
 int found=FALSE;
 user *usernext;
 
-memset(buf,0,BUF_SIZE);
-
 if(!*username) {
-	strcpy(namebuf,"*");          /* all users if no username */
+	strcpy(NameBuffer,"*");          /* all users if no username */
 }
 else
 {
-	strcpy(namebuf,username);          
+	strcpy(NameBuffer,username);          
 }
 
 /*
@@ -1574,16 +1513,16 @@ else
 usernext=users;
 
 while(usernext != NULL) {
-	if((regexp(usernext->name,namebuf) == TRUE) && (usernext->loggedin == TRUE)  && ((usernext->flags & USER_INVISIBLE) == 0)) {			/* found user */
+	if((regexp(usernext->name,NameBuffer) == TRUE) && (usernext->loggedin == TRUE)  && ((usernext->flags & USER_INVISIBLE) == 0)) {			/* found user */
 		if(usernext->gender == MALE) {
-			sprintf(buf,"%s the %s is in %s (#%d)\r\n",usernext->name,MaleUserLevelNames[usernext->status],usernext->roomname,usernext->room);
+			sprintf(OutputMessage,"%s the %s is in %s (#%d)\r\n",usernext->name,MaleUserLevelNames[usernext->status],usernext->roomname,usernext->room);
 		}
 		else
 		{
-			sprintf(buf,"%s the %s is in %s (#%d)\r\n",usernext->name,FemaleUserLevelNames[usernext->status],usernext->roomname,usernext->room);
+			sprintf(OutputMessage,"%s the %s is in %s (#%d)\r\n",usernext->name,FemaleUserLevelNames[usernext->status],usernext->roomname,usernext->room);
 		}
 
-		send(currentuser->handle,buf,strlen(buf),0);
+		send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
 		found=TRUE;  
 	}
 
@@ -1599,36 +1538,36 @@ return(0);
 }
 
 
-int go(user *currentuser,int roomnumber) {
+int go(user *currentuser,int RoomNumber) {
 room *roomnext;
 char *buf[BUF_SIZE];
 
-if(roomnumber == 0) {		/* invalid room */
+if(RoomNumber == 0) {		/* invalid room */
 	SetLastError(currentuser,BAD_DIRECTION);
 	return(-1);
 }
 
-if(currentuser->room != roomnumber) {	/* send leaving message */
+if(currentuser->room != RoomNumber) {	/* send leaving message */
 	sprintf(buf,"%s has left\r\n",currentuser->name);
 	SendMessageToAllInRoom(currentuser->room,buf);
 }
 
-if(GetRoomFlags(roomnumber) & ROOM_PRIVATE) {
+if(GetRoomFlags(RoomNumber) & ROOM_PRIVATE) {
 	SetLastError(currentuser,BAD_DIRECTION);
 	return(-1);
 }	
 
-strcpy(currentuser->roomname,GetRoomName(roomnumber));
+strcpy(currentuser->roomname,GetRoomName(RoomNumber));
 
-currentuser->room=roomnumber;
-currentuser->roomptr=GetRoomPointer(roomnumber); 		/* save pointer to current room */
+currentuser->room=RoomNumber;
+currentuser->roomptr=GetRoomPointer(RoomNumber); 		/* save pointer to current room */
 
 sprintf(buf,"%s has entered\r\n",currentuser->name);
 SendMessageToAllInRoom(currentuser->room,buf);
 
 look(currentuser,"");		/* look at new room */
 
-if(GetRoomFlags(roomnumber) & ROOM_DEAD) {
+if(GetRoomFlags(RoomNumber) & ROOM_DEAD) {
 	KillUser(currentuser,currentuser->name);
 	return(-1);
 }	
@@ -1640,16 +1579,14 @@ return(0);
 * move object or player
 */
 
-int MoveObject(user *currentuser,char *objectname,int roomnumber) {
-char c;
-room *destroom;
-roomobject *objnext;
-roomobject *destobj;
+int MoveObject(user *currentuser,char *ObjectName,int RoomNumber) {
+roomobject *RoomObjectPtr;
+roomobject *DestinationObject;
 int destination;
 user *usernext;
 room *currentroom;
-char *buf[BUF_SIZE];
-int foundroom=FALSE;
+room *DestinationRoom;
+int FoundRoom=FALSE;
 int found=FALSE;
 CONFIG config;
 
@@ -1662,17 +1599,19 @@ if(currentuser->status < WIZARD) {      /* not wizard */
 	return(-1);
 }
 
-if(roomnumber > config.lastroom) {			/* can't find room */
+if(RoomNumber > GetNumberOfRooms()) {			/* can't find room */
 	SetLastError(currentuser,BAD_ROOM);
 	return(-1);
 }
 
+DestinationRoom=GetRoomPointer(RoomNumber);		/* point to room */
+
 /* move object */
 	
-objnext=currentroom->roomobjects;
+RoomObjectPtr=currentroom->roomobjects;
 
-while(objnext != NULL) {
-	if(regexp(objnext->name,objectname) == 0 ) {				/* if object matches */
+while(RoomObjectPtr != NULL) {
+	if(regexp(RoomObjectPtr->name,ObjectName) == 0 ) {				/* if object matches */
 		
 		if(currentuser->status < ARCHWIZARD) {
 			if((strcmp(currentroom->owner,currentuser->name) == 0) && (currentroom->attr & OBJECT_MOVEABLE_PUBLIC) == 0) {
@@ -1686,38 +1625,38 @@ while(objnext != NULL) {
 			}
 		}
 
-		if(destroom->roomobjects != NULL) {				/* find end */				
-			destobj=destroom->roomobjects;
+		if(DestinationRoom->roomobjects != NULL) {				/* find end */				
+			DestinationObject=DestinationRoom->roomobjects;
 
-			while(destobj->next != NULL) destobj=destobj->next; 
+			while(DestinationObject->next != NULL) DestinationObject=DestinationObject->next; 
 			
-			destobj->next=calloc(1,sizeof( roomobject));	/* allocate objects */ 
+			DestinationObject->next=calloc(1,sizeof( roomobject));	/* allocate objects */ 
 
-			if(destobj->next == NULL) {		/* can't allocate */
+			if(DestinationObject->next == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);
 				return(-1);
 			}
 
-			destobj=destobj->next;
+			DestinationObject=DestinationObject->next;
 		}
 		else
 		{						
-			destroom->roomobjects=calloc(1,sizeof( roomobject));	/* allocate objects */ 
-			destobj=destroom->roomobjects;
+			DestinationRoom->roomobjects=calloc(1,sizeof( roomobject));	/* allocate objects */ 
+			DestinationObject=DestinationRoom->roomobjects;
 
-			if(destobj == NULL) {		/* can't allocate */
+			if(DestinationObject == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);
 				return(-1);
 			}
 		}
 	
-		memcpy(destobj,objnext,sizeof( roomobject));		/* copy object */
-		DeleteObject(currentuser,objectname);                                  /* delete object */
+		memcpy(DestinationObject,RoomObjectPtr,sizeof( roomobject));		/* copy object */
+		DeleteObject(currentuser,ObjectName);                                  /* delete object */
 	
 		found=TRUE;
 	}
 
-	objnext=objnext->next;
+	RoomObjectPtr=RoomObjectPtr->next;
 }
 
 
@@ -1730,14 +1669,14 @@ while(objnext != NULL) {
 usernext=users;
 
 while(usernext != NULL) {
-	if(regexp(usernext->name,objectname) == 0 && usernext->loggedin == TRUE) {       /* if object matches */
+	if(regexp(usernext->name,ObjectName) == 0 && usernext->loggedin == TRUE) {       /* if object matches */
 
 		if(currentuser->status < usernext->status) {  /* can't move user unless wizard or higher level */
 			SetLastError(currentuser,NOT_YET);
 			return(-1);
 		}
 
-		if(go(usernext->handle,roomnumber) == -1) return(-1);
+		if(go(usernext->handle,RoomNumber) == -1) return(-1);
 
 		found=TRUE;
 	}
@@ -1770,41 +1709,38 @@ while(usernext != NULL) {
 return(-1);
 }
 
-int LoginUser(int msgsocket,char *uname,char *upass) {
+int LoginUser(int messagesocket,char *username,char *password) {
 char *encryptedpassword[BUF_SIZE];
 char *RaceTokens[BUF_SIZE][BUF_SIZE];
 FILE *handle;
 char *buf[BUF_SIZE];
 user *usernext;
 user *userlast;
-roomobject *objnext;
-roomobject *objlast;
+roomobject *RoomObjectPtr;
+roomobject *RoomObjectLast;
 int count;
 struct sockaddr_in clientip;
 socklen_t clientiplen;
 char *ipaddress[BUF_SIZE];
-char *userinventoryfile[BUF_SIZE];
-char *cwd[BUF_SIZE];
+char *UserInventoryFile[BUF_SIZE];
 
 clientiplen=sizeof(struct sockaddr_in);			/* get ip address */
-getpeername(msgsocket,(struct sockaddr*)&clientip,&clientiplen);
+getpeername(messagesocket,(struct sockaddr*)&clientip,&clientiplen);
 
 strcpy(ipaddress,inet_ntoa(clientip.sin_addr));
 
-strcpy(encryptedpassword,crypt(upass,uname));
+strcpy(encryptedpassword,crypt(password,username));
 
 usernext=users;
 userlast=users;
 
-getcwd(cwd,BUF_SIZE);			/* get current directory */
-
 while(usernext != NULL) {
 /* check username and password */
-	if(strcmp(uname,usernext->name) == 0 && strcmp(encryptedpassword,usernext->password) == 0) {
+	if(strcmp(username,usernext->name) == 0 && strcmp(encryptedpassword,usernext->password) == 0) {
 		strcpy(usernext->ipaddress,ipaddress);	/* get ip address */
 
 		usernext->loggedin=TRUE;		/* user logged in */
-		usernext->handle=msgsocket;		/* tcp socket */
+		usernext->handle=messagesocket;		/* tcp socket */
 		usernext->room=usernext->homeroom;	/* room */
 		usernext->roomptr=GetRoomPointer(usernext->homeroom);
 
@@ -1812,17 +1748,17 @@ while(usernext != NULL) {
 		* load user inventory
 		*/
 
-		sprintf(userinventoryfile,"%s/config/%s.inv",cwd,usernext->name);		/* get absolute path of user inventory */
+		sprintf(UserInventoryFile,"config/%s.inv",usernext->name);		/* get absolute path of user inventory */
 
 		usernext->carryobjects=calloc(1,sizeof( roomobject));		/* allocate objects */
 		if(usernext->carryobjects == NULL) {
-			PrintError(msgsocket,NO_MEM);
+			PrintError(messagesocket,NO_MEM);
 			return(-1);		/* can't allocate */
 		}
 
-		objnext=usernext->carryobjects;
+		RoomObjectPtr=usernext->carryobjects;
 
-		handle=fopen(userinventoryfile,"rb");
+		handle=fopen(UserInventoryFile,"rb");
 		if(handle != NULL) {
 			while(!feof(handle)) {
 				fgets(buf,BUF_SIZE,handle);	
@@ -1831,25 +1767,25 @@ while(usernext != NULL) {
 				RemoveNewLine(buf);		/* remove newline character */
 
 				TokenizeLine(buf,RaceTokens,":");		/* tokenize line */
-				strcpy(objnext->name,RaceTokens[OBJECT_NAME]);
-				objnext->staminapoints=atoi(RaceTokens[OBJECT_STAMINAPOINTS]);
-				objnext->magicpoints=atoi(RaceTokens[OBJECT_MAGICPOINTS]);
-				objnext->attr=atoi(RaceTokens[OBJECT_ATTR]);
-				objnext->attackpoints=atoi(RaceTokens[OBJECT_ATTACKPOINTS]);
-				objnext->generateprob=atoi(RaceTokens[OBJECT_GENERATEPROB]);
-				strcpy(objnext->desc,RaceTokens[OBJECT_DESCRIPTION]);
-				strcpy(objnext->owner,RaceTokens[OBJECT_OWNER]);
+				strcpy(RoomObjectPtr->name,RaceTokens[OBJECT_NAME]);
+				RoomObjectPtr->staminapoints=atoi(RaceTokens[OBJECT_STAMINAPOINTS]);
+				RoomObjectPtr->magicpoints=atoi(RaceTokens[OBJECT_MAGICPOINTS]);
+				RoomObjectPtr->attr=atoi(RaceTokens[OBJECT_ATTR]);
+				RoomObjectPtr->attackpoints=atoi(RaceTokens[OBJECT_ATTACKPOINTS]);
+				RoomObjectPtr->generateprob=atoi(RaceTokens[OBJECT_GENERATEPROB]);
+				strcpy(RoomObjectPtr->desc,RaceTokens[OBJECT_DESCRIPTION]);
+				strcpy(RoomObjectPtr->owner,RaceTokens[OBJECT_OWNER]);
 
-				objnext->next=calloc(1,sizeof( roomobject));		/* allocate objects */
+				RoomObjectPtr->next=calloc(1,sizeof( roomobject));		/* allocate objects */
 				if(usernext->carryobjects == NULL) {
-					PrintError(msgsocket,NO_MEM);
+					PrintError(messagesocket,NO_MEM);
 					return(-1);		/* can't allocate */
 				}
 
-				objnext=objnext->next;
+				RoomObjectPtr=RoomObjectPtr->next;
 			}
 		
-			objnext->next=NULL;
+			RoomObjectPtr->next=NULL;
 
 			fclose(handle);
 
@@ -1876,7 +1812,6 @@ race *racenext;
 class *classnext;
 race *racelast;
 class *classlast;
-
 
 if(usernext == NULL) {
 	users=calloc(1,sizeof(user));		/* add to end */
@@ -1947,47 +1882,93 @@ UpdateUsersFile();		/* update users file */
 return(0);
 }
 
+int AddNewRace(user *currentuser,race *newrace) {
+race *raceptr;
+race *racelast;
 
-int AddNewRace(race *newrace) {
-race *next;
-race *last;
+if(races == NULL) {
+	races=calloc(1,sizeof(race));
+	if(races == NULL) {
+		SetLastError(currentuser,NO_MEM);
+		return(-1);
+	}
 
-next=races;
-last=next;
+	raceptr=races;
+}
+else
+{
+	/* check if race exists */
 
-if(next != NULL) {
-	last=next;
-	next=next->next;
+	raceptr=races;
+
+	while(raceptr != NULL) {
+		racelast=raceptr;
+
+		if(strcmp(raceptr->name,newrace->name) == 0) {
+			SetLastError(currentuser,RACE_EXISTS);
+			return(-1);
+		}
+
+		raceptr=raceptr->next;
+	}
+
+	racelast->next=calloc(1,sizeof(race));		/*  add new */
+	if(racelast->next == NULL) {
+		SetLastError(currentuser,NO_MEM);
+		return(-1);
+	}
+
+	raceptr=racelast->next;
 }
 
-last->next=calloc(1,sizeof(race));		/*  add new */
-if(last->next == NULL) return(-1);
+memcpy(raceptr,newrace,sizeof(race));		/* add new race */
 
-memcpy(last->next,newrace,sizeof(race));
+SetLastError(currentuser,NO_ERROR);
 return(0);
 }
 
 int AddNewClass(user *currentuser,class *newclass) {
-class *next;
-class *last;
+class *classptr;
+class *classlast;
 
-if(currentuser->status < ARCHWIZARD) {		/* can't do this yet */
-	SetLastError(currentuser,NOT_YET);  
-	return(-1);
+if(classes == NULL) {
+	classes=calloc(1,sizeof(class));
+	if(classes == NULL) {
+		SetLastError(currentuser,NO_MEM);
+		return(-1);
+	}
+
+	classptr=classes;
+}
+else
+{
+	/* check if class exists */
+
+	classptr=classes;
+
+	while(classptr != NULL) {
+		classlast=classptr;
+
+		if(strcmp(classptr->name,newclass->name) == 0) {
+			SetLastError(currentuser,CLASS_EXISTS);
+			return(-1);
+		}
+
+		classptr=classptr->next;
+	}
+
+	classlast->next=calloc(1,sizeof(class));		/*  add new */
+	if(classlast->next == NULL) {
+		SetLastError(currentuser,NO_MEM);
+		return(-1);
+	}
+
+	classptr=classlast->next;
 }
 
-next=classes;
-last=next;
+memcpy(classptr,newclass,sizeof(class));		/* add new class */
 
-if(next != NULL) {
-	last=next;
-	next=next->next;
-}
-
-last->next=calloc(1,sizeof(class));		/*  add new */
-if(last->next == NULL) return(-1);
-
-memcpy(last->next,newclass,sizeof(class));
+SetLastError(currentuser,NO_ERROR);
 return(0);
 }
 
@@ -2031,19 +2012,19 @@ char *GetPointerToFemaleTitles(int level) {
 return(MaleUserLevelNames[level]);
 }
 
-void AttackUser(int roomnumber,int roommonster) {
+void AttackUser(int RoomNumber,int roommonster) {
 user *usernext=users;
-int sta;
-char *buf[BUF_SIZE];
+int HitPoints;
+char *OutputMessage[BUF_SIZE];
 
 while(usernext != NULL) {
-	if(usernext->room == roomnumber) {		/* user is in room */
-		sta=rand() % (GetRoomMonsterEvil(roomnumber,roommonster) + 1) - 0;		/* random damage */
+	if(usernext->room == RoomNumber) {		/* user is in room */
+		HitPoints=rand() % (GetRoomMonsterEvil(RoomNumber,roommonster) + 1) - 0;		/* random damage */
 
-		sprintf(buf,"%s attacks %s causing %d points of damage\r\n",GetRoomMonsterName(roomnumber,roommonster),usernext->name,sta);
-		SendMessageToAllInRoom(roomnumber,buf);
+		sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",GetRoomMonsterName(RoomNumber,roommonster),usernext->name,HitPoints);
+		SendMessageToAllInRoom(RoomNumber,OutputMessage);
 
-		usernext->staminapoints=usernext->staminapoints-sta;
+		usernext->staminapoints -= HitPoints;
 
 		UpdateUser(usernext,usernext->name,"",0,0,"",0,usernext->staminapoints,0,0,"","",0);
 
