@@ -60,8 +60,8 @@ char *nname[BUF_SIZE];
 strcpy(mmask,mask);
 strcpy(nname,filename);
 
-touppercase(mmask);					/* to upper case */
-touppercase(nname);
+ToUppercase(mmask);					/* to upper case */
+ToUppercase(nname);
 
 memset(buf,0,BUF_SIZE);				/* clear buffer */
 
@@ -96,7 +96,7 @@ for(count=0;count<strlen(mmask);count++) {
 return(0);
 }
 
-void touppercase(char *string) {
+void ToUppercase(char *string) {
 char *s;
 
 s=string;
@@ -109,69 +109,70 @@ while(*s != 0) {			/* until end */
 return;
 }
 
-void wildcard_rename(char *name,char *mask,char *out) {
-unsigned int count;
-char *m;
-char *n;
-char *o;
-char c;
-unsigned int countx;
+/*
+ * Replace string using wildcard
+ *
+ * In: char *name	Input string
+	   char *mask	Wildcard to match
+	   char *out	Output string
+ *
+ * Returns nothing
+ *
+ */
+void WildcardRename(char *name,char *mask,char *out) {
+int count;
+char *MaskPtr;
+char *NewMaskPtr;
+char *OutPtr;
+int countx;
 char *newmask[BUF_SIZE];
 char *mmask[BUF_SIZE];
 char *nname[BUF_SIZE];
 
-strcpy(mmask,mask);
-strcpy(nname,name);
-
-touppercase(mmask);					/* convert to uppercase */
-touppercase(nname);
+ToUppercase(mask);					/* convert to uppercase */
+ToUppercase(name);
 
 /*replace any * wild cards with ? */
 
-n=newmask;
-m=mask;
+NewMaskPtr=newmask;
+MaskPtr=mask;
 
 for(count=0;count<strlen(mmask);count++) {
-	c=*m;						/* get character from mask */
-
-	if(c == '*') {					/* match many characters */
+	if((char) *MaskPtr == '*') {					/* match many characters */
 		for(countx=count;countx<8-count;countx++) {
-			*n++='?';    
+			*NewMaskPtr++='?';	
 		}
 
 	}
 	else
 	{
-		*n++=*m;
+		*NewMaskPtr++=*MaskPtr;
 	}
 
-	m++;
-
+	MaskPtr++;
 }
 
-n=nname;
-m=newmask;
-o=out;
+NewMaskPtr=nname;
+MaskPtr=newmask;
+OutPtr=out;
 
 
 for(count=0;count<strlen(newmask);count++) {
-	c=*m;						/* get character from mask */
-
-	if(c == '?') {					/* match single character */
-		*o++=*n++;
+	if((char) *MaskPtr == '?') {					/* match single character */
+		*OutPtr++=*NewMaskPtr++;
 	}
 	else
 	{
-		*o++=*m;
-	}
+		*OutPtr++=*MaskPtr;
+ 	}
 
-	m++;
+	MaskPtr++;
 }
 
 return;
 }			
 
-void tohex(uint32_t hex,char *buf) {
+void ToHex(uint32_t hex,char *buf) {
 unsigned int count;
 uint32_t h;
 uint32_t shiftamount;
@@ -195,8 +196,7 @@ for(count=1;count<9;count++) {
 
 return;
 }
-
-int tokenize_line(char *linebuf,char *tokens[][BUF_SIZE],char *split) {
+int TokenizeLine(char *linebuf,char *tokens[][BUF_SIZE],char *split) {
 char *token;
 int tc=0;
 int count;
@@ -235,7 +235,6 @@ tc++;
 
 return(tc);
 }
-
 
 
 unsigned int regexp(char *filename,char *mask) {
@@ -288,7 +287,7 @@ for(count=0;count<strlen(mmask);count++) {
 return(TRUE);
 }
 
-int tcp_getline(int socket,char *buf) {
+int TCPReadLine(int socket,char *buf) {
 char *temp[BUF_SIZE];
 int count;
 char *b;
@@ -312,97 +311,87 @@ while(1) {
 return;
 }
 
-int getvaluefromtimestring(char *str) {
-struct tm time;
-int val;
-char *p;
-char *start;
-char *buf[BUF_SIZE];
-int count=0;
-int total=0;
-int day=0;
-int month=0;
-int year=0;
-int hour=0;
-int minute=0;
-int second=0;
+int GetValueFromTimeString(char *str) {
+char *TimeStringPtr;
+char *CopyPtr;
+char *TemporaryBuffer[BUF_SIZE];
+int total;
 
-p=str;
-start=p;
+TimeStringPtr=str;
+CopyPtr=TemporaryBuffer;
 
-while(*p++ != 0) {		/* until end */
+while(*TimeStringPtr++ != 0) {		/* until end */
 
-	count++;
+	*CopyPtr=*TimeStringPtr++;
+	
+	if((*CopyPtr == 'y') || (*CopyPtr == 'MaskPtr') || (*CopyPtr == 'd') || (*CopyPtr == 'h') || (*CopyPtr == 'MaskPtr') || (*CopyPtr == 's')) {
+		*CopyPtr=0;		/* overwrite time specifier */
 
-	if(*p == 'y' || *p == 'm' || *p == 'd' || *p == 'h' || *p == 'm' || *p == 's') {
-		memcpy(buf,start,count);
-		count=0;
+		if(*TimeStringPtr == 'y') total += (atoi(TemporaryBuffer) * SECONDS_IN_YEAR);
+		if(*TimeStringPtr == 'MaskPtr') total += (atoi(TemporaryBuffer) * SECONDS_IN_MONTH);
+		if(*TimeStringPtr == 'd') total += (atoi(TemporaryBuffer) * SECONDS_IN_DAY);
+		if(*TimeStringPtr == 'h') total += (atoi(TemporaryBuffer) * SECONDS_IN_HOUR);
+		if(*TimeStringPtr == 'MaskPtr') total += (atoi(TemporaryBuffer) * SECONDS_IN_MINUTE);
+		if(*TimeStringPtr == 's') total += atoi(TemporaryBuffer);
 
-		if(*p == 'y') year=atoi(buf);
-		if(*p == 'm') month=atoi(buf);
-		if(*p == 'd') day=atoi(buf);
-		if(*p == 'h') hour=atoi(buf);
-		if(*p == 'm') minute=atoi(buf);
-		if(*p == 's') second=atoi(buf);
-
-		memset(buf,0,BUF_SIZE);
+		CopyPtr=TemporaryBuffer;
+	}
+	else
+	{
+		CopyPtr++;
 	}
 }
-
-total=second;
-total += (minute * SECONDS_IN_MINUTE);
-total += (hour * SECONDS_IN_HOUR);
-total += (day * SECONDS_IN_DAY);
-total += (month * SECONDS_IN_MONTH);
-total += (month * SECONDS_IN_YEAR);
 
 return(total);
 }
 
-void createtimestring(int time,char *b) {
-char *z[10];
-char *buf[255];
-
+void CreateTimeString(int time,char *b) {
+char *TimeStringBuffer[BUF_SIZE];
+char *TemporaryBuffer[BUF_SIZE];
 
 if(time >= SECONDS_IN_YEAR) {
-	sprintf(buf,"%dy ",time / SECONDS_IN_YEAR);
-	strcat(b,buf);
+	sprintf(TemporaryBuffer,"%dy ",time / SECONDS_IN_YEAR);
+	strcat(TimeStringBuffer,TemporaryBuffer);
 	time -= SECONDS_IN_YEAR/(time / SECONDS_IN_YEAR);
 }
 
 if(time >= SECONDS_IN_MONTH) {
-	sprintf(buf,"%dm ",time / SECONDS_IN_MONTH);
-	strcat(b,buf);
+	sprintf(TemporaryBuffer,"%dm ",time / SECONDS_IN_MONTH);
+	strcat(TimeStringBuffer,TemporaryBuffer);
+
 	time -= SECONDS_IN_MONTH/(time / SECONDS_IN_MONTH);
 }
 
 if(time > SECONDS_IN_DAY) {
-	sprintf(buf,"%dd ",time / SECONDS_IN_DAY);
-	strcat(b,buf);
+	sprintf(TemporaryBuffer,"%dd ",time / SECONDS_IN_DAY);
+	strcat(TimeStringBuffer,TemporaryBuffer);
+
 	time -= SECONDS_IN_DAY/(time / SECONDS_IN_DAY);
 }
 
 if(time >= SECONDS_IN_HOUR) {
-	sprintf(buf,"%dh ",time / SECONDS_IN_HOUR);
-	strcat(b,buf);
+	sprintf(TemporaryBuffer,"%dh ",time / SECONDS_IN_HOUR);
+	strcat(TimeStringBuffer,TemporaryBuffer);
+
 	time -= SECONDS_IN_HOUR/(time / SECONDS_IN_HOUR);
 }
 
 if(time >= SECONDS_IN_MINUTE) {
-	sprintf(buf,"%dm ",time / SECONDS_IN_MINUTE);
-	strcat(b,buf);
+	sprintf(TemporaryBuffer,"%dm ",time / SECONDS_IN_MINUTE);
+	strcat(TimeStringBuffer,TemporaryBuffer);
+
 	time -= SECONDS_IN_MINUTE/(time / SECONDS_IN_MINUTE);
 }
 
 if(time > SECONDS_IN_DAY) {
-	sprintf(buf,"%ds ",time);
-	strcat(b,buf);
+	sprintf(TemporaryBuffer,"%ds ",time);
+	strcat(TimeStringBuffer,TemporaryBuffer);
 }
 
 return;
 }
 
-void removenewline(char *line) {
+void RemoveNewLine(char *line) {
 char *lineptr=line+(strlen(line)-1);
 
 if(*lineptr == '\n') *lineptr=0;

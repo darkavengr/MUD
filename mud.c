@@ -94,9 +94,9 @@ WSADATA wsadata;
 
 printf("AdventureMUD Version %d.%d\n",MAJOR_VERSION,MINOR_VERSION);
 
-getconfig();				  /* get configuration */
+GetConfiguration();				  /* get configuration */
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 
 #ifdef _WIN32				/* Windows needs  WSAStartup */
 if(WSAStartup(MAKEWORD(2,2), &wsadata) != 0) {
@@ -156,7 +156,7 @@ time(&c);
 c=c+config.configsavetime;
 
 
-resetobjects();		/* create new objects */
+GenerateObjects();		/* create new objects */
 CreateMonster();	/* create monsters */
 	
 /*
@@ -173,7 +173,7 @@ while(1) {
 	 if(currenttime > o) {		/* update objects */
 		 printf("mud: Updating objects\n");
 
-		  resetobjects();		/* create new objects */
+		  GenerateObjects();		/* create new objects */
 
 		time(&o);			/* update reset time */
   		o=o+config.objectresettime;
@@ -182,7 +182,7 @@ while(1) {
 	 if(currenttime > d) {		/* update database */
   	 	printf("mud: Saving database\n");
 
-		updatedatabase();
+		UpdateDatabase();
 	
 		time(&d);			/* update reset time */
 		d=d+config.databaseresettime;
@@ -191,7 +191,7 @@ while(1) {
 	 if(currenttime > u) {	/* update users */
 		printf("mud: Saving users\n");
 
-  		updateusersfile();
+  		UpdateUsersFile();
 
   		time(&u);			/* update reset time */
 		u=u+config.userresettime;
@@ -246,7 +246,7 @@ while(1) {
  
 	     			strcpy(ipaddress,inet_ntoa(clientip.sin_addr));
 	
-	     			if(checkban(ipaddress) == TRUE) { /* check if banned */
+	     			if(CheckIfBanned(ipaddress) == TRUE) { /* check if banned */
 					PrintError(currentuser->handle,USER_BANNED);
 
 					FD_CLR(as,&currentset);
@@ -279,7 +279,7 @@ while(1) {
 
 				strcat(connections[count].buf,connections[count].temp);	/* add to buffer */
 
-				removenewline(connections[count].buf);		/* remove newline character */
+				RemoveNewLine(connections[count].buf);		/* remove newline character */
 
 				 /* state machine for determing what to do for each step */
 	
@@ -319,7 +319,7 @@ while(1) {
 					case STATE_CHECKLOGIN:			/* check username and password */	
 						strcpy(connections[count].upass,connections[count].buf);
 
-						if(login(count,connections[count].uname,connections[count].upass) == 0) {
+						if(LoginUser(count,connections[count].uname,connections[count].upass) == 0) {
 							connections[count].connectionstate=STATE_GETCOMMAND;
 						}	
 						else
@@ -439,8 +439,8 @@ while(1) {
 						racenext=races;				/* check if race exists */
 
 						while(racenext != NULL) {
-							touppercase(connections[count].buf);
-							touppercase(racenext->name);
+							ToUppercase(connections[count].buf);
+							ToUppercase(racenext->name);
 
 							if(strcmp(racenext->name,connections[count].buf) == 0) { 
 								connections[count].connectionstate=STATE_CREATEUSER; /* next state */
@@ -479,8 +479,8 @@ while(1) {
 						classnext=classes;
 	
 						while(classnext != NULL) {
-							touppercase(connections[count].class);
-							touppercase(classnext->name);
+							ToUppercase(connections[count].class);
+							ToUppercase(classnext->name);
 	
 							if(strcmp(connections[count].class,classnext->name) == 0) break;
                              
@@ -497,7 +497,7 @@ while(1) {
 		                	        }
 
 				
-						if(createuser(count,connections[count].uname,connections[count].upass,\
+						if(CreateUser(count,connections[count].uname,connections[count].upass,\
 							connections[count].gender,connections[count].description,connections[count].race,\
 							connections[count].class) == -1) {	/* can't create account */
 

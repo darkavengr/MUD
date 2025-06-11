@@ -42,14 +42,14 @@ int sta;
 int newroom;
 CONFIG config;
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 
 srand(time(NULL));
-roomnumber=1+rand() % config.roomcount;		/* which room */
+roomnumber=1+rand() % GetNumberOfRooms();		/* which room */
 
 if(GetNumberOfMonstersInRoom(roomnumber) == 0) return(0);	/* no monsters in room */
 
-roommonster=1+rand() % GetNumberOfMonstersInRoom(roomnumber);	/* which monster */
+if(GetNumberOfMonstersInRoom(roomnumber) > 0) roommonster=1+rand() % GetNumberOfMonstersInRoom(roomnumber);	/* which monster */
 
 /* attack user */
 attack=rand() % (GetRoomMonsterEvil(roomnumber,roommonster) + 1)+1;
@@ -76,7 +76,7 @@ int monsterno;
 int gencount;
 CONFIG config;
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 					
 for(roomnumber=0;roomnumber<config.roomcount;roomnumber++) {
 	if((rooms[roomnumber].attr & ROOM_HAVEN)) continue;		/* skip haven rooms */
@@ -89,9 +89,9 @@ for(roomnumber=0;roomnumber<config.roomcount;roomnumber++) {
 		monsterlist=monsters;
 		randx=rand() % monstercount; /* get numbers */
 
-		AddMonsterToList(&monsters[randx],rooms[roomnumber].roommonsters,rooms[roomnumber].roommonsters_last);	/* add monster to room */
+		AddMonsterToRoom(&monsters[randx],roomnumber);	/* add monster to room */
 
-		sendmudmessagetoall(rooms[roomnumber].room,rooms[roomnumber].roommonsters_last->createmessage);			      
+		SendMessageToAllInRoom(rooms[roomnumber].room,rooms[roomnumber].roommonsters_last->createmessage);			      
 	}
 }
 
@@ -101,12 +101,13 @@ return(0);
 int CopyMonsterToRoom(int room,int destroom,monster *monster) {
 printf("Moving monster %s to %d\n",monster->name,destroom);
 
-sendmudmessagetoall(room,monster->leavemessage);
+SendMessageToAllInRoom(room,monster->leavemessage);
 
-AddMonsterToList(monster,rooms[destroom].roommonsters,rooms[destroom].roommonsters_last);	/* copy monster to room */
+AddMonsterToRoom(monster,destroom);	/* copy monster to room */
 //DeleteMonster(room,monsterno);				/* remove monster from source room */
 
-sendmudmessagetoall(destroom,monster->arrivemessage);
+
+SendMessageToAllInRoom(destroom,monster->arrivemessage);
 
 return(0);
 }
@@ -152,9 +153,9 @@ while(!feof(handle)) {
 	if((char) *linebuffer == '#')  continue;		/* skip comments */
 	if((char) *linebuffer == '\n')  continue;		/* skip newline */
 
-	removenewline(linebuffer);		/* remove newline character */
+	RemoveNewLine(linebuffer);		/* remove newline character */
 
-	tokenize_line(linebuffer,linetokens,":\n");				/* tokenize line */
+	TokenizeLine(linebuffer,linetokens,":\n");				/* tokenize line */
 
 	if(strcmp(linetokens[0],"begin_monster") == 0) {
 		/* monster list is an array, not a linked list because it is randomly accessed */
@@ -216,7 +217,7 @@ while(!feof(handle)) {
 	}
 	else
 	{
-		printf("\nmud: %d: unknown configuration option %s in %s\n",lc,linetokens[0],monsterconf);		/* unknown configuration option */
+		printf("\nmud: %d: Unknown configuration option %s in %s\n",lc,linetokens[0],monsterconf);		/* unknown configuration option */
 		errorcount++;
 	}
 }
@@ -226,22 +227,31 @@ fclose(handle);
 return(errorcount);
 }
 
-int AddMonsterToList(monster *sourcemonster,monster *monsterlist,monster *listend) {
-if(monsterlist == NULL) {
-	monsterlist=calloc(1,sizeof(monster));	/* allocate objects */
-	if(monsterlist == NULL) return(-1);		/* can't allocate */
+int AddMonsterToRoom(monster *sourcemonster,int roomnumber) {
+if(rooms[roomnumber].roommonsters == NULL) {
+	rooms[roomnumber].roommonsters=calloc(1,sizeof(monster));	/* allocate objects */
+	if(rooms[roomnumber].roommonsters == NULL) return(-1);		/* can't allocate */
 
-	listend=monsterlist;
+	rooms[roomnumber].roommonsters_last=rooms[roomnumber].roommonsters;
 }
 else
 {
-	listend->next=calloc(1,sizeof(monster));	/* allocate objects */
-	if(monsterlist == NULL) return(-1);		/* can't allocate */
+	rooms[roomnumber].roommonsters_last->next=calloc(1,sizeof(monster));	/* allocate objects */
+	if(rooms[roomnumber].roommonsters_last->next == NULL) return(-1);		/* can't allocate */
 	
-	listend=listend->next;
+	rooms[roomnumber].roommonsters_last=rooms[roomnumber].roommonsters_last->next;
 }
 
-memcpy(listend,sourcemonster,sizeof(monster));	/* copy monster data */
+memcpy(rooms[roomnumber].roommonsters_last,sourcemonster,sizeof(monster));	/* copy monster data */
 
 return(0);
 }
+
+monster *FindFirstMonsterInRoom(int roomnumber) {
+return(rooms[roomnumber].roommonsters);
+}
+
+monster *FindNextMonsterInRoom(monster *previous) {
+return(previous->next);
+}
+

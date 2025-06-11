@@ -1,2 +1,4 @@
-int mudshutdown(user *currentuser,char *shutdownmessage);
+#include "user.h"
+
+int ShutdownServer(user *currentuser,char *shutdownmessage);
 

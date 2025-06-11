@@ -1,4 +1,4 @@
-int getconfig(void);
-int updateconfiguration(void);
-void getconfigurationinformation(CONFIG *buf);
-void updateconfigurationinformation(CONFIG *buf);
+int GetConfiguration(void);
+int UpdateConfiguration(void);
+void GetConfigurationInformation(CONFIG *buf);
+void UpdateConfiguratonInformation(CONFIG *buf);

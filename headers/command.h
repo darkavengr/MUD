@@ -33,7 +33,6 @@ int give_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_S
 int xyzzy_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int setrace_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int set_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int setgender_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int sethome_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int setgender_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int setlevel_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
@@ -48,7 +47,7 @@ int kill_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_S
 int create_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int delete_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int rename_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int chown_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]); 
+int chown_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);		/* set object owner */
 int chmod_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int copy_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int move_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
@@ -68,4 +67,5 @@ int visible_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BU
 int gag_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int ungag_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int setexit_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
+
 

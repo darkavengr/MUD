@@ -35,86 +35,79 @@
 #include "user.h"
 #include "room.h"
 #include "config.h"
+#include "monster.h"
 
-char *dbconf[BUF_SIZE];
-char *dbrel="/config/database.mud";                                          /* configuration files */
-int databaseupdated;
-
+char *DatabaseConfigurationFile[BUF_SIZE];
+char *DatabaseRelativePath="/config/database.mud";                                          /* configuration files */
+int DatabaseUpdated;
 char *directions[]={ "north","south","east","west","northeast","northwest","southeast","southwest","up","down" };
-
-char *createmessage= { "A room has been created to the north\r\n","A room has been created to the south\r\n",\
-						 "A room has been created to the east\r\n","A room has been created to the west\r\n",\
-						 "A room has been created to the northeast\r\n","A room has been created to the northwest\r\n",\
-						 "A room has been created to the southeast\r\n","A room has been created to the southwest\r\n",\
-						 "A room has been created above you\r\n","A room has been created below you\r\n" };
-char *resetconf[BUF_SIZE];
-char *resetrel="/config/reset.mud";
-char *roommsg="\r\nIn the room there is: ";
-char *roomexits[]={ "North ","South ","East ","West ","Northeast ","Northwest ","Southeast ","Southwest ","Up ","Down " };
-
+char *ObjectsConfigurationFile[BUF_SIZE];
+char *ObjectsRelativePath="/config/reset.mud";
+char *RoomMessage="\r\nIn the room there is: ";
+char *RoomExits[]={ "North ","South ","East ","West ","Northeast ","Northwest ","Southeast ","Southwest ","Up ","Down " };
 room *rooms=NULL;
+int RoomCount=0;
 
 /* update database file */
 
-int updatedatabase(void) {
+int UpdateDatabase(void) {
 FILE *handle;
-char *newname[BUF_SIZE];
-char *buf[BUF_SIZE];
+char *NewDatabaseName[BUF_SIZE];
 time_t rawtime;
 struct tm *timeinfo;
 roomobject *roomobjects;
-int count;
+int RoomCount;
 CONFIG config;
-char *currentdirectory[BUF_SIZE];
-char *backupfilename[BUF_SIZE];
+char *CurrentDirectory[BUF_SIZE];
+char *BackupFilename[BUF_SIZE];
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 
-time(&rawtime);
+time(&rawtime);				/* get time for backup filename */
 timeinfo=localtime(&rawtime);
 
 /* if configured to backup, copy database to backup file */
 
 if(config.databasebackup == TRUE) {
-	getcwd(currentdirectory,BUF_SIZE);		/* get current directory */
+	getcwd(CurrentDirectory,BUF_SIZE);		/* get current directory */
 
-	strftime(newname,BUF_SIZE,"/config/database-%H-%M-%S-%d-%e.sav",timeinfo);	/* get backup name */
+	strftime(NewDatabaseName,BUF_SIZE,"/config/database-%H-%M-%S-%d-%e.sav",timeinfo);	/* get backup name */
 
-	sprintf(backupfilename,"%s/%s",currentdirectory,newname);			/* get path of backup */
+	sprintf(BackupFilename,"%s/%s",CurrentDirectory,NewDatabaseName);			/* get path of backup */
 
-	copyfile(dbconf,buf);		/* backup database */
+	CopyFile(DatabaseConfigurationFile,BackupFilename);		/* backup database */
 }
 
-	handle=fopen(dbconf,"w");
+	handle=fopen(DatabaseConfigurationFile,"w");
 	if(handle == NULL) return(-1);	/* can't open file */
 
 	/*
 	* for each room output to file
 	*/
 
-	for(count=0;count<config.roomcount+1;count++) {
-		if(rooms[count].room > 0) {
-			fprintf(handle,"begin_room:%d\n",rooms[count].room);
-			fprintf(handle,"name:%s\n",rooms[count].name);
-			fprintf(handle,"owner:%s\n",rooms[count].owner);
-			fprintf(handle,"attr:%d\n",rooms[count].attr);
-			fprintf(handle,"description:%s\n",rooms[count].desc);
-			fprintf(handle,"north:%d\n",rooms[count].exits[NORTH]);
-			fprintf(handle,"south:%d\n",rooms[count].exits[SOUTH]);
-			fprintf(handle,"east:%d\n",rooms[count].exits[EAST]);
-			fprintf(handle,"west:%d\n",rooms[count].exits[WEST]);
-			fprintf(handle,"northeast:%d\n",rooms[count].exits[NORTHEAST]);
-			fprintf(handle,"southeast:%d\n",rooms[count].exits[SOUTHEAST]);
-			fprintf(handle,"northwest:%d\n",rooms[count].exits[NORTHWEST]);
-			fprintf(handle,"northeast:%d\n",rooms[count].exits[NORTHEAST]);
-			fprintf(handle,"up:%d\n",rooms[count].exits[UP]);
-			fprintf(handle,"down:%d\n",rooms[count].exits[DOWN]);
+	for(RoomCount=0;RoomCount<GetNumberOfRooms();RoomCount++) {
+		if(rooms[RoomCount].room > 0) {
+			fprintf(handle,"begin_room:%d\n",rooms[RoomCount].room);
+			fprintf(handle,"name:%s\n",rooms[RoomCount].name);
+			fprintf(handle,"owner:%s\n",rooms[RoomCount].owner);
+			fprintf(handle,"attr:%d\n",rooms[RoomCount].attr);
+			fprintf(handle,"description:%s\n",rooms[RoomCount].desc);
+			fprintf(handle,"north:%d\n",rooms[RoomCount].exits[NORTH]);
+			fprintf(handle,"south:%d\n",rooms[RoomCount].exits[SOUTH]);
+			fprintf(handle,"east:%d\n",rooms[RoomCount].exits[EAST]);
+			fprintf(handle,"west:%d\n",rooms[RoomCount].exits[WEST]);
+			fprintf(handle,"northeast:%d\n",rooms[RoomCount].exits[NORTHEAST]);
+			fprintf(handle,"southeast:%d\n",rooms[RoomCount].exits[SOUTHEAST]);
+			fprintf(handle,"northwest:%d\n",rooms[RoomCount].exits[NORTHWEST]);
+			fprintf(handle,"northeast:%d\n",rooms[RoomCount].exits[NORTHEAST]);
+			fprintf(handle,"up:%d\n",rooms[RoomCount].exits[UP]);
+			fprintf(handle,"down:%d\n",rooms[RoomCount].exits[DOWN]);
 
 			/*
 			* output objects
 			*/
 
-			roomobjects=rooms[count].roomobjects;
+			roomobjects=rooms[RoomCount].roomobjects;
 
 			while(roomobjects != NULL) {
 				if(roomobjects->attr & OBJECT_TEMPORARY) {
@@ -138,184 +131,159 @@ fclose(handle);
 return(0);
 }
 
-int loaddatabase(void) {
+int LoadDatabase(void) {
 FILE *handle;
-int lc=0;
+int LineCount=0;
 roomobject *roomobject;
-char *linebuffer[BUF_SIZE];
-char *b;
-char c;
-char *linetokens[19][BUF_SIZE];
-int count;
-int errorcount=0;
-int countx;
+char *LineBuffer[BUF_SIZE];
+char *LineTokens[BUF_SIZE][BUF_SIZE];
+int DirectionCount;
+int ErrorCount=0;
 CONFIG config;
-char *currentdirectory[BUF_SIZE];
+char *CurrentDirectory[BUF_SIZE];
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 
 /* get path of database */
 
-getcwd(currentdirectory,BUF_SIZE);
-sprintf(dbconf,"%s/%s",currentdirectory,dbrel);
+getcwd(CurrentDirectory,BUF_SIZE);
+sprintf(DatabaseConfigurationFile,"%s/%s",CurrentDirectory,DatabaseRelativePath);
 
-handle=fopen(dbconf,"rb");
+handle=fopen(DatabaseConfigurationFile,"rb");
 if(handle == NULL) {                                           /* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",dbconf);
+	printf("\nmud: Can't open configuration file %s\n",DatabaseConfigurationFile);
 	exit(NOCONFIGFILE);
 }
 
-config.roomcount=0;
-
-while(!feof(handle)) {
-		fgets(linebuffer,BUF_SIZE,handle);				/*' get and parse line */
-		
-		tokenize_line(linebuffer,linetokens,":\n");				/* tokenize line */
-		if(strcmp(linetokens[0],"begin_room") == 0) {
-			config.roomcount++;
-			updateconfigurationinformation(&config);
-
-		}
-
-}
-
-fseek(handle,0,SEEK_SET);
-
-config.databasememorysize=sizeof(room)*config.roomcount;
-
-rooms=calloc(config.roomcount,config.databasememorysize);	/* allocate buffer */
-if(rooms == NULL) {
-	perror("mud:");
-	exit(NOMEM);
-}
-
-count=0;
+RoomCount=0;
 
 	while(!feof(handle)) {
-		fgets(linebuffer,BUF_SIZE,handle);				/*' get and parse line */
-		b=linebuffer;
-		c=*b;
-		if(c == '#')  continue;		/* skip comments */
-		if(c == '\n')  continue;		/* skip newline */
+		fgets(LineBuffer,BUF_SIZE,handle);				/*' get and parse line */
 	
-		removenewline(linebuffer);		/* remove newline character */
+		if((char) *LineBuffer == '#')  continue;		/* skip comments */
+		if((char) *LineBuffer == '\n')  continue;		/* skip newline */
+	
+		RemoveNewLine(LineBuffer);		/* remove newline character */
 
-		tokenize_line(linebuffer,linetokens,":\n");				/* tokenize line */
+		TokenizeLine(LineBuffer,LineTokens,":\n");				/* tokenize line */
 
-		lc++;
+		LineCount++;
 
-		if(strcmp(linetokens[0],"begin_room") == 0) {		/* room name */
-			count=atoi(linetokens[1]);
-		
-			if(count > config.roomcount) {
-				printf("\nmud: %d: room number is > number of rooms in %s\r\n",lc,dbconf); /* unknown configuration option */
-				errorcount++;
-				exit(1);
+		if(strcmp(LineTokens[0],"begin_room") == 0) {		/* room name */
+			/* room list is an array, not a linked list because it is randomly accessed */
+
+			if(rooms == NULL) {			/* first room */
+				rooms=calloc(1,sizeof(room));
+				if(rooms == NULL) {
+					perror("\nmud:");
+					exit(NOMEM);
+				}
+			}
+			else
+			{
+				RoomCount++;
+
+				rooms=realloc(rooms,sizeof(room)*(RoomCount+1));
+				if(rooms == NULL) {
+					perror("\nmud:");
+					exit(NOMEM);
+				}
 			}
 
-			memset(&rooms[count],0,sizeof(room));
-
-			rooms[count].room=atoi(linetokens[1]);
+			rooms[RoomCount].room=atoi(LineTokens[1]);
 			continue;
 		}
-
-		if(strcmp(linetokens[0],"name") == 0) {		/* room name */
-			strcpy(rooms[count].name,linetokens[1]);
+		else if(strcmp(LineTokens[0],"name") == 0) {		/* room name */
+			strcpy(rooms[RoomCount].name,LineTokens[1]);
 			continue;
 		}
-
-		if(strcmp(linetokens[0],"owner") == 0) {		/* owner */
-			strcpy(rooms[count].owner,linetokens[1]);
+		else if(strcmp(LineTokens[0],"owner") == 0) {		/* owner */
+			strcpy(rooms[RoomCount].owner,LineTokens[1]);
 			continue;
 		}
-
-		if(strcmp(linetokens[0],"attr") == 0) {		/* attributes */
-			rooms[count].attr=atoi(linetokens[1]);
+		else if(strcmp(LineTokens[0],"attr") == 0) {		/* attributes */
+			rooms[RoomCount].attr=atoi(LineTokens[1]);
 			continue;
 		}
-
-		if(strcmp(linetokens[0],"description") == 0) {		/* description */
-			strcpy(rooms[count].desc,linetokens[1]);
+		else if(strcmp(LineTokens[0],"description") == 0) {		/* description */
+			strcpy(rooms[RoomCount].desc,LineTokens[1]);
 			continue;
 		}
-
-
-		if(strcmp(linetokens[0],"name") == 0) {
-			strcpy(rooms[count].name,linetokens[1]);
+		else if(strcmp(LineTokens[0],"name") == 0) {
+			strcpy(rooms[RoomCount].name,LineTokens[1]);
 			continue;
 		}
+		else if(strcmp(LineTokens[0],"object") == 0) {		/* room object */
 
-		for(countx=0;countx<12;countx++) {
-			if(strcmp(linetokens[0],directions[countx]) == 0) {		/* room exits */
-				
-				if(atoi(linetokens[1])  > config.roomcount) {
-					printf("\nmud: %d: room number is > number of rooms in %s\r\n",lc,dbconf); /* unknown configuration option */
-					errorcount++;
-					exit(1);
+			if(rooms[RoomCount].roomobjects == NULL) {		/* first object */
+				rooms[RoomCount].roomobjects=calloc(1,sizeof(roomobject));		/* add link to end */
+
+				if(rooms[RoomCount].roomobjects == NULL) {		/* can't allocate */
+					perror("mud:");
+					exit(NOMEM);
 				}
 
-				rooms[count].exits[countx]=atoi(linetokens[1]);
+				roomobject=rooms[RoomCount].roomobjects;
+				rooms[RoomCount].roomobjects_last=rooms[RoomCount].roomobjects;
+			}
+			else
+			{
+				rooms[RoomCount].roomobjects_last->next=calloc(1,sizeof(roomobject));		/* add link to end */
+				if(rooms[RoomCount].roomobjects_last->next == NULL) {		/* can't allocate */
+					perror("mud:");
+					exit(NOMEM);
+				}
+
+				rooms[RoomCount].roomobjects_last=rooms[RoomCount].roomobjects_last->next;
+				roomobject=rooms[RoomCount].roomobjects_last;
+			}
+
+			strcpy(roomobject->name,LineTokens[OBJECT_NAME]);		/* get details */
+			roomobject->attr=atoi(LineTokens[OBJECT_ATTR]);
+			strcpy(roomobject->desc,LineTokens[OBJECT_DESCRIPTION]);		
+			roomobject->attackpoints=atoi(LineTokens[OBJECT_ATTACKPOINTS]);		
+			roomobject->staminapoints=atoi(LineTokens[OBJECT_GENERATEPROB]);
+			roomobject->magicpoints=atoi(LineTokens[OBJECT_MAGICPOINTS]);   
+			roomobject->next=NULL;
+			continue;
+		}
+		else if(strcmp(LineTokens[0],"end") == 0) {
+			continue;
+		}
+
+		/* handle room exits */
+
+		for(DirectionCount=0;DirectionCount<12;DirectionCount++) {
+			if(strcmp(LineTokens[0],directions[DirectionCount]) == 0) {		/* room exits */
+						
+				//if(atoi(LineTokens[1])  > GetNumberOfRooms()) {
+				//	printf("\nmud: %d: room number is > number of rooms in %s\r\n",LineCount,DatabaseConfigurationFile); /* unknown configuration option */
+			
+				//	ErrorCount++;
+				//	return(ErrorCount);
+				//}
+
+				rooms[RoomCount].exits[DirectionCount]=atoi(LineTokens[1]);
 				break;
 			}
 
 			continue;
 		}
 
-		if(countx < 12) continue;		/* found room */
+		if(DirectionCount < 12) continue;		/* was a north, south, east, west,... statement */
 
-		if(strcmp(linetokens[0],"object") == 0) {		/* room object */
-			if(rooms[count].roomobjects == NULL) {		/* first object */
-				rooms[count].roomobjects=calloc(1,sizeof(roomobject));		/* add link to end */
-				if(rooms[count].roomobjects == NULL) {		/* can't allocate */
-					perror("mud:");
-					exit(NOMEM);
-				}
+		if((char) *LineTokens[0] == '#') continue;			/* comment */
 
-				roomobject=rooms[count].roomobjects;
-				rooms[count].roomobjects_last=rooms[count].roomobjects;
-			}
-			else
-			{
-				rooms[count].roomobjects_last->next=calloc(1,sizeof(roomobject));		/* add link to end */
-				if(rooms[count].roomobjects_last->next == NULL) {		/* can't allocate */
-					perror("mud:");
-					exit(NOMEM);
-				}
-
-				rooms[count].roomobjects_last=rooms[count].roomobjects_last->next;
-				roomobject=rooms[count].roomobjects_last;
-			}
-
-			strcpy(roomobject->name,linetokens[OBJECT_NAME]);		/* get details */
-			roomobject->attr=atoi(linetokens[OBJECT_ATTR]);
-			strcpy(roomobject->desc,linetokens[OBJECT_DESCRIPTION]);		
-			roomobject->attackpoints=atoi(linetokens[OBJECT_ATTACKPOINTS]);		
-			roomobject->staminapoints=atoi(linetokens[OBJECT_GENERATEPROB]);
-			roomobject->magicpoints=atoi(linetokens[OBJECT_MAGICPOINTS]);   
-			roomobject->next=NULL;
-			continue;
-		}
-
-		if(strcmp(linetokens[0],"end") == 0) {
-			continue;
-		}
-
-		if(strcmp(linetokens[0],"#") == 0) continue;			/* comment */
-
-		printf("\nmud: %d: unknown configuration option %s in %s\n",lc,linetokens[0],dbconf);		/* unknown configuration option */
-		errorcount++;
+		printf("\nmud: %d: unknown configuration option %s in %s\n",LineCount,LineTokens[0],DatabaseConfigurationFile);		/* unknown configuration option */
+		ErrorCount++;
 		continue;
 	}
 
 fclose(handle);
-return(errorcount);
+return(ErrorCount);
 }
 
-int setexit(user *currentuser,int whichroom,int direction,int exit) {
-CONFIG config;
-
-getconfigurationinformation(&config);
-
+int SetExit(user *currentuser,int whichroom,int direction,int exit) {
 if(currentuser->status < ARCHWIZARD) {		/* can't do this yet */
 	SetLastError(currentuser,NOT_YET);
 	return(-1);
@@ -326,7 +294,7 @@ if(direction > 11) {
 	return(-1);
 }
 
-if(direction > config.roomcount) {
+if(direction > GetNumberOfRooms()) {
 	SetLastError(currentuser,BAD_ROOM);  
 	return(-1);
 }
@@ -337,17 +305,13 @@ return(0);
 
 /* create room */
 
-int createroom(user *currentuser,char *roomdirection) {
-room *roomnext;
-room *currentroom;
-room temproom;
-char *buf[BUF_SIZE];
+int CreateRoom(user *currentuser,char *roomdirection) {
+int LastRoom;
+room *CurrentRoom;
 int roomdir;
-CONFIG config;
+char *CreateMessage[BUF_SIZE];
 
-getconfigurationinformation(&config);
-
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(currentuser->status < WIZARD) {		/* must be wizard or higher level to create room */
 	SetLastError(currentuser,NOT_YET);
@@ -375,8 +339,7 @@ if(currentuser->status < ARCHWIZARD) {
 }
 
 
-/*
-	* if the room is in argument, create it */
+/* if the room is in argument, create it */
 
 if(*roomdirection) {			/* room spcified */
 	for(roomdir=0;roomdir != 11;roomdir++) {
@@ -395,299 +358,284 @@ if(roomdir > 11) {
 	return(-1);
 }
 
-config.databasememorysize += sizeof(room);
+LastRoom=GetNumberOfRooms();
+LastRoom++;
 
-roomnext=realloc(rooms,config.databasememorysize);		/* resize database */
-if(roomnext == NULL) {
-	SetLastError(currentuser,CANT_CREATE_ROOM);  
+rooms=realloc(rooms,(sizeof(room)*LastRoom)+1);		/* resize database */
+if(rooms == NULL) {
+	SetLastError(currentuser,NO_MEM);  
 	return(-1);
 }
 
-config.roomcount++;
+memset(&rooms[LastRoom],0,sizeof(room));		/* clear room */
+strcpy(rooms[LastRoom].name,"Empty room\r\r\n");		/* create room info */
+strcpy(rooms[LastRoom].owner,currentuser->name);
+strcpy(rooms[LastRoom].desc,"Empty room, you can describe it using desc here <description>\r\n");
 
-memset(&rooms[config.roomcount],0,sizeof(room));		/* clear room */
-strcpy(rooms[config.roomcount].name,"Empty room\r\r\n");		/* create room info */
-strcpy(rooms[config.roomcount].owner,currentuser->name);
-strcpy(rooms[config.roomcount].desc,"Empty room, you can describe it using desc here <description>\r\r\n");
-rooms[config.roomcount].attr=ROOM_CREATE_OWNER+ROOM_EXIT_OWNER+ROOM_RENAME_OWNER;
-rooms[config.roomcount].room=++config.lastroom;
+rooms[LastRoom].attr=ROOM_CREATE_OWNER | ROOM_EXIT_OWNER | ROOM_RENAME_OWNER;
+rooms[LastRoom].room=LastRoom;
 
-currentroom->exits[roomdir]=config.roomcount;
+CurrentRoom->exits[roomdir]=GetNumberOfRooms();
 
-updateconfigurationinformation(&config);
+sprintf(CreateMessage,"A room has been created to the %s\r\n",RoomExits[roomdir]);
+send(currentuser->handle,CreateMessage,strlen(CreateMessage),0);
 
-send(currentuser->handle,createmessage[roomdir],strlen(roomdir),0);
-
-databaseupdated=TRUE;                  /* update database flag */
+DatabaseUpdated=TRUE;                  /* update database flag */
 return(0);
 }
 
 /* set an object, room or user's attributes */
 
-int setobjectattributes(user *currentuser,char *object,char *attr) {
-char *cb[109][255];
-int cpc;
-roomobject *objnext;
-room *roomnext;
-user *usernext;
-room *currentroom;
-int count;
-int found=FALSE;	
-char *b;
-char *buf[BUF_SIZE];
-CONFIG config;
+int SetObjectAttributes(user *currentuser,char *object,char *attributes) {
+roomobject *ObjectPtr;
+room *CurrentRoom;
+int RoomCount;
+int ObjectFound=FALSE;
+char *ErrorMessage[BUF_SIZE];
+char *AttributePtr;
 
-getconfigurationinformation(&config);
-
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(currentuser->status < WIZARD) {            /* need to be wizard or higher level to change attributes */
 	SetLastError(currentuser,NOT_YET);
 	return(-1);
 }
 
-cpc=tokenize_line(attr,cb," \009");			/* tokenize line */
+ObjectPtr=CurrentRoom->roomobjects;		/* point to objects */
 
-objnext=currentroom->roomobjects;		/* point to objects */
+while(ObjectPtr != NULL) {
 
-while(objnext != NULL) {
-
-	if(regexp(objnext->name,object) == TRUE) {		/* found object */
+	if(regexp(ObjectPtr->name,object) == TRUE) {		/* found object */
 		if(currentuser->status < ARCHWIZARD) {
-			if((strcmp(objnext->owner,currentuser->name) == 0) && (objnext->attr & OBJECT_MOVEABLE_PUBLIC) == 0) {
+			if((strcmp(ObjectPtr->owner,currentuser->name) == 0) && (ObjectPtr->attr & OBJECT_MOVEABLE_PUBLIC) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
 
-			if((strcmp(objnext->owner,currentuser->name) == 0) && (objnext->attr & OBJECT_MOVEABLE_OWNER) == 0) {
+			if((strcmp(ObjectPtr->owner,currentuser->name) == 0) && (ObjectPtr->attr & OBJECT_MOVEABLE_OWNER) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
 		}
 
-		for(count=0;count<cpc;count++) {
-			b=cb[count];		/* point to argument */
+		AttributePtr=attributes;
 
-			if(*b == '+') {	/* setting attribute */
+		while(*AttributePtr != 0) {
+			if(*AttributePtr == '+') {	/* setting attribute */
 
-				while(*b != 0) {
-					switch(*b++) {
-						case 'd':
-							objnext->attr |= OBJECT_DELETE_OWNER;
-					  		 break;
+				AttributePtr++;
 
-						case 'D':
-					   		objnext->attr |= OBJECT_DELETE_PUBLIC;
-					   		break;
+				switch(*AttributePtr++) {
+					case 'd':
+						ObjectPtr->attr |= OBJECT_DELETE_OWNER;
+				  		 break;
 
-						case 'm':
-					   		objnext->attr |= OBJECT_MOVEABLE_OWNER;
-					   		break;
-		
-						case 'M':
-							objnext->attr |= OBJECT_MOVEABLE_PUBLIC;
-							break;
-		
-						case 'p':
-							objnext->attr |= OBJECT_PICKUP_OWNER;
-							break;
+					case 'D':
+				   		ObjectPtr->attr |= OBJECT_DELETE_PUBLIC;
+				   		break;
 
-						case 'P':
-					   		objnext->attr |= OBJECT_PICKUP_PUBLIC;
-					   		break;
+					case 'm':
+				   		ObjectPtr->attr |= OBJECT_MOVEABLE_OWNER;
+				   		break;
 		
-						case 'r':
-							objnext->attr |= OBJECT_RENAME_OWNER;
-							break;
+					case 'M':
+						ObjectPtr->attr |= OBJECT_MOVEABLE_PUBLIC;
+						break;
 		
-						case 'R':
-							objnext->attr |= OBJECT_RENAME_PUBLIC;
-							break;
-		
-					 	case 't':
-					   		objnext->attr |= OBJECT_TEMPORARY;
-					   		break;
-		
-						default:
-							sprintf(buf,"Unknown attribute %c\r\n",*b);
-					 
-						}
-			}
+					case 'p':
+						ObjectPtr->attr |= OBJECT_PICKUP_OWNER;
+						break;
 
-			if(*b == '-') {
-				while(*b != 0) {
-					switch(*b++) {
-						case 'd':
-							objnext->attr &= OBJECT_DELETE_OWNER;
-							break;
-
-						case 'D':
-							objnext->attr &= OBJECT_DELETE_PUBLIC;
-							break;
-
-					  	case 'm':
-					   		objnext->attr &= OBJECT_MOVEABLE_OWNER;
-					   		break;
+					case 'P':
+				   		ObjectPtr->attr |= OBJECT_PICKUP_PUBLIC;
+				   		break;
 		
-					  	case 'M':
-					   		objnext->attr &= OBJECT_MOVEABLE_PUBLIC;
-					   		break;
+					case 'r':
+						ObjectPtr->attr |= OBJECT_RENAME_OWNER;
+						break;
 		
-					 	case 'p':
-					   		objnext->attr &= OBJECT_PICKUP_OWNER;
-					   		break;
-
-					 	case 'P':
-					   		objnext->attr &= OBJECT_PICKUP_PUBLIC;
-					   		break;
+					case 'R':
+						ObjectPtr->attr |= OBJECT_RENAME_PUBLIC;
+						break;
 		
-					 	case 'r':
-							objnext->attr &= OBJECT_RENAME_OWNER;
-							break;
+				 	case 't':
+				   		ObjectPtr->attr |= OBJECT_TEMPORARY;
+				   		break;
 		
-					 	case 'R':
-					   		objnext->attr &= OBJECT_RENAME_PUBLIC;
-					   		break;
-		
-					 	case 't':
-					   		objnext->attr &= OBJECT_TEMPORARY;
-					   		break;
-		
-						default:
-					  		sprintf(buf,"Unknown attribute %c\r\n",*b);
-							send(currentuser->handle,buf,strlen(buf),0);
-						}
+					default:
+						sprintf(ErrorMessage,"Unknown attribute %c\r\n",*AttributePtr);
+						send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
 					}
 				}
+			}
+
+			if(*AttributePtr == '-') {
+				AttributePtr++;
+
+				switch(*AttributePtr++) {
+					case 'd':
+						ObjectPtr->attr &= OBJECT_DELETE_OWNER;
+						break;
+
+					case 'D':
+						ObjectPtr->attr &= OBJECT_DELETE_PUBLIC;
+						break;
+
+				  	case 'm':
+				   		ObjectPtr->attr &= OBJECT_MOVEABLE_OWNER;
+				   		break;
+		
+				  	case 'M':
+				   		ObjectPtr->attr &= OBJECT_MOVEABLE_PUBLIC;
+				   		break;
+		
+				 	case 'p':
+				   		ObjectPtr->attr &= OBJECT_PICKUP_OWNER;
+				   		break;
+
+				 	case 'P':
+				   		ObjectPtr->attr &= OBJECT_PICKUP_PUBLIC;
+				   		break;
+		
+				 	case 'r':
+						ObjectPtr->attr &= OBJECT_RENAME_OWNER;
+						break;
+		
+				 	case 'R':
+				   		ObjectPtr->attr &= OBJECT_RENAME_PUBLIC;
+				   		break;
+
+				 	case 't':
+				   		ObjectPtr->attr &= OBJECT_TEMPORARY;
+				   		break;
+		
+					default:
+				  		sprintf(ErrorMessage,"Unknown attribute %c\r\n",*AttributePtr);
+						send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
+					}
 			} 
 
-			found=TRUE;
+			ObjectFound=TRUE;
 		}
 
 
-	objnext=objnext->next;
+	ObjectPtr=ObjectPtr->next;
 }
 
 
-for(count=0;count<config.roomcount;count++) {
-	if(regexp(rooms[count].name,object) == TRUE) {		/* found room */
-		b=cb[count];
+/* Setting a room's attribute */
 
-		if(*b == '+') {	/* setting attribute */
-			b++;
+for(RoomCount=0;RoomCount<GetNumberOfRooms();RoomCount++) {
 
-			while(*b != 0) {
+	if(regexp(rooms[RoomCount].name,object) == TRUE) {		/* found room */
+		AttributePtr=attributes;
 
-				switch(*b++) {
-				  	case 'c':
-						rooms[count].attr |= ROOM_CREATE_OWNER;
-						break;
+		if(*AttributePtr == '+') {	/* setting attribute */
+			AttributePtr++;
 
-					case 'C':
-						rooms[count].attr |= ROOM_CREATE_PUBLIC;
-						break;
+			switch(*AttributePtr++) {
+			  	case 'c':
+					rooms[RoomCount].attr |= ROOM_CREATE_OWNER;
+					break;
 
-					case 'e':
-						rooms[count].attr |= ROOM_EXIT_OWNER;
-						break;
+				case 'C':
+					rooms[RoomCount].attr |= ROOM_CREATE_PUBLIC;
+					break;
 
-					case 'E':
-						rooms[count].attr |= ROOM_CREATE_PUBLIC;
-						break;
+				case 'e':
+					rooms[RoomCount].attr |= ROOM_EXIT_OWNER;
+					break;
+
+				case 'E':
+					rooms[RoomCount].attr |= ROOM_CREATE_PUBLIC;
+					break;
 	
-					case 'r':
-						rooms[count].attr |= ROOM_RENAME_OWNER;
-						break;
+				case 'r':
+					rooms[RoomCount].attr |= ROOM_RENAME_OWNER;
+					break;
 
-					case 'R':
-						rooms[count].attr |= ROOM_RENAME_PUBLIC;
-						break;
+				case 'R':
+					rooms[RoomCount].attr |= ROOM_RENAME_PUBLIC;
+					break;
 
-					case 'h':
-						rooms[count].attr |= ROOM_HAVEN;
-						break;
+				case 'h':
+					rooms[RoomCount].attr |= ROOM_HAVEN;
+					break;
 
-					case 'p':
-						rooms[count].attr |= ROOM_PRIVATE;
-						break;
+				case 'p':
+					rooms[RoomCount].attr |= ROOM_PRIVATE;
+					break;
 
-					default:
-					    sprintf(buf,"Unknown attribute %c\r\n",*b);
-					    send(currentuser->handle,buf,strlen(buf),0);
-					}
+				default:
+					sprintf(ErrorMessage,"Unknown attribute %c\r\n",*AttributePtr);
+					send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
 				}
-			}
+				
 		}
-
-		if(*b == '-') {
-			while(*b != 0) {	
-				switch(*b++) {
-				 	case 'c':
-						rooms[count].attr &= ROOM_CREATE_OWNER;
-						break;
-
-				 	case 'C':
-						rooms[count].attr &= ROOM_CREATE_PUBLIC;
-						break;
-
-					case 'e':
-						rooms[count].attr &= ROOM_EXIT_OWNER;
-						break;
-
-				 	case 'E':
-						rooms[count].attr &= ROOM_EXIT_PUBLIC;
-						break;
 	
-				 	case 'r':
-						rooms[count].attr &= ROOM_RENAME_OWNER;
-						break;
+		if(*AttributePtr == '-') {
+			switch(*AttributePtr++) {
+			 	case 'c':
+					rooms[RoomCount].attr &= ROOM_CREATE_OWNER;
+					break;
 
-					 case 'R':
-						rooms[count].attr &= ROOM_RENAME_PUBLIC;
-						break;
+			 	case 'C':
+					rooms[RoomCount].attr &= ROOM_CREATE_PUBLIC;
+					break;
 
-				 	case 'h':
-						rooms[count].attr &= ROOM_HAVEN;
-						break;
+				case 'e':
+					rooms[RoomCount].attr &= ROOM_EXIT_OWNER;
+					break;
 
-				 	case 'p':
-						rooms[count].attr &= ROOM_PRIVATE;
-						break;
+			 	case 'E':
+					rooms[RoomCount].attr &= ROOM_EXIT_PUBLIC;
+					break;
+	
+			 	case 'r':
+					rooms[RoomCount].attr &= ROOM_RENAME_OWNER;
+					break;
 
-					default:
-						sprintf(buf,"Unknown attribute %c\r\n",*b);
-						send(currentuser->handle,buf,strlen(buf),0);
-					}
+				 case 'R':
+					rooms[RoomCount].attr &= ROOM_RENAME_PUBLIC;
+					break;
 
+			 	case 'h':
+					rooms[RoomCount].attr &= ROOM_HAVEN;
+					break;
+
+			 	case 'p':
+					rooms[RoomCount].attr &= ROOM_PRIVATE;
+					break;
+
+				default:
+					sprintf(ErrorMessage,"Unknown attribute %c\r\n",*AttributePtr);
+					send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
 				}
 			}
 
-		found=TRUE;
+		ObjectFound=TRUE;
 	}
 }
 
-
-if(found == FALSE)  {
+if(ObjectFound == FALSE)  {
 	SetLastError(currentuser,OBJECT_NOT_FOUND);  
 	return(-1);
 }
 
+SetLastError(currentuser,NO_ERROR);
 return(0);
 }
 
 
 /* set owner of room or object */
 
-int setowner(user *currentuser,char *objectname,char *n) {
+int SetOwner(user *currentuser,char *objectname,char *n) {
 room *roomnext;
-roomobject *objnext;
-room *currentroom;
-int count;
-CONFIG config;
+roomobject *ObjectPtr;
+room *CurrentRoom;
+int RoomCount;
 
-getconfigurationinformation(&config);
-
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(currentuser->status < WIZARD) {             /* can't do this unless wizard of higher level */
 	SetLastError(currentuser,NOT_YET);
@@ -706,34 +654,34 @@ if(currentuser->status <ARCHWIZARD) {
 * find object
 */
 
-objnext=currentroom->roomobjects;
-while(objnext != NULL) {
+ObjectPtr=CurrentRoom->roomobjects;
+while(ObjectPtr != NULL) {
 
-	if(regexp(objnext->name,objectname) == TRUE) { 			/* if object found */
-		strcpy(objnext->owner,n);
-		databaseupdated=TRUE;
+	if(regexp(ObjectPtr->name,objectname) == TRUE) { 			/* if object found */
+		strcpy(ObjectPtr->owner,n);
+		DatabaseUpdated=TRUE;
 
 		return(0);
 	}
 
-	objnext=objnext->next;
+	ObjectPtr=ObjectPtr->next;
 }
 
 /*
 * not object, find room to change owner
 */
 
-for(count=0;count<config.roomcount;count++) {
-	if(rooms[count].room == atoi(objectname)) {		/* if object found */
+for(RoomCount=0;RoomCount<GetNumberOfRooms();RoomCount++) {
+	if(rooms[RoomCount].room == atoi(objectname)) {		/* if object found */
 
-		if(currentuser->status < ARCHWIZARD && strcmp(rooms[count].owner,currentuser->name) != 0) {	/* permission denied */
+		if(currentuser->status < ARCHWIZARD && strcmp(rooms[RoomCount].owner,currentuser->name) != 0) {	/* permission denied */
 			SetLastError(currentuser,ACCESS_DENIED);
 			return(-1);
 		}
 
-		strcpy(rooms[count].owner,n);   
+		strcpy(rooms[RoomCount].owner,n);   
 
-		databaseupdated=TRUE;       			/* update database */
+		DatabaseUpdated=TRUE;       			/* update database */
 		return(0);
 	}
 
@@ -745,98 +693,93 @@ return(0);
 
 /* copy object */
 
-int copyobject(user *currentuser,char *o,int l) {
+int CopyObject(user *currentuser,char *ObjectName,int DestinationRoom) {
 room *destroom;
-roomobject *objnext;
-roomobject *destobj;
+roomobject *ObjectPtr;
 int destination;
 user *usernext;
-room *currentroom;
-char *buf[BUF_SIZE];
-int foundroom=FALSE;
+room *CurrentRoom;
 int found=FALSE;
 int count;
-CONFIG config;
 
-getconfigurationinformation(&config);
-
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(currentuser->status < WIZARD) {      /* not wizard */
 	SetLastError(currentuser,NOT_YET);
 	return(-1);
 }
 
-if(config.roomcount > currentroom->room) {			/* can't find room */
+if(GetNumberOfRooms() > CurrentRoom->room) {			/* can't find room */
 	SetLastError(currentuser,BAD_ROOM);  
 	return(-1);
 }
 
 /* move object */
 	
-objnext=currentroom->roomobjects;
+ObjectPtr=CurrentRoom->roomobjects;
 
-while(objnext != NULL) {
-	if(regexp(objnext->name,o) == TRUE) {				/* if object matches */
+while(ObjectPtr != NULL) {
+	if(regexp(ObjectPtr->name,ObjectName) == TRUE) {				/* if object matches */
+
 		if(currentuser->status < ARCHWIZARD) {
-			if((strcmp(currentroom->owner,currentuser->name) == 0) && (currentroom->attr & OBJECT_MOVEABLE_PUBLIC) == 0) {
+			if((strcmp(CurrentRoom->owner,currentuser->name) == 0) && (CurrentRoom->attr & OBJECT_MOVEABLE_PUBLIC) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
 
-			if((strcmp(currentroom->owner,currentuser->name) == 0) && (currentroom->attr & OBJECT_MOVEABLE_OWNER) == 0) {
+			if((strcmp(CurrentRoom->owner,currentuser->name) == 0) && (CurrentRoom->attr & OBJECT_MOVEABLE_OWNER) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
 		}
 
 		/* copy object */
-		if(rooms[l].roomobjects == NULL) {
-			rooms[l].roomobjects=calloc(1,sizeof( roomobject));	/* allocate objects */ 
-			if(rooms[l].roomobjects == NULL) {		/* can't allocate */
+		if(rooms[DestinationRoom].roomobjects == NULL) {
+			rooms[DestinationRoom].roomobjects=calloc(1,sizeof( roomobject));	/* allocate objects */ 
+			if(rooms[DestinationRoom].roomobjects == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);  
 				return(-1);
 			}
 
-			rooms[l].roomobjects_last=rooms[l].roomobjects;
+			rooms[DestinationRoom].roomobjects_last=rooms[DestinationRoom].roomobjects;
 		}
 		else
 		{
-			rooms[l].roomobjects_last->next=calloc(1,sizeof( roomobject));	/* allocate objects */ 
-			if(rooms[l].roomobjects == NULL) {		/* can't allocate */
+			rooms[DestinationRoom].roomobjects_last->next=calloc(1,sizeof( roomobject));	/* allocate objects */ 
+			if(rooms[DestinationRoom].roomobjects == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);  
 				return(-1);
 			}
 
-			rooms[l].roomobjects_last=rooms[l].roomobjects_last->next;
+			rooms[DestinationRoom].roomobjects_last=rooms[DestinationRoom].roomobjects_last->next;
 		}
 
-		memcpy(rooms[l].roomobjects_last,objnext,sizeof(roomobject));		/* copy object */
+		memcpy(rooms[DestinationRoom].roomobjects_last,ObjectPtr,sizeof(roomobject));		/* copy object */
 		
 		found=TRUE;
 	}
 
-	objnext=objnext->next;
+	ObjectPtr=ObjectPtr->next;
 }
 
 /*
 * move player
 */
 
-usernext=GetUserPointerByName(o);		/* find user */
+usernext=GetUserPointerByName(ObjectName);		/* find user */
 
 if(usernext != NULL) {			/* found user */
-	go(usernext,l);
+	go(usernext,ObjectName);
 	found=TRUE;
 }
 
 /* copy room */
 
-if((char) *o == '#') {
-	o++;
-	destination=atoi(o);
+if((char) *ObjectName == '#') {
+	ObjectName++;
+	destination=atoi(ObjectName);
 
-	memcpy(&rooms[destination],&rooms[l],sizeof(room));
+	memcpy(&rooms[destination],&rooms[DestinationRoom],sizeof(room));
 	found=TRUE;
 }
 
@@ -850,116 +793,118 @@ return(0);
 
 /* generate objects */
 
-int resetobjects(void) {
+int GenerateObjects(void) {
 FILE *handle;
-roomobject *objnext;
-roomobject *objlast;
 char *tokens[BUF_SIZE][BUF_SIZE];
-int NumberOfObjectsToGenerate;
-int randnumber;
-char *buf=NULL;
-char *bufptr;
-int objectcount=0;
-int gencount;
-int count=0;
-int roomobjectcount;
+int NumberOfObjectsToGenerate=0;
+int RandomObjectNumber;
+int TotalObjectCount=0;
+char *ObjectsList=NULL;
+int RoomObjectCount;
+int RoomCount=0;
 CONFIG config;
-char *currentdirectory[BUF_SIZE];
+char *CurrentDirectory[BUF_SIZE];
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 
-getcwd(currentdirectory,BUF_SIZE);
-sprintf(resetconf,"%s/%s",currentdirectory,resetrel);
+getcwd(CurrentDirectory,BUF_SIZE);
+sprintf(ObjectsConfigurationFile,"%s/%s",CurrentDirectory,ObjectsRelativePath);
 
-handle=fopen(resetconf,"rb");
+handle=fopen(ObjectsConfigurationFile,"rb");
 if(handle == NULL) return(-1);		/* can't open configution file */
 
 /*
 * load objects into array */
 
 while(!feof(handle)) {
-	if(buf == NULL) {
-		buf=malloc(BUF_SIZE);
-		if(buf == NULL) return(-1);
+	if(ObjectsList == NULL) {
+		ObjectsList=malloc(BUF_SIZE);
+		if(ObjectsList == NULL) return(-1);
 	}
 	else
 	{
-		objectcount++;
+		TotalObjectCount++;
 
-		buf=realloc(buf,BUF_SIZE*(objectcount+1));
-		if(buf == NULL) return(-1);
+		ObjectsList=realloc(ObjectsList,BUF_SIZE*(TotalObjectCount+1));
+		if(ObjectsList == NULL) return(-1);
 	}
 
-	fgets(&buf[objectcount*BUF_SIZE],BUF_SIZE,handle);                                      /* get line into array */
+	fgets(&ObjectsList[TotalObjectCount*BUF_SIZE],BUF_SIZE,handle);                                      /* get line into array */
 }
 
 fclose(handle);
 
+printf("haha\n");
 
 srand(time(NULL));
 
-/*
-* for each room, generate objects depending on probability
-*/
+/* Generate room objects */
 
-for(count=0;count<config.roomcount;count++) {
+for(RoomCount=0;RoomCount < GetNumberOfRooms(); RoomCount++) {
 
-	if((rooms[count].attr & ROOM_HAVEN) == 0) {          /* not haven */
+	if((rooms[RoomCount].attr & ROOM_HAVEN) == 0) {          /* not haven */
 		NumberOfObjectsToGenerate=rand() % (config.roomobjectnumber + 1) - 0;
 
-		for(roomobjectcount=1;roomobjectcount<NumberOfObjectsToGenerate;roomobjectcount++) {   
-			randnumber=rand() % (objectcount + 1) - 0;
+		while(NumberOfObjectsToGenerate > 0) {
+			RandomObjectNumber=rand() % (TotalObjectCount + 1) - 0;
 			
-			tokenize_line(&buf[randnumber*BUF_SIZE],tokens,":");		/* tokenize line */
+			if(IsObjectInRoom(ObjectsList[OBJECT_NAME]) == FALSE) { 		/* if object is not in room */
+				TokenizeLine(&ObjectsList[RandomObjectNumber*BUF_SIZE],tokens,":");		/* tokenize line */
 
-			if(rooms[roomobjectcount].roomobjects == NULL) {	/* no objects in room */
-				rooms[roomobjectcount].roomobjects=calloc(1,sizeof(roomobject));		/* add link to end */
-				if(rooms[roomobjectcount].roomobjects == NULL) continue;
+				if(rooms[RoomCount].roomobjects == NULL) {	/* no objects in room */
+					rooms[RoomCount].roomobjects=calloc(1,sizeof(roomobject));		/* add link to end */
+					if(rooms[RoomCount].roomobjects == NULL) continue;
 
-				rooms[roomobjectcount].roomobjects_last=rooms[roomobjectcount].roomobjects;
-			}
-        		else
-        		{
-				rooms[roomobjectcount].roomobjects_last->next=calloc(1,sizeof(roomobject));		/* add link to end */
-				rooms[roomobjectcount].roomobjects_last=rooms[roomobjectcount].roomobjects_last->next;
-			}
+					rooms[RoomCount].roomobjects_last=rooms[RoomCount].roomobjects;
+				}
+        			else
+        			{
+					rooms[RoomCount].roomobjects_last->next=calloc(1,sizeof(roomobject));		/* add link to end */
+					rooms[RoomCount].roomobjects_last=rooms[RoomCount].roomobjects_last->next;
+				}
 
-	
-			/* add object to room */
+				/* add object to room */
 
-			rooms[roomobjectcount].roomobjects_last->room=count;
-			strcpy(rooms[roomobjectcount].roomobjects_last->name,tokens[OBJECT_NAME]);
-			strcpy(rooms[roomobjectcount].roomobjects_last->owner,"nobody");
-			strcpy(rooms[roomobjectcount].roomobjects_last->desc,tokens[OBJECT_DESCRIPTION]);
-			rooms[roomobjectcount].roomobjects_last->attackpoints=atoi(tokens[OBJECT_ATTACKPOINTS]);
-			rooms[roomobjectcount].roomobjects_last->generateprob=atoi(tokens[OBJECT_GENERATEPROB]);
-			rooms[roomobjectcount].roomobjects_last->staminapoints=atoi(tokens[OBJECT_STAMINAPOINTS]);
-			rooms[roomobjectcount].roomobjects_last->magicpoints=atoi(tokens[OBJECT_MAGICPOINTS]);
-			rooms[roomobjectcount].roomobjects_last->attr=OBJECT_TEMPORARY;
-		}   
+				rooms[RoomCount].roomobjects_last->room=RoomCount;
+				strcpy(rooms[RoomCount].roomobjects_last->name,tokens[OBJECT_NAME]);
+				strcpy(rooms[RoomCount].roomobjects_last->owner,"nobody");
+				strcpy(rooms[RoomCount].roomobjects_last->desc,tokens[OBJECT_DESCRIPTION]);
+				rooms[RoomCount].roomobjects_last->attackpoints=atoi(tokens[OBJECT_ATTACKPOINTS]);
+				rooms[RoomCount].roomobjects_last->generateprob=atoi(tokens[OBJECT_GENERATEPROB]);
+				rooms[RoomCount].roomobjects_last->staminapoints=atoi(tokens[OBJECT_STAMINAPOINTS]);
+				rooms[RoomCount].roomobjects_last->magicpoints=atoi(tokens[OBJECT_MAGICPOINTS]);
+				rooms[RoomCount].roomobjects_last->attr=OBJECT_TEMPORARY;
+
+				NumberOfObjectsToGenerate--;
+			}   
+
+			
+		}
 	}
 
 }
 
-free(buf);
+free(ObjectsList);
 return(0);
 }
 
-int pickup(user *currentuser,char *o) {
-roomobject *obj;
-char *buf[BUF_SIZE];
+int PickUpObject(user *currentuser,char *o) {
+roomobject *UserCarryObjectsPtr;
+char *ErrorMessage[BUF_SIZE];
 
-obj=currentuser->carryobjects;
+/* check if user is already carrying this object */
 
-while(obj != NULL) {
-	if(regexp(obj->name,o) == TRUE) {	/* already picked up object */
-		sprintf(buf,"You already have a %s\r\n",obj->name);
-		send(currentuser->handle,buf,strlen(buf),0);
+UserCarryObjectsPtr=currentuser->carryobjects;
 
+while(UserCarryObjectsPtr != NULL) {
+
+	if(regexp(UserCarryObjectsPtr->name,o) == TRUE) {	/* already picked up object */
+		sprintf(ErrorMessage,"You already have a %s\r\n",UserCarryObjectsPtr->name);
+		send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
 		return(-1);
 	}
 
-	obj=obj->next;
+	UserCarryObjectsPtr=UserCarryObjectsPtr->next;
 }
 
 /* add object to inventory */
@@ -967,8 +912,7 @@ while(obj != NULL) {
 if(currentuser->carryobjects == NULL) {
 	currentuser->carryobjects=calloc(1,sizeof(roomobject));		/* add link to end */
 	if(currentuser->carryobjects == NULL) {		/* can't allocate */
-		sprintf(buf,"Can't pick up object %s\r\n",o);
-		send(currentuser->handle,buf,strlen(buf),0);
+		SetLastError(currentuser,NO_MEM);
 		return(-1);
 	}
 
@@ -978,9 +922,7 @@ else
 {  
 	currentuser->carryobjects_last->next=calloc(1,sizeof(roomobject));		/* add link to end */
 	if(currentuser->carryobjects_last->next == NULL) {		/* can't allocate */
-		sprintf(buf,"Can't pick up object %s\r\n",o);
-		send(currentuser->handle,buf,strlen(buf),0);
-
+		SetLastError(currentuser,NO_MEM);
 		return(-1);
 	}
 
@@ -988,48 +930,48 @@ else
 
 	strcpy(currentuser->carryobjects_last->name,o);		/* add item */
 
-	if(obj->magicpoints > 0) {
-		sprintf(buf,"You have gained %d magic points!\r\n",obj->magicpoints);
-		send(currentuser->handle,buf,strlen(buf),0);
+	if(UserCarryObjectsPtr->magicpoints > 0) {
+		sprintf(ErrorMessage,"You have gained %d magic points!\r\n",UserCarryObjectsPtr->magicpoints);
+		send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
 	}
 
-	if(obj->staminapoints > 0) {
-		sprintf(buf,"You have gained %d stamina points!\r\n",obj->staminapoints);
-		send(currentuser->handle,buf,strlen(buf),0);
+	if(UserCarryObjectsPtr->staminapoints > 0) {
+		sprintf(ErrorMessage,"You have gained %d stamina points!\r\n",UserCarryObjectsPtr->staminapoints);
+		send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
 	}  
 
-	obj->magicpoints=0;
-	obj->staminapoints=0;
-	obj->next=NULL;
+	UserCarryObjectsPtr->magicpoints=0;
+	UserCarryObjectsPtr->staminapoints=0;
+	UserCarryObjectsPtr->next=NULL;
 }
 
 return(0);
 }
 
 
-int drop(user *currentuser,char *o) {
-roomobject *obj;
+int DropObject(user *currentuser,char *o) {
+roomobject *UserCarryObjectsPtr;
 roomobject *objlast;
-room *currentroom;
+room *CurrentRoom;
 roomobject *roomobj;
-char *buf[BUF_SIZE];
+char *ObjectsList[BUF_SIZE];
 int found=FALSE;
 
 /* check permissions */
 
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(currentuser->status < ARCHWIZARD) {
 
-	if(strcmp(currentroom->owner,currentuser->name) == 0) {
+	if(strcmp(CurrentRoom->owner,currentuser->name) == 0) {
 
-		if((currentroom->attr & ROOM_CREATE_OWNER) == 0) {
+		if((CurrentRoom->attr & ROOM_CREATE_OWNER) == 0) {
 			SetLastError(currentuser,CANT_CREATE_OBJECTS_HERE);  
 			return(-1);
 		}
 		else
 		{
-			if((currentroom->attr & ROOM_CREATE_PUBLIC) == 0) {
+			if((CurrentRoom->attr & ROOM_CREATE_PUBLIC) == 0) {
 				SetLastError(currentuser,CANT_CREATE_OBJECTS_HERE);  
 				return(-1);
 			}
@@ -1037,60 +979,60 @@ if(currentuser->status < ARCHWIZARD) {
 	}
 }
 
-obj=currentuser->carryobjects;		/* point to carried objects */
+UserCarryObjectsPtr=currentuser->carryobjects;		/* point to carried objects */
 
-objlast=obj;
+objlast=UserCarryObjectsPtr;
 
-while(obj != NULL) {
+while(UserCarryObjectsPtr != NULL) {
 	
-	if(regexp(obj->name,o) == TRUE) {	/* found object */
+	if(regexp(UserCarryObjectsPtr->name,o) == TRUE) {	/* found object */
 		/* add to list of objects in room */
 
-		if(currentroom->roomobjects == NULL) {					       
-			currentroom->roomobjects=calloc(1,sizeof(roomobject));	/* allocate objects */
-			if(currentroom->roomobjects == NULL) {		/* can't allocate */
+		if(CurrentRoom->roomobjects == NULL) {					       
+			CurrentRoom->roomobjects=calloc(1,sizeof(roomobject));	/* allocate objects */
+			if(CurrentRoom->roomobjects == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);  
 				return(-1);
 			}
 
-			currentroom->roomobjects_last=currentroom->roomobjects;
+			CurrentRoom->roomobjects_last=CurrentRoom->roomobjects;
 		}
 		else
 		{
-			currentroom->roomobjects_last=calloc(1,sizeof(roomobject));	/* allocate objects */
-			if(currentroom->roomobjects_last == NULL) {		/* can't allocate */
+			CurrentRoom->roomobjects_last=calloc(1,sizeof(roomobject));	/* allocate objects */
+			if(CurrentRoom->roomobjects_last == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);  
 				return(-1);
 			}
 		}
 
-		currentroom->roomobjects_last->next=currentroom->roomobjects_last;
+		CurrentRoom->roomobjects_last->next=CurrentRoom->roomobjects_last;
 	}
 
-	memcpy(roomobj,obj,sizeof(roomobject));	/* copy object */
+	memcpy(roomobj,UserCarryObjectsPtr,sizeof(roomobject));	/* copy object */
 
-	if(obj == currentuser->carryobjects) {		/* first object */
-		obj=obj->next;
+	if(UserCarryObjectsPtr == currentuser->carryobjects) {		/* first object */
+		UserCarryObjectsPtr=UserCarryObjectsPtr->next;
 
 		free(currentuser->carryobjects);   
-		currentuser->carryobjects=obj;
+		currentuser->carryobjects=UserCarryObjectsPtr;
 		found=TRUE;
 	}
 
-	if(obj->next == NULL) {		/* last object */
+	if(UserCarryObjectsPtr->next == NULL) {		/* last object */
 		found=TRUE;
-	      	free(obj);	
+	      	free(UserCarryObjectsPtr);	
 	}
 
-	if(obj != currentuser->carryobjects && obj->next != NULL) {      
-		objlast->next=obj->next;	/* skip over over object */
-		free(obj);
+	if(UserCarryObjectsPtr != currentuser->carryobjects && UserCarryObjectsPtr->next != NULL) {      
+		objlast->next=UserCarryObjectsPtr->next;	/* skip over over object */
+		free(UserCarryObjectsPtr);
 	}
 
 	found=TRUE;
 
-	objlast=obj;
-	obj=obj->next;
+	objlast=UserCarryObjectsPtr;
+	UserCarryObjectsPtr=UserCarryObjectsPtr->next;
 }
 
 if(found == FALSE) {
@@ -1105,13 +1047,13 @@ return(0);
 
 /* create object */
 
-int createobject(user *currentuser,char *objname) {
-roomobject *objnext;
+int CreateObject(user *currentuser,char *objname) {
+roomobject *ObjectPtr;
 roomobject *objlast;
-room *currentroom;
+room *CurrentRoom;
 char *buf[BUF_SIZE];
 
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(currentuser->status < WIZARD) {         /* can't create object unless wizard level or above */
 	SetLastError(currentuser,NOT_YET);
@@ -1123,7 +1065,7 @@ if(currentuser->status < WIZARD) {         /* can't create object unless wizard 
 */
 
 if(currentuser->status < ARCHWIZARD) {
-	if((strcmp(currentroom->owner,currentuser->name) !=0) && (currentroom->attr  & ROOM_CREATE_PUBLIC) == 0 && currentuser->status < ARCHWIZARD) {
+	if((strcmp(CurrentRoom->owner,currentuser->name) !=0) && (CurrentRoom->attr  & ROOM_CREATE_PUBLIC) == 0 && currentuser->status < ARCHWIZARD) {
 		SetLastError(currentuser,ACCESS_DENIED);
 		return(-1);
 	}
@@ -1132,7 +1074,7 @@ if(currentuser->status < ARCHWIZARD) {
 	* deny permission if not archwizard and owner not allowed to create objects in room
 	*/
 
-	if((strcmp(currentroom->owner,currentuser->name) == 0) && (currentroom->attr  & ROOM_CREATE_OWNER) == 0 && currentuser->status < ARCHWIZARD) {
+	if((strcmp(CurrentRoom->owner,currentuser->name) == 0) && (CurrentRoom->attr  & ROOM_CREATE_OWNER) == 0 && currentuser->status < ARCHWIZARD) {
 		SetLastError(currentuser,ACCESS_DENIED);
 		return(-1);
 	}
@@ -1142,65 +1084,65 @@ if(currentuser->status < ARCHWIZARD) {
 * check if object already exists and display error message if it does
 */
 
-objnext=currentroom->roomobjects;
+ObjectPtr=CurrentRoom->roomobjects;
 
-while(objnext != NULL) {
+while(ObjectPtr != NULL) {
 	
-	if(strcmp(objname,objnext->name) == 0) {
+	if(strcmp(objname,ObjectPtr->name) == 0) {
 		SetLastError(currentuser,OBJECT_EXISTS);  
 		return(-1);
 	}
 
-	objlast=objnext;
-	objnext=objnext->next;
+	objlast=ObjectPtr;
+	ObjectPtr=ObjectPtr->next;
 }
 	
-if(currentroom->roomobjects == NULL) {		/* no objects */
-	currentroom->roomobjects=calloc(1,sizeof(roomobject));		/* add link to end */
-	if(currentroom->roomobjects == NULL) {		/* can't allocate */
+if(CurrentRoom->roomobjects == NULL) {		/* no objects */
+	CurrentRoom->roomobjects=calloc(1,sizeof(roomobject));		/* add link to end */
+	if(CurrentRoom->roomobjects == NULL) {		/* can't allocate */
 		SetLastError(currentuser,NO_MEM);  
 		return(-1);
 	}
 
-	objnext=currentroom->roomobjects;
+	ObjectPtr=CurrentRoom->roomobjects;
 }
 else
 {
-	objnext=currentroom->roomobjects_last;
+	ObjectPtr=CurrentRoom->roomobjects_last;
 }
 
 
-objnext->next=calloc(1,sizeof(roomobject));
-if(objnext == NULL) {		/* can't allocate */
+ObjectPtr->next=calloc(1,sizeof(roomobject));
+if(ObjectPtr == NULL) {		/* can't allocate */
 	SetLastError(currentuser,NO_MEM);  
 	return(-1);
 }
 
-objnext=objnext->next;
+ObjectPtr=ObjectPtr->next;
 
 /*
 * add object details at end
 */
 
-strcpy(objnext->name,objname);
-objnext->attr=OBJECT_DELETE_OWNER+OBJECT_MOVEABLE_OWNER+OBJECT_RENAME_OWNER;
-objnext->magicpoints=0;
-strcpy(objnext->owner,currentuser->name);
-strcpy(objnext->desc,"No description");
-objnext->next=NULL;
+strcpy(ObjectPtr->name,objname);
+ObjectPtr->attr=OBJECT_DELETE_OWNER+OBJECT_MOVEABLE_OWNER+OBJECT_RENAME_OWNER;
+ObjectPtr->magicpoints=0;
+strcpy(ObjectPtr->owner,currentuser->name);
+strcpy(ObjectPtr->desc,"No description");
+ObjectPtr->next=NULL;
 
-databaseupdated=TRUE;                                     /* mark database as updated */
+DatabaseUpdated=TRUE;                                     /* mark database as updated */
 return(0);
 }
 
 /* delete object */
 
-int deletething(user *currentuser,char *o) {
-roomobject *objnext;
+int DeleteObject(user *currentuser,char *o) {
+roomobject *ObjectPtr;
 roomobject *objlast;
-room *currentroom;
+room *CurrentRoom;
 
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(currentuser->status < WIZARD) {             /* can't do this unless wizard of higher level */
 	SetLastError(currentuser,NOT_YET);
@@ -1211,13 +1153,13 @@ if(currentuser->status < WIZARD) {             /* can't do this unless wizard of
 * find object
 */
 
-objnext=currentroom->roomobjects;
-objlast=objnext;
+ObjectPtr=CurrentRoom->roomobjects;
+objlast=ObjectPtr;
 
-while(objnext != NULL) {
-	objlast=objnext;
+while(ObjectPtr != NULL) {
+	objlast=ObjectPtr;
 
-	if(regexp(objnext->name,o) == TRUE) {		/* found */
+	if(regexp(ObjectPtr->name,o) == TRUE) {		/* found */
 
 		/*
 		* can't delete if not owner and OBJECT_DELETE_PUBLIC attribute not set
@@ -1225,7 +1167,7 @@ while(objnext != NULL) {
 
 
 		if(currentuser->status < ARCHWIZARD) {
-			if((strcmp(objnext->owner,currentuser->name) != 0) && (objnext->attr & OBJECT_DELETE_PUBLIC) == 0) {
+			if((strcmp(ObjectPtr->owner,currentuser->name) != 0) && (ObjectPtr->attr & OBJECT_DELETE_PUBLIC) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
@@ -1234,7 +1176,7 @@ while(objnext != NULL) {
 			* if object owner and OBJECT_MOVEABLE_OWNER attribute not set, display error message
 			*/
 
-			if((strcmp(objnext->owner,currentuser->name) == 0) && (objnext->attr & OBJECT_DELETE_OWNER) == 0) {
+			if((strcmp(ObjectPtr->owner,currentuser->name) == 0) && (ObjectPtr->attr & OBJECT_DELETE_OWNER) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
@@ -1246,30 +1188,30 @@ while(objnext != NULL) {
 		*/
 
 
-		if(objnext == currentroom->roomobjects) {		/* first object */
-			objnext=objnext->next;
+		if(ObjectPtr == CurrentRoom->roomobjects) {		/* first object */
+			ObjectPtr=ObjectPtr->next;
 
-			free(currentroom->roomobjects);   
-			currentroom->roomobjects=objnext;
+			free(CurrentRoom->roomobjects);   
+			CurrentRoom->roomobjects=ObjectPtr;
 		}
 					    
-		if(objnext != currentroom->roomobjects && objnext->next == NULL) {		/* last object */
-			free(objnext);	
+		if(ObjectPtr != CurrentRoom->roomobjects && ObjectPtr->next == NULL) {		/* last object */
+			free(ObjectPtr);	
 			
-			currentroom->roomobjects_last=objlast->next;	/* new end of list */
+			CurrentRoom->roomobjects_last=objlast->next;	/* new end of list */
 		}
 
-		if(objnext != currentroom->roomobjects && objnext->next != NULL) {      
-			objlast->next=objnext->next;	/* skip over over object */
-			free(objnext);
+		if(ObjectPtr != CurrentRoom->roomobjects && ObjectPtr->next != NULL) {      
+			objlast->next=ObjectPtr->next;	/* skip over over object */
+			free(ObjectPtr);
 		}
 
-		databaseupdated=TRUE;                                       /* database update flag */
+		DatabaseUpdated=TRUE;                                       /* database update flag */
 		return(0);
 	}
 
-	objlast=objnext;
-	objnext=objnext->next;
+	objlast=ObjectPtr;
+	ObjectPtr=ObjectPtr->next;
 }
 
 SetLastError(currentuser,OBJECT_NOT_FOUND);  
@@ -1277,12 +1219,12 @@ return(-1);
 }
 
 
-int renameobject(user *currentuser,char *o,char *n) {
+int RenameObject(user *currentuser,char *o,char *n) {
 user *usernext;
-roomobject *objnext;
-room *currentroom;
+roomobject *ObjectPtr;
+room *CurrentRoom;
 
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(currentuser->status < WIZARD) {		/* can't do this yet */
 	SetLastError(currentuser,NOT_YET);
@@ -1295,41 +1237,41 @@ usernext=GetUserPointerByName(o);		/* find user */
 if(usernext != NULL) {			/* found user */
 	strcpy(usernext,n);	/* set username */
 
-	if(updateuser(currentuser,currentuser->name,"",0,0,"",0,currentuser->staminapoints,0,0,"","",0) == -1) return(-1);
+	if(UpdateUser(currentuser,currentuser->name,"",0,0,"",0,currentuser->staminapoints,0,0,"","",0) == -1) return(-1);
 }
 
 
 
 /* renaming object */
-objnext=currentroom->roomobjects;
+ObjectPtr=CurrentRoom->roomobjects;
 
-	while(objnext->next != NULL) {
+	while(ObjectPtr->next != NULL) {
 
-		if(regexp(objnext->name,o) == TRUE) {		/* found user */
+		if(regexp(ObjectPtr->name,o) == TRUE) {		/* found user */
 			/* check permissions */
 
 			if(currentuser->status < ARCHWIZARD) {
 
 			/* is owner but can't rename */
 
-				if(strcmp(objnext->owner,currentuser->next) == 0 && (objnext->attr & OBJECT_RENAME_OWNER) == 0) {
+				if(strcmp(ObjectPtr->owner,currentuser->next) == 0 && (ObjectPtr->attr & OBJECT_RENAME_OWNER) == 0) {
 					SetLastError(currentuser,ACCESS_DENIED);
 					return(-1);
 				}
 
 			/* not owner and can't rename */
 
-			if(strcmp(objnext->owner,currentuser->next) != 0 && (objnext->attr & OBJECT_RENAME_PUBLIC) == 0) {
+			if(strcmp(ObjectPtr->owner,currentuser->next) != 0 && (ObjectPtr->attr & OBJECT_RENAME_PUBLIC) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
 		}
 
-		strcpy(objnext->name,n);		/* rename object */
+		strcpy(ObjectPtr->name,n);		/* rename object */
 		return(0);
 	}
 
-	objnext=objnext->next;
+	ObjectPtr=ObjectPtr->next;
 }
 
 SetLastError(currentuser,OBJECT_NOT_FOUND);  
@@ -1339,40 +1281,37 @@ return(-1);
 /* look at object, user or room */
 
 int look(user *currentuser,char *n) {
-char *buf[BUF_SIZE];
-char *linebuffer[10];
+char *ErrorMessage[BUF_SIZE];
+char *LineBuffer[10];
 roomobject *objectnext;
 user *usernext;
-room *currentroom;
+room *CurrentRoom;
 int found=FALSE;
 int count;
+monster *RoomMonster;
 
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 	
 /* no name, so look at current room */
 
-printf("n=%s\n",n);
-
-printf("handle=%d\n",currentuser->handle);
-
 if(!*n) {				/* display name */
-	sprintf(buf,"\r\n#%d %s\r\n",currentroom->room,currentroom->name);
+	sprintf(ErrorMessage,"\r\n#%d %s\r\n",CurrentRoom->room,CurrentRoom->name);
 
-	send(currentuser->handle,buf,strlen(buf),0);  
-	send(currentuser->handle,currentroom->desc,strlen(currentroom->desc),0);  
+	send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);  
+	send(currentuser->handle,CurrentRoom->desc,strlen(CurrentRoom->desc),0);  
 
 	send(currentuser->handle,"\r\nExits: ",8,0);  		/* display exits */
 
 	for(count=0;count<11;count++) {
-		if(currentroom->exits[count] != 0) send(currentuser->handle,roomexits[count],strlen(roomexits[count]),0);
+		if(CurrentRoom->exits[count] != 0) send(currentuser->handle,RoomExits[count],strlen(RoomExits[count]),0);
 	}
 
 	send(currentuser->handle,"\r\n",2,0);
 
-	if(currentroom->roomobjects != NULL) {		/* display objects */
+	if(CurrentRoom->roomobjects != NULL) {		/* display objects */
 		send(currentuser->handle,"\r\n",2,0);
-		send(currentuser->handle,roommsg,strlen(roommsg),0);
-		objectnext=currentroom->roomobjects;
+		send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
+		objectnext=CurrentRoom->roomobjects;
 
 		while(objectnext != NULL) {
 			send(currentuser->handle,objectnext->name,strlen(objectnext->name),0);
@@ -1391,10 +1330,16 @@ if(!*n) {				/* display name */
 
 	send(currentuser->handle,"\r\n",2,0);
 
-	for(count=0;count<currentroom->monstercount;count++) {
-		sprintf(buf,"a %s is here\r\n",currentroom->roommonsters[count].name);
-		send(currentuser->handle,buf,strlen(buf),0);
-	}
+	RoomMonster=FindFirstMonsterInRoom(currentuser->room);
+
+	while(RoomMonster != NULL) {
+		sprintf(ErrorMessage,"a %s is here\r\n",RoomMonster->name);
+
+		send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
+
+		RoomMonster=FindNextMonsterInRoom(RoomMonster);
+	} 
+
 
 /*
 * display users in room
@@ -1405,14 +1350,14 @@ usernext=FindFirstUser();		/* find first user */
 while(usernext != NULL) {
 	if((regexp(usernext->name,n) == TRUE) && (usernext->loggedin == TRUE) && (usernext->room == currentuser->room)) {
 		if(usernext->gender == MALE) {
-			sprintf(buf,"%s the %s is here\r\n",usernext->name,GetPointerToMaleTitles(usernext->status));
+			sprintf(ErrorMessage,"%s the %s is here\r\n",usernext->name,GetPointerToMaleTitles(usernext->status));
 		}
 		else
 		{
-			sprintf(buf,"%s the %s is here\r\n",usernext->name,GetPointerToFemaleTitles(usernext->status));
+			sprintf(ErrorMessage,"%s the %s is here\r\n",usernext->name,GetPointerToFemaleTitles(usernext->status));
 		}
 
-		send(currentuser->handle,buf,strlen(buf),0);
+		send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
 	}
 
 	usernext=FindNextUser(usernext);		/* find next user */
@@ -1426,7 +1371,7 @@ return(0);
 * looking at object or person
 */
 
-objectnext=currentroom->roomobjects;
+objectnext=CurrentRoom->roomobjects;
 
 while(NULL != objectnext) {
 	if(objectnext == NULL) break;
@@ -1448,15 +1393,15 @@ usernext=FindFirstUser();		/* find first user */
 
 while(usernext != NULL) {
 	if((regexp(usernext->name,n) == TRUE) && (usernext->loggedin == TRUE) && (usernext->room == currentuser->room)) {
-		sprintf(buf,"%s\r\n",usernext->desc);		/* show description */
-		send(currentuser->handle,buf,strlen(buf),0);
+		sprintf(ErrorMessage,"%s\r\n",usernext->desc);		/* show description */
+		send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
 
 		found=TRUE;
 
 	/* if the user is a wizard tell them they have looked at them */
 
-		sprintf(buf,"%s has looked at you\r\n",currentuser->name);
-		if(usernext->status >= WIZARD) send(usernext->handle,buf,strlen(buf),0);
+		sprintf(ErrorMessage,"%s has looked at you\r\n",currentuser->name);
+		if(usernext->status >= WIZARD) send(usernext->handle,ErrorMessage,strlen(ErrorMessage),0);
 	}
 
 	usernext=FindNextUser(usernext);		/* find next user */
@@ -1467,14 +1412,17 @@ while(usernext != NULL) {
 *
 */
 
-for(count=0;count<currentroom->monstercount;count++) {
-	if(regexp(n,currentroom->roommonsters[count].name) == TRUE) {
-		send(currentuser->handle,currentroom->roommonsters[count].desc,strlen(currentroom->roommonsters[count].desc),0);
+RoomMonster=FindFirstMonsterInRoom(currentuser->room);
+
+while(RoomMonster != NULL) {
+	if(regexp(n,RoomMonster->name) == TRUE) {
+		send(currentuser->handle,RoomMonster->desc,strlen(RoomMonster->desc),0);
 		found=TRUE;
 		return(0);
 	}
 
-}
+	RoomMonster=FindNextMonsterInRoom(RoomMonster);
+};
 
 
 /* can't find it, so output error message and exit */
@@ -1491,7 +1439,7 @@ return(0);
 
 /* copy file */
 
-int copyfile(char *source,char *destination) {
+int CopyFile(char *source,char *destination) {
 int sourcehandle;
 int desthandle;
 void *readbuf;
@@ -1544,16 +1492,16 @@ return(0);
 int describe(user *currentuser,char *o,char *d) {
 user *usernext;
 roomobject *roomobject;
-room *currentroom;
+room *CurrentRoom;
 int count;
 CONFIG config;
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 
-currentroom=currentuser->roomptr;
+CurrentRoom=currentuser->roomptr;
 
 if(strcmp(o,"me") == 0) {                           /* if setting description for self */
-	return(updateuser(currentuser,currentuser->name,"",0,0,d,0,currentuser->staminapoints,0,0,"","",0));
+	return(UpdateUser(currentuser,currentuser->name,"",0,0,d,0,currentuser->staminapoints,0,0,"","",0));
 }
 
 /*
@@ -1570,7 +1518,7 @@ while(usernext != NULL) {
 			return(-1);
 		}
 
-		return(updateuser(currentuser,o,"",0,0,d,0,usernext->staminapoints,0,0,"","",0));
+		return(UpdateUser(currentuser,o,"",0,0,d,0,usernext->staminapoints,0,0,"","",0));
 	}
 
 	usernext=FindNextUser(usernext);		/* find next user */
@@ -1579,11 +1527,11 @@ while(usernext != NULL) {
 /*
 * set object description
 */
-roomobject=currentroom->roomobjects;
+roomobject=CurrentRoom->roomobjects;
 
 while(roomobject != NULL) {
 	if(regexp(roomobject->name,o) == TRUE) {		/* found user */
-		/* if owner and OBJECT_RENAME_OWNER attribute not set, then display error */
+		/* if owner and OBJECT_RENAME_OWNER attribute not set, then display an error message */
 
 		if(currentuser->status < ARCHWIZARD) {
 			if((strcmp(rooms[count].owner,currentuser->name) == 0) && (roomobject->attr & OBJECT_RENAME_OWNER) == 0) {
@@ -1591,7 +1539,7 @@ while(roomobject != NULL) {
 				return(-1);
 			}
 
-			/* if not owner and OBJECT_RENAME_PUBLIC attribute not set, then display error        */
+			/* if not owner and OBJECT_RENAME_PUBLIC attribute not set, then display an error message */
 
 			if((strcmp(rooms[count].owner,currentuser->name) != 0) && (roomobject->attr & OBJECT_RENAME_PUBLIC) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
@@ -1601,7 +1549,7 @@ while(roomobject != NULL) {
 
 
 		strcpy(roomobject->desc,d);               /* set object description	*/
-		databaseupdated=TRUE;                     /* update database */
+		DatabaseUpdated=TRUE;                     /* update database */
 	}
 
 	roomobject=roomobject->next;
@@ -1623,8 +1571,8 @@ if(strcmp(o,"here") == 0) {                           /* if setting description 
 		}
 	}
 
-	strcpy(currentroom->desc,d);
-	databaseupdated=TRUE;
+	strcpy(CurrentRoom->desc,d);
+	DatabaseUpdated=TRUE;
 
 	return(0);
 }
@@ -1633,7 +1581,7 @@ if(strcmp(o,"here") == 0) {                           /* if setting description 
 * set room description
 */
 
-for(count=0;count<config.roomcount;count++) {
+for(count=0;count<GetNumberOfRooms();count++) {
 	if(regexp(rooms[count].name,o) == TRUE) {                    /* found object */
 		if(currentuser->status < ARCHWIZARD) {
 			if((strcmp(rooms[count].owner,currentuser->name) == 0) && (roomobject->attr & OBJECT_RENAME_OWNER) == 0) {
@@ -1651,7 +1599,7 @@ for(count=0;count<config.roomcount;count++) {
 
 
 		strcpy(rooms[count].desc,d);                              /* set object description */
-		databaseupdated=TRUE;                               /* update database */
+		DatabaseUpdated=TRUE;                               /* update database */
 		return(0);
 	}
 
@@ -1661,39 +1609,59 @@ SetLastError(currentuser,OBJECT_NOT_FOUND);
 return(-1);
 }
 
-void setdatabaseupdatedflag(void) {
-	databaseupdated=TRUE;
+void SetDatabaseUpdateFlag(void) {
+	DatabaseUpdated=TRUE;
 }
 
-void cleardatabaseupdatedflag(void) {
-	databaseupdated=FALSE;
+void ClearDatabaseUpdateFlag(void) {
+	DatabaseUpdated=FALSE;
 }
 
 char *GetDirectionName(int direction) {
 return(&directions[direction]);
 }
 
-int GetRoomFlags(int roomnumber) {
-return(rooms[roomnumber].attr);
+int GetRoomFlags(int RoomNumber) {
+return(rooms[RoomNumber].attr);
 }
 
-char *GetRoomName(int roomnumber) {
-return(&rooms[roomnumber].name);
+char *GetRoomName(int RoomNumber) {
+return(&rooms[RoomNumber].name);
 }
 
-char *GetRoomPointer(int roomnumber) {
-return(&rooms[roomnumber]);
+char *GetRoomPointer(int RoomNumber) {
+return(&rooms[RoomNumber]);
 }
 
-int GetRoomMonsterEvil(int roomnumber,int roommonster) {
-return(rooms[roomnumber].roommonsters[roommonster].evil);
+int GetRoomMonsterEvil(int RoomNumber,int RoomMonster) {
+return(rooms[RoomNumber].roommonsters[RoomMonster].evil);
 }
 
-char *GetRoomMonsterName(int roomnumber,int roommonster) {
-return(&rooms[roomnumber].roommonsters[roommonster].name);
+char *GetRoomMonsterName(int RoomNumber,int RoomMonster) {
+return(&rooms[RoomNumber].roommonsters[RoomMonster].name);
 }
 
-int GetNumberOfMonstersInRoom(int roomnumber) {
-return(rooms[roomnumber].monstercount);
+int GetNumberOfMonstersInRoom(int RoomNumber) {
+return(rooms[RoomNumber].monstercount);
+}
+
+int IsObjectInRoom(char *name,int RoomNumber) {
+roomobject *roomptr;
+
+roomptr=rooms[RoomNumber].roomobjects;
+
+/* search through list of objects */
+
+while(roomptr != NULL) {
+	if(strcmp(name,rooms[RoomNumber].roomobjects->name) == 0) return(TRUE);	/* found object */
+
+	roomptr=roomptr->next;
+}
+
+return(FALSE);
+}
+
+int GetNumberOfRooms(void) {
+return(RoomCount);
 }
 

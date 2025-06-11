@@ -23,15 +23,12 @@
 #include "errors.h"
 #include "user.h"
 
-int changepassword(user *currentuser,char *u) {
-char *newpassprompt="Enter new password:";
-char *userx[BUF_SIZE];
-char *encryptedpassword[BUF_SIZE];
-char *newpass[BUF_SIZE];
-char *buf[BUF_SIZE];
+int ChangePassword(user *currentuser,char *username,char *password) {
+char *EncryptedPassword[BUF_SIZE];
+char *CurrentUserName[BUF_SIZE];
 
-if(!*u) {
-	strcpy(userx,currentuser->name);		/* use default user and password */
+if(!*username) {
+	strcpy(CurrentUserName,currentuser->name);		/* use default user and password */
 }
 else
 {
@@ -40,61 +37,47 @@ else
 		return(-1);
 	}
 
-	strcpy(userx,u);		/* use default user and password */
+	strcpy(CurrentUserName,username);		/* use default user and password */
 }
 
-send(currentuser->handle,newpassprompt,strlen(newpassprompt),0);		/* get new password */
-getpassword(currentuser->handle,newpass);
-
-if(checkpasswordstrength(newpass) == FALSE) {	/* weak password */
+if(CheckPasswordStrength(password) == FALSE) {	/* weak password */
 	SetLastError(currentuser,WEAK_PASSWORD);  
 	return(-1);
 }
 
-strcpy(buf,userx);
-strcpy(encryptedpassword,crypt(newpass,buf));
+strcpy(EncryptedPassword,crypt(password,CurrentUserName));
 
-return(updateuser(currentuser,userx,encryptedpassword,0,0,"",0,currentuser->staminapoints,0,0,"","",0));
+return(UpdateUser(currentuser,CurrentUserName,EncryptedPassword,0,0,"",0,currentuser->staminapoints,0,0,"","",0));
 }
 
-int checkpasswordstrength(char *pass) {
-if(strlen(pass)  < 10) return(FALSE);
+int CheckPasswordStrength(char *password) {
+if(strlen(password)  < 10) return(FALSE);
 
-if(strpbrk(pass,"abcdefghijklmnopqrstuvwxyz") == NULL) return(FALSE);
-if(strpbrk(pass,"ABCDEFGHIJKLMNOPQRSTUVWXYZ") == NULL) return(FALSE);
-if(strpbrk(pass,"0123456789") == NULL) return(FALSE);
-if(strpbrk(pass,"!\"£$%^&*()_-+={}[]:;@'~#<>,.?/|\¬`") == NULL) return(FALSE);
+if(strpbrk(password,"abcdefghijklmnopqrstuvwxyz") == NULL) return(FALSE);
+if(strpbrk(password,"ABCDEFGHIJKLMNOPQRSTUVWXYZ") == NULL) return(FALSE);
+if(strpbrk(password,"0123456789") == NULL) return(FALSE);
+if(strpbrk(password,"!\"£$%^&*()_-+={}[]:;@'~#<>,.?/|\¬`") == NULL) return(FALSE);
 
 return(TRUE);
 }
 
 
 
-int getpassword(int msgsocket,char *buf) {
-char *temp[BUF_SIZE];
-int count;
-char *b;
-char *x;
-
-x=buf;			
-
-memset(temp,0,BUF_SIZE);
+void getpassword(int msgsocket,char *buf) {
+char passchar;
+char *bufptr=buf;
 
 while(1) {
-	if(recv(msgsocket,temp,1,0) == -1) return(-1);	/* read data */
-
-	b=temp;
+	if(recv(msgsocket,*&passchar,1,0) == -1) return(-1);	/* read data */
 
 	send(msgsocket,"\b \b",3,0);
 
-	 if(*b == '\n') {
-	 	if(strlen(buf) > 0) *b=0;
-
-	 	return(count);
+	 if(passchar == '\n') {
+	 	*bufptr=0;
+	 	return;
 	 }
 	
-	 *x++=*b++;
-	 count++;
+	 *bufptr++=passchar;
 	}
 
 return(0);

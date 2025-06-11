@@ -2,7 +2,7 @@
 
 #ifndef RACE_H
 #define RACE_H
-typedef struct {				/* race */
+typedef struct race {				/* race */
  char *name[BUF_SIZE];
  int magic;
  int strength;

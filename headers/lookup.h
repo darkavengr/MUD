@@ -1,1 +1,2 @@
-int address_lookup(char *address,char *buf);
+int LookupHostAddress(char *address,char *buf);
+

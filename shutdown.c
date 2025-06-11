@@ -15,12 +15,13 @@
 #include "winsock.h"
 #endif
 
+#include "shutdown.h"
 #include "errors.h"
 #include "user.h"
 
 char *shutdownmsg="WARNING: server shutdown\r\n";
 
-int mudshutdown(user *currentuser,char *shutdownmessage) {
+int ShutdownServer(user *currentuser,char *shutdownmessage) {
 room *currentroom;
 
 currentroom=currentuser->roomptr;
@@ -46,5 +47,4 @@ WSACleanup();			/* windoze needs wsacleanup */
 
 exit(0);				/* terminate server */
 }
-
 

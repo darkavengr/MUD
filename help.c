@@ -41,35 +41,32 @@
 #include "errors.h"
 #include "user.h"
 
-char *helpprompt="-- Press any key to continue -- or type q to quit";
-
-int showhelp(user *currentuser,char *ht) {
-char *buf[BUF_SIZE];
-char *b;
-int count=0;
+int ShowHelp(user *currentuser,char *HelpTopic) {
+char *ReadBuffer[BUF_SIZE];
 FILE *handle;
-char *helpfile[BUF_SIZE];
+char *HelpFile[BUF_SIZE];
 
-getcwd(buf,BUF_SIZE);
+getcwd(ReadBuffer,BUF_SIZE);
 
-if(!*ht) {		                      /* get help file */
-	sprintf(helpfile,"%s/%s",buf,"/help/help.txt");
+if(!*HelpTopic) {		                      /* get help file */
+	sprintf(HelpFile,"%s/%s",ReadBuffer,"/help/help.txt");
 }
 else
 {
-	sprintf(helpfile,"%s/help/%s.txt",buf,ht);
+	sprintf(HelpFile,"%s/help/%s.txt",ReadBuffer,HelpTopic);
 }
 
-handle=fopen(helpfile,"rb");
+handle=fopen(HelpFile,"rb");
 if(!handle) {                 /* can't open file */
 	SetLastError(currentuser,NO_PARAMS);  
-	free(buf);
+	free(ReadBuffer);
 	return(-1);
 }
 
 do {
-	fgets(buf,BUF_SIZE,handle);
-	send(currentuser->handle,buf,strlen(buf),0);
+	fgets(ReadBuffer,BUF_SIZE,handle);
+
+	send(currentuser->handle,ReadBuffer,strlen(ReadBuffer),0);
 } while(!feof(handle));
 
 fclose(handle);

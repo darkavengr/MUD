@@ -1,7 +1,7 @@
 #include "size.h"
 
 #define MONSTER_SPAWN_PROB	5
-#define ROOM_MONSTER_COUNT	10
+#define ROOM_MONSTER_COUNT	5
 
 #ifndef MONSTER_H
 #define MONSTER_H
@@ -32,5 +32,7 @@ int CreateMonster(void);
 int CopymonsterToRoom(int room,int destroom,int monsterno);
 int DeleteMonster(int room,int monsterno);
 int LoadMonsters(void);
-int AddMonsterToList(monster *sourcemonster,monster *monsterlist,monster *listend);
+int AddMonsterToRoom(monster *sourcemonster,int roomnumber);
+monster *FindFirstMonsterInRoom(int roomnumber);
+monster *FindNextMonsterInRoom(monster *previous);
 

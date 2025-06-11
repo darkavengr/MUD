@@ -1,4 +1,4 @@
-int changepassword(user *currentuser,char *u);
-int checkpasswordstrength(char *pass);
-int getpassword(int msgsocket,char *buf);
+int ChangePassword(user *currentuser,char *username,char *password);
+int CheckPasswordStrength(char *password);
+void getpassword(int msgsocket,char *buf);
 

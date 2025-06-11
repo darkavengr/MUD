@@ -462,3 +462,19 @@ northeast:0
 up:0
 down:0
 end
+begin_room:34
+name:Stone arch
+owner:dungeonmaster
+attr:21
+description:In front of you there is a a stone arch.
+north:36
+south:0
+east:0
+west:0
+northeast:0
+southeast:0
+northwest:0
+northeast:0
+up:0
+down:0
+end

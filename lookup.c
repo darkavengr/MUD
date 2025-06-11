@@ -38,7 +38,7 @@
  #include "winsock.h"
 #endif
 
-int address_lookup(char *address,char *buf) {
+int LookupHostAddress(char *address,char *buf) {
 struct hostent *he;
 struct in_addr **addr_list;
 

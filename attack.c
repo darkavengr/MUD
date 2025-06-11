@@ -66,7 +66,7 @@ int savestamina;
 currentroom=currentuser->roomptr;
 racenext=currentuser->race;
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 
 /*
 * can't attack in haven rooms or attack wizards
@@ -95,41 +95,41 @@ if(found == TRUE) {
 		if(usernext->status >= WIZARD) {
 			sprintf(buf,"%s tries to attack %s but it just bounces off\r\n",usernext->next,currentuser->name);
 
-			sendmudmessagetoall(currentuser->room,buf);
+			SendMessageToAllInRoom(currentuser->room,buf);
 			continue;
 		}
 		else
 		{
 			sprintf(buf,"%s attacks %s causing %d points of damage\r\n",currentuser->name,usernext->name,sta);
-			sendmudmessagetoall(usernext->room,buf);
+			SendMessageToAllInRoom(usernext->room,buf);
 
 			usernext->staminapoints -= sta;
 	
  			currentuser->staminapoints += sta;
 			currentuser->experiencepoints += (sta*currentuser->status);
 
-			updateuser(currentuser,usernext->name,"",0,0,"",0,usernext->staminapoints,0,0,"","",0);
-			updateuser(currentuser,usernext->name,"",0,0,"",0,currentuser->staminapoints,currentuser->experiencepoints,0,"","",0);
+			UpdateUser(currentuser,usernext->name,"",0,0,"",0,usernext->staminapoints,0,0,"","",0);
+			UpdateUser(currentuser,usernext->name,"",0,0,"",0,currentuser->staminapoints,currentuser->experiencepoints,0,"","",0);
 		}
 
 		/* user two attacks user one */
 
 		if(currentuser->status >= WIZARD) {
 			sprintf(buf,"%s tries to attack %s but it just bounces off\r\n",currentuser->name,usernext->name);
-			sendmudmessagetoall(currentuser->room,buf);
+			SendMessageToAllInRoom(currentuser->room,buf);
 		}
 		else
 		{
 			sta=rand() % (racenext->strength + 1) - 0;		/* random damage */
 
 			sprintf(buf,"%s attacks %s causing %d points of damage\r\n",usernext->name,currentuser->name,sta);
-			sendmudmessagetoall(currentuser->room,buf);
+			SendMessageToAllInRoom(currentuser->room,buf);
 
 			currentuser->staminapoints -= sta;
 			currentuser->experiencepoints += (sta*currentuser->status);
 
-			updateuser(currentuser,usernext->name,"",0,0,"",0,usernext->staminapoints,0,0,"","",0);
-			updateuser(currentuser,usernext->name,"",0,0,"",0,currentuser->staminapoints,currentuser->experiencepoints,0,"","",0);
+			UpdateUser(currentuser,usernext->name,"",0,0,"",0,usernext->staminapoints,0,0,"","",0);
+			UpdateUser(currentuser,usernext->name,"",0,0,"",0,currentuser->staminapoints,currentuser->experiencepoints,0,"","",0);
 
 		}
 
@@ -149,13 +149,13 @@ for(count=0;count != rooms[currentroom->room].monstercount;count++) {
 			sta=rand() % (racenext->strength + 1) - 0;		/* random damage */
 	
 			sprintf(buf,"%s attacks %s causing %d points of damage\r\n",currentuser->name,rooms[currentroom->room].roommonsters[count].name,sta);
-			sendmudmessagetoall(currentuser->room,buf);
+			SendMessageToAllInRoom(currentuser->room,buf);
 
 			rooms[currentroom->room].roommonsters[count].stamina -= sta;
 
 			if(rooms[currentroom->room].roommonsters[count].stamina <= 0) { /* monster defeated */
 				sprintf(buf,"%s has killed the %s!\r\n",currentuser->name,rooms[currentroom->room].roommonsters[count].name);
-				sendmudmessagetoall(currentuser->room,buf);
+				SendMessageToAllInRoom(currentuser->room,buf);
 
 				sprintf(buf,"You have gained %d stamina points\r\n",(savestamina*currentuser->status));
 				send(currentuser->handle,buf,strlen(buf),0);
@@ -176,10 +176,10 @@ for(count=0;count != rooms[currentroom->room].monstercount;count++) {
 
 			currentuser->staminapoints -= sta;
 
-			updateuser(currentuser,currentuser->name,"",0,0,"",0,currentuser->staminapoints,0,0,"","",0);
+			UpdateUser(currentuser,currentuser->name,"",0,0,"",0,currentuser->staminapoints,0,0,"","",0);
 
 			sprintf(buf,"%s attacks %s causing %d points of damage\r\n",rooms[currentroom->room].roommonsters[count].name,currentuser->name,sta);
-			sendmudmessagetoall(currentuser->room,buf);
+			SendMessageToAllInRoom(currentuser->room,buf);
 		}
 
 		break;

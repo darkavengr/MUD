@@ -38,18 +38,15 @@ char *isrel="/config/issue.mud";
 char *mudrel="/config/mud.mud";
 char *MustBeTrueOrFalse="mud: %d: value must be true or false\n";
 
-int getconfig(void) {
+int GetConfiguration(void) {
 FILE *handle;
-char *linebuffer[BUF_SIZE];
-int lc;
-char *linetokens[19][255];
-char c;
-char *b;
-int errorcount=0;
-int count;
+char *LineBuffer[BUF_SIZE];
+int LineCount;
+char *LineTokens[BUF_SIZE][BUF_SIZE];
+int ErrorCount=0;
 
-sprintf(mudconf,"%s/%s",getcwd(linebuffer,BUF_SIZE),mudrel);		/* get absolute path of configuration files */
-sprintf(isconf,"%s/%s",getcwd(linebuffer,BUF_SIZE),isrel);
+sprintf(mudconf,"%s/%s",getcwd(LineBuffer,BUF_SIZE),mudrel);		/* get absolute path of configuration files */
+sprintf(isconf,"%s/%s",getcwd(LineBuffer,BUF_SIZE),isrel);
 
 /* load general configuration */
 
@@ -61,108 +58,108 @@ if(handle == NULL) {                                           /* couldn't open 
 	exit(NOCONFIGFILE);
 }
 
-lc=0;
+LineCount=0;
 
 while(!feof(handle)) {
-	fgets(linebuffer,BUF_SIZE,handle);			/* get data */
+	fgets(LineBuffer,BUF_SIZE,handle);			/* get data */
 
-	if((char) *linebuffer == '\n') continue;		/* skip blank lines */
-	if((char) *linebuffer == '#') continue;			/* skip comments */
+	if((char) *LineBuffer == '\n') continue;		/* skip blank lines */
+	if((char) *LineBuffer == '#') continue;			/* skip comments */
 
-	removenewline(linebuffer);				/* remove newline character */
+	RemoveNewLine(LineBuffer);				/* remove newline character */
 
-	tokenize_line(linebuffer,linetokens,"=");			/* tokenize line */
+	TokenizeLine(LineBuffer,LineTokens,"=");			/* tokenize line */
 
-	lc++;                                          /* line count */
+	LineCount++;                                          /* line count */
 
-	if(strcmp(linetokens[0],"server") == 0) {
-		strcpy(config.mudserver,linetokens[1]);
+	if(strcmp(LineTokens[0],"server") == 0) {
+		strcpy(config.mudserver,LineTokens[1]);
 	}
-	else if(strcmp(linetokens[0],"port") == 0) {
-		config.mudport=atoi(linetokens[1]);   
+	else if(strcmp(LineTokens[0],"port") == 0) {
+		config.mudport=atoi(LineTokens[1]);   
 	}
-	else if(strcmp(linetokens[0],"objectresettime") == 0) {        /* how often to reset objects */
-		config.objectresettime=getvaluefromtimestring(linetokens[1]);
+	else if(strcmp(LineTokens[0],"objectresettime") == 0) {        /* how often to reset objects */
+		config.objectresettime=GetValueFromTimeString(LineTokens[1]);
 	}
-	else if(strcmp(linetokens[0],"databasesavetime") == 0) {	   /* how often to save database */
-		config.databaseresettime=getvaluefromtimestring(linetokens[1]);
+	else if(strcmp(LineTokens[0],"databasesavetime") == 0) {	   /* how often to save database */
+		config.databaseresettime=GetValueFromTimeString(LineTokens[1]);
 	}
-	else if(strcmp(linetokens[0],"userresettime") == 0) {                /* how often to reset users */
-		config.userresettime=getvaluefromtimestring(linetokens[1]);
+	else if(strcmp(LineTokens[0],"userresettime") == 0) {                /* how often to reset users */
+		config.userresettime=GetValueFromTimeString(LineTokens[1]);
 	}
-	else if(strcmp(linetokens[0],"configsavetime") == 0) {		/* backup database before save */
-		config.configsavetime=getvaluefromtimestring(linetokens[1]);
+	else if(strcmp(LineTokens[0],"configsavetime") == 0) {		/* backup database before save */
+		config.configsavetime=GetValueFromTimeString(LineTokens[1]);
 	}
-	else if(strcmp(linetokens[0],"databasebackup") == 0) {		/* backup database before save */
+	else if(strcmp(LineTokens[0],"databasebackup") == 0) {		/* backup database before save */
 		config.databasebackup=-1;
 
-		if(strcmp(linetokens[1],"true") == 0) config.databasebackup=TRUE;
-		if(strcmp(linetokens[1],"false") == 0) config.databasebackup=FALSE;
+		if(strcmp(LineTokens[1],"true") == 0) config.databasebackup=TRUE;
+		if(strcmp(LineTokens[1],"false") == 0) config.databasebackup=FALSE;
 
-		if(config.databasebackup == -1) printf(MustBeTrueOrFalse,lc);	/* invalid option */
+		if(config.databasebackup == -1) printf(MustBeTrueOrFalse,LineCount);	/* invalid option */
 
 	}
-	else if(strcmp(linetokens[0],"allowplayerkilling") == 0) {		/* allow player killing */
+	else if(strcmp(LineTokens[0],"allowplayerkilling") == 0) {		/* allow player killing */
 		config.allowplayerkilling=-1;
 
-		if(strcmp(linetokens[1],"true") == 0) config.allowplayerkilling=TRUE;
-		if(strcmp(linetokens[1],"false") == 0) config.allowplayerkilling=FALSE;
+		if(strcmp(LineTokens[1],"true") == 0) config.allowplayerkilling=TRUE;
+		if(strcmp(LineTokens[1],"false") == 0) config.allowplayerkilling=FALSE;
 
-		if(config.allowplayerkilling == -1) printf(MustBeTrueOrFalse,lc);	/* invalid option */
+		if(config.allowplayerkilling == -1) printf(MustBeTrueOrFalse,LineCount);	/* invalid option */
 	 }
-	 else if(strcmp(linetokens[0],"allownewaccounts") == 0) {		/* allow new accounts */
+	 else if(strcmp(LineTokens[0],"allownewaccounts") == 0) {		/* allow new accounts */
 		config.allownewaccounts=-1;
 
-		if(strcmp(linetokens[1],"true") == 0) config.allownewaccounts=TRUE;
-		if(strcmp(linetokens[1],"false") == 0) config.allownewaccounts=FALSE;
+		if(strcmp(LineTokens[1],"true") == 0) config.allownewaccounts=TRUE;
+		if(strcmp(LineTokens[1],"false") == 0) config.allownewaccounts=FALSE;
 
-		if(config.allownewaccounts == -1) printf(MustBeTrueOrFalse,lc);	/* invalid option */
+		if(config.allownewaccounts == -1) printf(MustBeTrueOrFalse,LineCount);	/* invalid option */
 	 }
-	 else if(strcmp(linetokens[0],"monsterresettime") == 0) {		/* how often to reset monsters */
-		config.monsterresettime=getvaluefromtimestring(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"monsterresettime") == 0) {		/* how often to reset monsters */
+		config.monsterresettime=GetValueFromTimeString(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"banresettime") == 0) {		/* how often to reset monsters */
-		config.banresettime=getvaluefromtimestring(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"banresettime") == 0) {		/* how often to reset monsters */
+		config.banresettime=GetValueFromTimeString(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"maxobjectsperroom") == 0) {		/* how often to reset monsters */
-		config.roomobjectnumber=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"maxobjectsperroom") == 0) {		/* how often to reset monsters */
+		config.roomobjectnumber=atoi(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"pointsforwarrior") == 0) {
-		config.pointsforwarrior=atoi(linetokens[1]);	/* points for levels */
+	 else if(strcmp(LineTokens[0],"pointsforwarrior") == 0) {
+		config.pointsforwarrior=atoi(LineTokens[1]);	/* points for levels */
 	 }
-	 else if(strcmp(linetokens[0],"pointsforhero") == 0) {
-		config.pointsforhero=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"pointsforhero") == 0) {
+		config.pointsforhero=atoi(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"pointsforchampion") == 0) {
-		config.pointsforchampion=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"pointsforchampion") == 0) {
+		config.pointsforchampion=atoi(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"pointsforsuperhero") == 0) {
-		config.pointsforsuperhero=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"pointsforsuperhero") == 0) {
+		config.pointsforsuperhero=atoi(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"pointsforenchanter") == 0) {
-		config.pointsforenchanter=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"pointsforenchanter") == 0) {
+		config.pointsforenchanter=atoi(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"pointsforsorceror") == 0) {
-		config.pointsforsorceror=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"pointsforsorceror") == 0) {
+		config.pointsforsorceror=atoi(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"pointsfornecromancer") == 0) {
-		config.pointsfornecromancer=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"pointsfornecromancer") == 0) {
+		config.pointsfornecromancer=atoi(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"pointsforlegend") == 0) {
-		config.pointsforlegend=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"pointsforlegend") == 0) {
+		config.pointsforlegend=atoi(LineTokens[1]);
 	 }
-	 else if(strcmp(linetokens[0],"pointsforwizard") == 0) {
-		config.pointsforwizard=atoi(linetokens[1]);
+	 else if(strcmp(LineTokens[0],"pointsforwizard") == 0) {
+		config.pointsforwizard=atoi(LineTokens[1]);
 	 }
 	 else {
-		 printf("\nmud: %d: unknown configuration option %s in %s\n",lc,linetokens[0],mudconf);		/* unknown configuration option */
-		 errorcount++;	
+		 printf("\nmud: %d: unknown configuration option %s in %s\n",LineCount,LineTokens[0],mudconf);		/* unknown configuration option */
+		 ErrorCount++;	
 	}
 }
 
 fclose(handle);
 
-if(errorcount == 0) {
+if(ErrorCount == 0) {
 	printf("ok\n");
 }
 else
@@ -174,9 +171,9 @@ else
 
 printf("Loading database...");
 
-errorcount += loaddatabase();
+ErrorCount += LoadDatabase();
 
-if(errorcount == 0) {
+if(ErrorCount == 0) {
 	printf("ok\n");
 }
 else
@@ -189,9 +186,9 @@ else
 */
 
 printf("Loading spells...");
-errorcount += loadspells();
+ErrorCount += LoadSpells();
 
-if(errorcount == 0) {
+if(ErrorCount == 0) {
 	printf("ok\n");
 }
 else
@@ -203,12 +200,12 @@ printf("\n");
 * load monsters
 */
 
-lc=0;
+LineCount=0;
 
 printf("Loading monsters...");
-errorcount += LoadMonsters();
+ErrorCount += LoadMonsters();
 
-if(errorcount == 0) {
+if(ErrorCount == 0) {
 	printf("ok\n");
 }
 else
@@ -221,8 +218,8 @@ else
 */
 printf("Loading races...");
 
-errorcount += loadraces();
-if(errorcount == 0) {
+ErrorCount += LoadRaces();
+if(ErrorCount == 0) {
 	printf("ok\n");
 }
 else
@@ -232,9 +229,9 @@ else
 
 printf("Loading classes...");
 
-errorcount += loadclasses();
+ErrorCount += LoadClasses();
 
-if(errorcount == 0) {
+if(ErrorCount == 0) {
 	printf("ok\n");
 }
 else
@@ -269,9 +266,9 @@ printf("ok\n");
 
 printf("Loading users...");
 
-errorcount += loadusers();
+ErrorCount += LoadUsers();
 
-if(errorcount == 0) {
+if(ErrorCount == 0) {
 	printf("ok\n");
 }
 else
@@ -289,16 +286,16 @@ printf("ok\n");
 */
 
 printf("Loading bans...");
-loadbans();
+LoadBans();
 printf("ok\n");
 
 printf("Creating objects...");
 
-resetobjects();
+GenerateObjects();
 printf("ok\n");
 
-if(errorcount > 0) {			/* errors */
-	printf("%d errors\n",errorcount);
+if(ErrorCount > 0) {			/* errors */
+	printf("%d errors\n",ErrorCount);
 	exit(CONFIG_ERROR);
 }
 
@@ -318,12 +315,12 @@ fprintf(handle,"port=%d\n",config.mudport);
 
 memset(buf,0,BUF_SIZE);
 
-createtimestring(config.objectresettime,buf);
+CreateTimeString(config.objectresettime,buf);
 fprintf(handle,"objectresettime=%s\n",buf);
 
 memset(buf,0,BUF_SIZE);
 
-createtimestring(config.databaseresettime,buf);
+CreateTimeString(config.databaseresettime,buf);
 fprintf(handle,"databasesavetime=%s\n",buf);
 
 fputs("databasebackup=",handle);
@@ -356,12 +353,12 @@ else
 
 memset(buf,0,BUF_SIZE);
 
-createtimestring(config.monsterresettime,buf);
+CreateTimeString(config.monsterresettime,buf);
 
 fprintf(handle,"monsterresettime=%s\n",buf);
 
 memset(buf,0,BUF_SIZE);
-createtimestring(config.banresettime,buf);
+CreateTimeString(config.banresettime,buf);
 
 fprintf(handle,"banresettime=%s\n",buf);
 fprintf(handle,"pointsforhero=%d\n",config.pointsforhero);
@@ -378,11 +375,11 @@ fclose(handle);
 return(0);
 }
 
-void getconfigurationinformation(CONFIG *buf) {
+void GetConfigurationInformation(CONFIG *buf) {
 memcpy(buf,&config,sizeof(CONFIG));
 }
 
-void updateconfigurationinformation(CONFIG *buf) {
+void UpdateConfigurationInformation(CONFIG *buf) {
 memcpy(&config,buf,sizeof(CONFIG));
 }
 

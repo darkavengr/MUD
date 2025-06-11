@@ -79,7 +79,7 @@ unsigned int (*call_statement)(user *,int,void *);		/* function pointer */
 		 {  NULL,"VERSION",&version_statement },\
 		 {  NULL,"DESCRIBE",&describe_statement },\
 		 {  NULL,"GET",&get_statement },\
-		 {  NULL,"DROP",&drop_statement },\
+		 {  NULL,"DropObject",&drop_statement },\
 		 {  NULL,"HELP",&help_statement },\
 		 {  NULL,"PASSWORD",&password_statement },\
 		 {  NULL,"SPELL",&spell_statement },\
@@ -97,7 +97,7 @@ unsigned int (*call_statement)(user *,int,void *);		/* function pointer */
 		 {  NULL,"SETXP",&setxp_statement },\
 		 {  NULL,"SETMP",&setmp_statement },\
 		 {  NULL,"SETSP",&setsp_statement },\
-		 {  NULL,"BANIP",&banip_statement },\
+		 {  NULL,"BANIP",&ban_statement },\
 		 {  NULL,"UNBAN",&unban_statement },\
 		 {  NULL,"BAN",&ban_statement },\
 		 {  NULL,"KILL",&kill_statement },\
@@ -149,7 +149,7 @@ printf("command=%s\n",s);
 currentroom=currentuser->roomptr;  
 
 memset(command_tokens,0,10*BUF_SIZE);
-tc=tokenize_line(s,command_tokens," ");			/* tokenize line */
+tc=TokenizeLine(s,command_tokens," ");			/* tokenize line */
 
 strcpy(param,command_tokens[2]);
 strcat(param," ");
@@ -166,7 +166,7 @@ statementcount=0;
 do {
 	if(statements[statementcount].statement == NULL) break;
 
-	touppercase(command_tokens[0]);
+	ToUppercase(command_tokens[0]);
 
 	if(strcmp(statements[statementcount].statement,command_tokens[0]) == 0) return(statements[statementcount].call_statement(currentuser,tc,command_tokens));
 
@@ -271,7 +271,7 @@ else
 	sprintf(buf,"Somebody Says, \042%s\042\r\n",param);
 }
 	
-return(sendmudmessagetoall(currentuser->room,buf));
+return(SendMessageToAllInRoom(currentuser->room,buf));
 }
 
 int whisper_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -290,7 +290,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(sendmudmessage(currentuser,command_tokens[1],param_notfirsttwotokens));
+return(SendMessage(currentuser,command_tokens[1],param_notfirsttwotokens));
 }
 
 int pose_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -355,7 +355,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(pickup(currentuser,command_tokens[1]));
+return(PickUpObject(currentuser,command_tokens[1]));
 }
 
 int drop_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -364,15 +364,15 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(drop(currentuser,command_tokens[1]));
+return(DropObject(currentuser,command_tokens[1]));
 }
 
 int help_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(showhelp(currentuser,command_tokens[1]));
+return(ShowHelp(currentuser,command_tokens[1]));
 }
 
 int password_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(changepassword(currentuser,command_tokens[1]));
+return(ChangePassword(currentuser,command_tokens[1]));
 }
 
 int spell_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -381,7 +381,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(castspell(currentuser,command_tokens[1],command_tokens[2]));
+return(CastSpell(currentuser,command_tokens[1],command_tokens[2]));
 }
 
 int fight_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -389,11 +389,11 @@ return(attack(currentuser,command_tokens[1]));
 }
 
 int score_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(score(currentuser,command_tokens[1]));
+return(DisplayScore(currentuser,command_tokens[1]));
 }
 
 int inv_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(inventory(currentuser,command_tokens[1]));
+return(DisplayInventory(currentuser,command_tokens[1]));
 }
 
 int give_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -402,7 +402,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(give(currentuser,command_tokens[1],command_tokens[2]));
+return(GiveObjectToUser(currentuser,command_tokens[1],command_tokens[2]));
 }
 
 int xyzzy_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -426,7 +426,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-updateuser(currentuser,command_tokens[1],"",0,0,"",0,0,0,0,command_tokens[1],"",0);
+UpdateUser(currentuser,command_tokens[1],"",0,0,"",0,0,0,0,command_tokens[1],"",0);
 return(0);
 }
 
@@ -437,7 +437,7 @@ int set_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SI
 char *buf[BUF_SIZE];
 CONFIG config;
 
-getconfigurationinformation(&config);
+GetConfigurationInformation(&config);
 
 if(currentuser->status < ARCHWIZARD) {		/* can't do this yet */
 	SetLastError(currentuser,NOT_YET);
@@ -447,130 +447,130 @@ if(currentuser->status < ARCHWIZARD) {		/* can't do this yet */
 if(strcmp(command_tokens[1],"port") == 0) {	
 	config.mudport=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"server") == 0) {	
 	strcpy(config.mudserver,command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"object_reset_time") == 0) {	
 	config.objectresettime=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"database_save_time") == 0) {	
 	config.databaseresettime=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"user_reset_time") == 0) {	
 	config.userresettime=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"database_save_time") == 0) {	
 	config.databaseresettime=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 
 if(strcmp(command_tokens[1],"config_save_time") == 0) {	
 	config.configsavetime=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"allow_player_killing") == 0) {	
 	if(strcmp(command_tokens[2],"true") == 0) config.allowplayerkilling=TRUE;
 	if(strcmp(command_tokens[2],"false") == 0) config.allowplayerkilling=FALSE;
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"allow_new_accounts_") == 0) {	
 	if(strcmp(command_tokens[2],"true") == 0) config.allownewaccounts=TRUE;
 	if(strcmp(command_tokens[2],"false") == 0) config.allownewaccounts=FALSE;
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"monster_reset_time") == 0) {	
 	config.monsterresettime=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"ban_reset_time") == 0) {	
 	config.banresettime=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_warrior") == 0) {	
 	config.pointsforwarrior=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_hero") == 0) {	
 	config.pointsforhero=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_warrior") == 0) {	
 	config.pointsforwarrior=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_champion") == 0) {	
 	config.pointsforchampion=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_superhero") == 0) {	
 	config.pointsforsuperhero=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_enchanter") == 0) {	
 	config.pointsforenchanter=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_sorceror") == 0) {	
 	config.pointsforsorceror=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_necromancer") == 0) {	
 	config.pointsfornecromancer=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_legend") == 0) {	
 	config.pointsforlegend=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 if(strcmp(command_tokens[1],"points_for_wizard") == 0) {	
 	config.pointsforwizard=atoi(command_tokens[2]);
 
-	return(updateconfigurationinformation(&config));
+	return(UpdateConfigurationInformation(&config));
 }
 
 sprintf(buf,"Bad option %s\r\n",command_tokens[2]);
@@ -589,7 +589,7 @@ if(!*command_tokens[1] && currentuser->status < WIZARD) {			/* can't do this yet
 	return(-1);
 }
 
-return(updateuser(currentuser,command_tokens[0],"",atoi(command_tokens[1]),0,"",0,0,0,0,"","",0));
+return(UpdateUser(currentuser,command_tokens[0],"",atoi(command_tokens[1]),0,"",0,0,0,0,"","",0));
 }
 
 int setgender_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -598,7 +598,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(setgender(currentuser,command_tokens[1],command_tokens[2]));
+return(SetUserGender(currentuser,command_tokens[1],command_tokens[2]));
 }
 
 int setlevel_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -607,7 +607,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(setlevel(currentuser,command_tokens[1],command_tokens[2]));
+return(SetUserLevel(currentuser,command_tokens[1],command_tokens[2]));
 }
 
 int setclass_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -616,7 +616,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(updateuser(currentuser,command_tokens[1],"",0,0,"",0,0,0,0,"",command_tokens[2],0));
+return(UpdateUser(currentuser,command_tokens[1],"",0,0,"",0,0,0,0,"",command_tokens[2],0));
 }
 
 int setxp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -625,7 +625,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(setpoints(currentuser,command_tokens[1],command_tokens[2],EXPERIENCEPOINTS));
+return(SetUserPoints(currentuser,command_tokens[1],command_tokens[2],EXPERIENCEPOINTS));
 }
 
 int setmp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -634,7 +634,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(setpoints(currentuser,command_tokens[1],command_tokens[2],MAGICPOINTS));
+return(SetUserPoints(currentuser,command_tokens[1],command_tokens[2],MAGICPOINTS));
 }
 
 int setsp_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -643,16 +643,16 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(setpoints(currentuser,command_tokens[1],command_tokens[2],STAMINAPOINTS));
+return(SetUserPoints(currentuser,command_tokens[1],command_tokens[2],STAMINAPOINTS));
 }
 
-int banip_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
+int BanUserByIPAddress_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
 if(tc < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(banip(currentuser,command_tokens[1]));
+return(BanUserByIPAddress(currentuser,command_tokens[1]));
 }
 
 int unban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -661,11 +661,11 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(unbanip(currentuser,command_tokens[1]));
+return(UnBanUserByIPAddress(currentuser,command_tokens[1]));
 }
 
 int ban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(userban(currentuser,command_tokens[1]));
+return(BanUserByName(currentuser,command_tokens[1]));
 }
 
 int kill_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -674,7 +674,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(killuser(currentuser,command_tokens[1]));
+return(KillUser(currentuser,command_tokens[1]));
 }
 
 int create_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -683,7 +683,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(createobject(currentuser,command_tokens[1]));
+return(CreateObject(currentuser,command_tokens[1]));
 }
 
 int delete_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -692,7 +692,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(deletething(currentuser,command_tokens[1]));
+return(DeleteObject(currentuser,command_tokens[1]));
 }
 
 int rename_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -701,7 +701,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(renameobject(currentuser,command_tokens[1],command_tokens[2]));
+return(RenameObject(currentuser,command_tokens[1],command_tokens[2]));
 }
 
 int chown_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {		/* set object owner */
@@ -710,7 +710,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(setowner(currentuser,command_tokens[1],command_tokens[2]));
+return(SetOwner(currentuser,command_tokens[1],command_tokens[2]));
 }
 
 int chmod_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -719,7 +719,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(setobjectattributes(currentuser,command_tokens[1],command_tokens[2]));
+return(SetObjectAttributes(currentuser,command_tokens[1],command_tokens[2]));
 }
 
 int copy_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -728,7 +728,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(copyobject(currentuser,command_tokens[1],atoi(command_tokens[2])));
+return(CopyObject(currentuser,command_tokens[1],atoi(command_tokens[2])));
 }
 
 int move_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -737,15 +737,15 @@ if(tc < 2) {
 	return(-1);
 }
 
-if(copyobject(currentuser,command_tokens[1],atoi(command_tokens[2])) == -1) return(-1);
+if(CopyObject(currentuser,command_tokens[1],atoi(command_tokens[2])) == -1) return(-1);
 
-if(deletething(currentuser,command_tokens[1]) == -1) return(-1);
+if(DeleteObject(currentuser,command_tokens[1]) == -1) return(-1);
 
 return(0);
 }
 
 int dig_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(createroom(currentuser,command_tokens[1]));
+return(CreateRoom(currentuser,command_tokens[1]));
 }
 
 int force_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -765,11 +765,11 @@ for(count=2;count<tc;count++) {
 	strcat(param," ");
 }
 
-return(force(currentuser,command_tokens[1],param));
+return(ForceUser(currentuser,command_tokens[1],param));
 }
 
 int listban_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(listbans(currentuser,command_tokens[1]));
+return(ListBans(currentuser,command_tokens[1]));
 }
 
 int go_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -801,7 +801,7 @@ if(tc < 2) {
 	return(-1);
 }
 
-return(take(currentuser,command_tokens[1],command_tokens[2]));
+return(TakeObject(currentuser,command_tokens[1],command_tokens[2]));
 }
 
 int reload_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -810,11 +810,11 @@ if(currentuser->status < ARCHWIZARD) {		/* can't do this yet */
 	return(-1);
 }
 
-return(getconfig());
+return(GetConfiguration());
 }
 
 int shutdown_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(mudshutdown(currentuser,command_tokens[1]));
+return(ShutdownServer(currentuser,command_tokens[1]));
 }
 
 int addclass_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -827,7 +827,7 @@ if(tc < 2) {
 
 strcpy(class.name,command_tokens[1]);
 	
-if(addnewclass(currentuser,&class) == -1) {
+if(AddNewClass(currentuser,&class) == -1) {
 	SetLastError(currentuser,NO_MEM);  
 	return(-1);
 }
@@ -852,7 +852,7 @@ race.wisdom=atoi(command_tokens[6]);
 race.intelligence=atoi(command_tokens[7]);
 race.stamina=atoi(command_tokens[8]);
 
-if(addnewrace(&race) == -1) {
+if(AddNewRace(&race) == -1) {
 	SetLastError(currentuser,NO_MEM);
 	return(-1);
 }
@@ -861,23 +861,23 @@ return(0);
 }
 
 int dropdead_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(updateuser(currentuser,currentuser->name,"",0,0,"",0,0,0,0,"","",0));
+return(UpdateUser(currentuser,currentuser->name,"",0,0,"",0,0,0,0,"","",0));
 }
 
 int invisible_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(invisible(currentuser,command_tokens[1],FALSE));
+return(SetVisibleMode(currentuser,command_tokens[1],FALSE));
 }
 
 int visible_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(visible(currentuser,command_tokens[1],TRUE));
+return(SetVisibleMode(currentuser,command_tokens[1],TRUE));
 }
 
 int gag_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(gag(currentuser,command_tokens[1],TRUE));
+return(GagUser(currentuser,command_tokens[1],TRUE));
 }
 
 int ungag_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
-return(gag(currentuser,command_tokens[1],FALSE));
+return(GagUser(currentuser,command_tokens[1],FALSE));
 }
 
 int setexit_statement(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]) {
@@ -905,6 +905,6 @@ for(whichroom=0;whichroom<11;whichroom++) {
 	if(strcmp(GetDirectionName(whichroom),command_tokens[4]) == 0) break;
 }
 
-return(setexit(currentuser,room,atoi(command_tokens[2]),whichroom));
+return(SetExit(currentuser,room,atoi(command_tokens[2]),whichroom));
 }
 
