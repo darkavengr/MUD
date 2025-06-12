@@ -248,8 +248,9 @@ while(1) {
 	        			close(AcceptSocket);
 			        }
 
+			        send(AcceptSocket,config.isbuf,config.issuecount,0);  	/* send banner message
+
 				/* send username prompt */
-			        send(AcceptSocket,config.isbuf,config.issuecount,0);  	
 
 		       		if(config.allownewaccounts == TRUE) {
                       			send(AcceptSocket,NewUserAccountPrompt,strlen(NewUserAccountPrompt),0);  	
@@ -263,10 +264,10 @@ while(1) {
 	 		}
 	 		else
          		{				/* existing connection */
+
 	  			memset(connections[SocketCount].OutputBuffer,0,BUF_SIZE);
 
 				/* get line from connection */
-		
 
 			        if(recv(SocketCount,connections[SocketCount].OutputBuffer,BUF_SIZE,0) == -1) {	/* get data */
 					FD_CLR(SocketCount,&currentset);
@@ -281,15 +282,7 @@ while(1) {
 	
 				switch(connections[SocketCount].connectionstate) {
 					
-	     	 			case STATE_GETUSER:			/* prompt for user name */
-						if(config.allownewaccounts == TRUE) {
-							send(SocketCount,NewUserAccountPrompt,strlen(NewUserAccountPrompt),0);  	
-						}
-						else
-						{
-			        		       send(SocketCount,UsernamePrompt,strlen(UsernamePrompt),0);  	
-						}
-
+	     	 			case STATE_GETUSER:			/* get username */
 	   		       			connections[SocketCount].connectionstate=STATE_GETPASSWORD;
 
 			       			strcpy(connections[SocketCount].upass,connections[SocketCount].buf);
@@ -320,7 +313,15 @@ while(1) {
 						{
 							PrintError(SocketCount,INVALID_LOGIN);
 
-							connections[SocketCount].connectionstate=STATE_GETUSER;
+					 		if(config.allownewaccounts == TRUE) {
+		        	              			send(SocketCount,NewUserAccountPrompt,strlen(NewUserAccountPrompt),0);  	
+							}
+							else
+							{
+						               send(SocketCount,UsernamePrompt,strlen(UsernamePrompt),0);  	
+							}
+
+							connections[AcceptSocket].connectionstate=STATE_GETPASSWORD;	/* move to next state */
 							break;
 						}
 

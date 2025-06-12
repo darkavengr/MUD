@@ -230,7 +230,7 @@ memcpy(rooms[RoomNumber].roommonsters_last,sourcemonster,sizeof(monster));	/* co
 
 rooms[RoomNumber].roommonsters_last->next=NULL;
 
-printf("Created monster %s\n",rooms[RoomNumber].roommonsters_last->name);
+//printf("Created monster %s\n",rooms[RoomNumber].roommonsters_last->name);
 return(0);
 }
 

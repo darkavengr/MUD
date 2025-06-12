@@ -29,7 +29,7 @@ char *errors[] = {
 	"Unknown race\r\n",\
 	"You must enter a password\r\n",\
 	"User BANNED\r\n",\
-   	"Invalid login\r\n",\
+   	"Invalid username or password\r\n",\
 	"Player vs player combat not allowed\r\n",\
 	"I don't understand that\r\n",\
    	"Missing parameters\r\n",\

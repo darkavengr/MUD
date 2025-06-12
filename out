@@ -1,6 +1,0 @@
-mud.o: In function `main':
-mud.c:(.text+0x1b42): undefined reference to `docommand'
-user.o: In function `ForceUser':
-user.c:(.text+0x7e1): undefined reference to `docommand'
-collect2: error: ld returned 1 exit status
-make: *** [mud] Error 1

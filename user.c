@@ -1799,6 +1799,7 @@ while(usernext != NULL) {
 	usernext=usernext->next;
 }
 
+printf("login failed\n");
 return(-1);
 }
 

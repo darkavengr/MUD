@@ -44,7 +44,7 @@ char *ObjectsConfigurationFile="/config/reset.mud";
 char *RoomMessage="\r\nIn the room there is: ";
 char *RoomExits[]={ "North ","South ","East ","West ","Northeast ","Northwest ","Southeast ","Southwest ","Up ","Down " };
 room *rooms=NULL;
-int RoomCount=0;
+int NumberOfRooms=0;
 
 /* update database file */
 
@@ -54,10 +54,10 @@ char *NewDatabaseName[BUF_SIZE];
 time_t rawtime;
 struct tm *timeinfo;
 roomobject *roomobjects;
-int RoomCount;
 CONFIG config;
 char *CurrentDirectory[BUF_SIZE];
 char *BackupFilename[BUF_SIZE];
+int RoomCount;
 
 GetConfigurationInformation(&config);
 
@@ -147,7 +147,7 @@ if(handle == NULL) {                                           /* couldn't open 
 	exit(NOCONFIGFILE);
 }
 
-RoomCount=0;
+NumberOfRooms=0;
 
 	while(!feof(handle)) {
 		fgets(LineBuffer,BUF_SIZE,handle);				/*' get and parse line */
@@ -173,61 +173,62 @@ RoomCount=0;
 			}
 			else
 			{
-				RoomCount++;
+				NumberOfRooms++;
 
-				rooms=realloc(rooms,sizeof(room)*(RoomCount+1));
+				rooms=realloc(rooms,sizeof(room)*(NumberOfRooms+1));
 				if(rooms == NULL) {
 					perror("\nmud:");
 					exit(NOMEM);
 				}
 			}
 
-			rooms[RoomCount].room=atoi(LineTokens[1]);
+			rooms[NumberOfRooms].room=atoi(LineTokens[1]);
+			
 			continue;
 		}
 		else if(strcmp(LineTokens[0],"name") == 0) {		/* room name */
-			strcpy(rooms[RoomCount].name,LineTokens[1]);
+			strcpy(rooms[NumberOfRooms].name,LineTokens[1]);
 			continue;
 		}
 		else if(strcmp(LineTokens[0],"owner") == 0) {		/* owner */
-			strcpy(rooms[RoomCount].owner,LineTokens[1]);
+			strcpy(rooms[NumberOfRooms].owner,LineTokens[1]);
 			continue;
 		}
 		else if(strcmp(LineTokens[0],"attr") == 0) {		/* attributes */
-			rooms[RoomCount].attr=atoi(LineTokens[1]);
+			rooms[NumberOfRooms].attr=atoi(LineTokens[1]);
 			continue;
 		}
 		else if(strcmp(LineTokens[0],"description") == 0) {		/* description */
-			strcpy(rooms[RoomCount].desc,LineTokens[1]);
+			strcpy(rooms[NumberOfRooms].desc,LineTokens[1]);
 			continue;
 		}
 		else if(strcmp(LineTokens[0],"name") == 0) {
-			strcpy(rooms[RoomCount].name,LineTokens[1]);
+			strcpy(rooms[NumberOfRooms].name,LineTokens[1]);
 			continue;
 		}
 		else if(strcmp(LineTokens[0],"object") == 0) {		/* room object */
 
-			if(rooms[RoomCount].roomobjects == NULL) {		/* first object */
-				rooms[RoomCount].roomobjects=calloc(1,sizeof(roomobject));		/* add link to end */
+			if(rooms[NumberOfRooms].roomobjects == NULL) {		/* first object */
+				rooms[NumberOfRooms].roomobjects=calloc(1,sizeof(roomobject));		/* add link to end */
 
-				if(rooms[RoomCount].roomobjects == NULL) {		/* can't allocate */
+				if(rooms[NumberOfRooms].roomobjects == NULL) {		/* can't allocate */
 					perror("mud:");
 					exit(NOMEM);
 				}
 
-				roomobject=rooms[RoomCount].roomobjects;
-				rooms[RoomCount].roomobjects_last=rooms[RoomCount].roomobjects;
+				roomobject=rooms[NumberOfRooms].roomobjects;
+				rooms[NumberOfRooms].roomobjects_last=rooms[NumberOfRooms].roomobjects;
 			}
 			else
 			{
-				rooms[RoomCount].roomobjects_last->next=calloc(1,sizeof(roomobject));		/* add link to end */
-				if(rooms[RoomCount].roomobjects_last->next == NULL) {		/* can't allocate */
+				rooms[NumberOfRooms].roomobjects_last->next=calloc(1,sizeof(roomobject));		/* add link to end */
+				if(rooms[NumberOfRooms].roomobjects_last->next == NULL) {		/* can't allocate */
 					perror("mud:");
 					exit(NOMEM);
 				}
 
-				rooms[RoomCount].roomobjects_last=rooms[RoomCount].roomobjects_last->next;
-				roomobject=rooms[RoomCount].roomobjects_last;
+				rooms[NumberOfRooms].roomobjects_last=rooms[NumberOfRooms].roomobjects_last->next;
+				roomobject=rooms[NumberOfRooms].roomobjects_last;
 			}
 
 			strcpy(roomobject->name,LineTokens[OBJECT_NAME]);		/* get details */
@@ -247,15 +248,7 @@ RoomCount=0;
 
 		for(DirectionCount=0;DirectionCount<12;DirectionCount++) {
 			if(strcmp(LineTokens[0],directions[DirectionCount]) == 0) {		/* room exits */
-						
-				if(atoi(LineTokens[1])  > GetNumberOfRooms()) {
-					printf("\nmud: %d: room number is > number of rooms in %s\r\n",LineCount,DatabaseConfigurationFile); /* unknown configuration option */
-			
-					ErrorCount++;
-					return(ErrorCount);
-				}
-
-				rooms[RoomCount].exits[DirectionCount]=atoi(LineTokens[1]);
+				rooms[NumberOfRooms].exits[DirectionCount]=atoi(LineTokens[1]);
 				break;
 			}
 
@@ -1646,6 +1639,6 @@ return(FALSE);
 }
 
 int GetNumberOfRooms(void) {
-return(RoomCount);
+return(NumberOfRooms);
 }
 
