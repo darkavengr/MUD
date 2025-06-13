@@ -30,7 +30,7 @@ char *errors[] = {
 	"You must enter a password\r\n",\
 	"User BANNED\r\n",\
    	"Invalid username or password\r\n",\
-	"Player vs player combat not allowed\r\n",\
+	"Player versus player combat not allowed\r\n",\
 	"I don't understand that\r\n",\
    	"Missing parameters\r\n",\
 	"Invalid exit\r\n",\
@@ -59,6 +59,8 @@ char *errors[] = {
 	"You have this object in your inventory\r\n",\
 	"Race already exists\r\n",\
 	"Class already exists\r\n",\
+	"Syntax error\r\n",\
+	"I/O error\r\n",\
 };
 
 

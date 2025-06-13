@@ -30,7 +30,7 @@ int MonsterCount=0;
 
 extern room *rooms;
 
-int MoveMonster(void) {
+void MoveMonster(void) {
 int MoveProbability;
 int RoomNumber;
 int WhichMonster;
@@ -38,9 +38,12 @@ int AttackProbability;
 int MoveDirection;
 
 srand(time(NULL));
+
+if(GetNumberOfRooms() == 0) return;
+
 RoomNumber=1+rand() % GetNumberOfRooms();		/* which room */
 
-if(GetNumberOfMonstersInRoom(RoomNumber) == 0) return(0);	/* no monsters in room */
+if(GetNumberOfMonstersInRoom(RoomNumber) == 0) return;	/* no monsters in room */
 
 if(GetNumberOfMonstersInRoom(RoomNumber) > 0) WhichMonster=1+rand() % GetNumberOfMonstersInRoom(RoomNumber);	/* which monster */
 
@@ -60,7 +63,7 @@ if(MoveProbability == 1) {
 	}
 }
 
-return(0);
+return;
 }
 		
 int GenerateMonsters(void) {
@@ -83,7 +86,7 @@ for(RoomNumber=0;RoomNumber<GetNumberOfRooms();RoomNumber++) {
 
 		AddMonsterToRoom(&monsters[RandomMonsterNumber],RoomNumber);	/* add monster to room */
 
-		SendMessageToAllInRoom(rooms[RoomNumber].room,rooms[RoomNumber].roommonsters_last->createmessage);			      
+		SendMessageToAllInRoom(rooms[RoomNumber].id,rooms[RoomNumber].roommonsters_last->createmessage);			      
 	}
 }
 
@@ -228,6 +231,7 @@ else
 
 memcpy(rooms[RoomNumber].roommonsters_last,sourcemonster,sizeof(monster));	/* copy monster data */
 
+rooms[RoomNumber].roommonsters_last->id=GetNextObjectNumber();		/* assign an ID number to the monster */
 rooms[RoomNumber].roommonsters_last->next=NULL;
 
 //printf("Created monster %s\n",rooms[RoomNumber].roommonsters_last->name);

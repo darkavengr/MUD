@@ -79,7 +79,7 @@ unsigned int (*call_command)(user *,int,void *);		/* function pointer */
 		 {  NULL,"VERSION",&version_command },\
 		 {  NULL,"DESCRIBE",&describe_command },\
 		 {  NULL,"GET",&get_command },\
-		 {  NULL,"DropObject",&drop_command },\
+		 {  NULL,"DROP",&drop_command },\
 		 {  NULL,"HELP",&help_command },\
 		 {  NULL,"PASSWORD",&password_command },\
 		 {  NULL,"SPELL",&spell_command },\
@@ -126,6 +126,12 @@ unsigned int (*call_command)(user *,int,void *);		/* function pointer */
 		 {  NULL,"SETEXIT",&setexit_command },\
 	         { NULL,NULL } };
 
+char *NothingHappens="Nothing happens\r\n";
+char *DirectionsMessage[]={ "North ","South ","East ","West ","Northeast ","Northwest ","Southeast ","Southwest ","Up ","Down " };
+char *ExitsMessage="\r\nExits: ";
+char *AllParameters;
+char *AllParametersNotFirstTwo;
+
 int ExecuteCommand(user *currentuser,char *command) {
 char *CommandTokens[BUF_SIZE][BUF_SIZE];
 int TokenCount;
@@ -134,7 +140,8 @@ int StatementCount;
 
 if(!*command) return(0);			/* no command */
 
-printf("command=%command\n",command);
+AllParameters=strpbrk(command," ");		/* point to all parameters */
+if(AllParameters != NULL) AllParametersNotFirstTwo=strpbrk(AllParameters+1," ");
 
 memset(CommandTokens,0,10*BUF_SIZE);
 TokenCount=TokenizeLine(command,CommandTokens," ");			/* tokenize line */
@@ -148,7 +155,11 @@ do {
 
 	ToUppercase(CommandTokens[0]);
 
-	if(strcmp(statements[StatementCount].statement,CommandTokens[0]) == 0) return(statements[StatementCount].call_command(currentuser,TokenCount,CommandTokens));
+	/* if statement found, call it */
+
+	if(strcmp(statements[StatementCount].statement,CommandTokens[0]) == 0) {
+		return(statements[StatementCount].call_command(currentuser,TokenCount,CommandTokens));
+	}
 
 	StatementCount++;
 
@@ -219,58 +230,247 @@ return(go(currentuser,currentroom->exits[DOWN]));
 }
 
 int look_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+char *RoomMessage[BUF_SIZE];
+roomobject *ObjectNext;
+user *UserPtr;
+room *CurrentRoom;
+int found=FALSE;
+int RoomExitCount;
+monster *RoomMonster;
 
-return(look(currentuser,CommandTokens[1]));
+CurrentRoom=currentuser->roomptr;
+	
+/* no name, so look at current room */
+
+if(TokenCount <= 1) {				/* display name */
+
+	send(currentuser->handle,CurrentRoom->name,strlen(CurrentRoom->name),0);
+
+	if(currentuser->status >= WIZARD) {		/* if wizard or higher, show object number */
+		sprintf(RoomMessage," (#%x)",CurrentRoom->id);
+		send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
+	}
+
+	send(currentuser->handle,"\r\n",2,0);
+	send(currentuser->handle,CurrentRoom->desc,strlen(CurrentRoom->desc),0);  
+
+	send(currentuser->handle,ExitsMessage,strlen(ExitsMessage),0);  		/* display exits */
+
+	for(RoomExitCount=0;RoomExitCount<11;RoomExitCount++) {
+		if(CurrentRoom->exits[RoomExitCount] != 0) send(currentuser->handle,DirectionsMessage[RoomExitCount],strlen(DirectionsMessage[RoomExitCount]),0);
+	}
+
+	send(currentuser->handle,"\r\n",2,0);
+
+	if(CurrentRoom->roomobjects != NULL) {		/* display objects */
+		send(currentuser->handle,"\r\n",2,0);
+		send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
+		ObjectNext=CurrentRoom->roomobjects;
+
+		while(ObjectNext != NULL) {
+
+			if(currentuser->status >= WIZARD) {		/* if wizard or higher, show object number */
+				sprintf(RoomMessage," (#%x), ",ObjectNext->id);
+				send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
+			}
+			else
+			{
+				send(currentuser->handle,ObjectNext->name,strlen(ObjectNext->name),0);
+				send(currentuser->handle,", ",2,0);
+			}
+
+			ObjectNext=ObjectNext->next;
+		}
+
+		send(currentuser->handle,"\r\n",2,0);
+	}
+
+/*
+* display monsters in room
+*
+*/
+
+	send(currentuser->handle,"\r\n",2,0);
+
+	RoomMonster=FindFirstMonsterInRoom(currentuser->room);
+
+	while(RoomMonster != NULL) {
+
+		if(currentuser->status >= WIZARD) {		/* if wizard or higher, show object number */
+			sprintf(RoomMessage,"A %s (#%x) is here\r\n",RoomMonster->name,RoomMonster->id);
+		}
+		else
+		{
+			sprintf(RoomMessage,"A %s is here\r\n",RoomMonster->name);
+		}
+
+		send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
+
+		RoomMonster=FindNextMonsterInRoom(RoomMonster);
+	} 
+
+
+	/* display users in room */
+
+	UserPtr=FindFirstUser();		/* find first user */
+
+	while(UserPtr != NULL) {
+		if((UserPtr->loggedin == TRUE) && (UserPtr->room == currentuser->room)) {
+			if(UserPtr->gender == MALE) {
+				sprintf(RoomMessage,"%s the %s is here\r\n",UserPtr->name,GetPointerToMaleTitles(UserPtr->status));
+			}
+			else
+			{
+				sprintf(RoomMessage,"%s the %s is here\r\n",UserPtr->name,GetPointerToFemaleTitles(UserPtr->status));
+			}
+
+			send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
+		}
+
+		UserPtr=FindNextUser(UserPtr);		/* find next user */
+	}
+
+	return(0);
 }
 
-int who_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+/* looking at object or person */
 
-return(who(currentuser,CommandTokens[1]));
+ObjectNext=CurrentRoom->roomobjects;
+
+while(NULL != ObjectNext) {
+	if(ObjectNext == NULL) break;
+
+	if(regexp(ObjectNext->name,CommandTokens[1]) == TRUE) {
+		send(currentuser->handle,ObjectNext->desc,strlen(ObjectNext->desc),0); /* if object matches */
+		found=TRUE;
+	}
+
+	ObjectNext=ObjectNext->next;
+}
+	
+
+/* if not not object or room, search for user */
+
+UserPtr=FindFirstUser();		/* find first user */
+
+while(UserPtr != NULL) {
+	if((regexp(UserPtr->name,CommandTokens[1]) == TRUE) && (UserPtr->loggedin == TRUE) && (UserPtr->room == currentuser->room)) {
+		sprintf(RoomMessage,"%s\r\n",UserPtr->desc);		/* show description */
+		send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
+
+		found=TRUE;
+
+	/* if the user is a wizard tell them they have looked at them */
+
+		if(UserPtr->status >= WIZARD) {
+			sprintf(RoomMessage,"%s has looked at you\r\n",currentuser->name);
+			send(UserPtr->handle,RoomMessage,strlen(RoomMessage),0);
+		}
+	}
+
+	UserPtr=FindNextUser(UserPtr);		/* find next user */
 }
 
-int say_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-int count;
-char *param[BUF_SIZE];
-char *buf[BUF_SIZE];
+/*
+* if monster
+*
+*/
 
-if(TokenCount < 2) {
-	SetLastError(currentuser,NO_PARAMS);
+RoomMonster=FindFirstMonsterInRoom(currentuser->room);
+
+while(RoomMonster != NULL) {
+	if(regexp(CommandTokens[1],RoomMonster->name) == TRUE) {
+		send(currentuser->handle,RoomMonster->desc,strlen(RoomMonster->desc),0);
+
+		found=TRUE;
+		return(0);
+	}
+
+	RoomMonster=FindNextMonsterInRoom(RoomMonster);
+}
+
+
+/* can't find it, so output error message and exit */
+
+if(found == FALSE) {
+	SetLastError(currentuser,OBJECT_NOT_FOUND);  
 	return(-1);
 }
 
-for(count=1;count<TokenCount;count++) {
-	strcat(param,CommandTokens[count]);
-	strcat(param," ");
+return(0);
 }
 
-if((currentuser->flags & USER_INVISIBLE) == 0) {
-	sprintf(buf,"%command Says, \042%command\042\r\n",currentuser->name,param);
+
+int who_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+char *OutputMessage[BUF_SIZE];
+char *NameBuffer[BUF_SIZE];
+int found=FALSE;
+user *UserPtr;
+
+if(TokenCount <= 1) {
+	strcpy(NameBuffer,"*");          /* all users if no username */
 }
 else
 {
-	sprintf(buf,"Somebody Says, \042%command\042\r\n",param);
+	strcpy(NameBuffer,CommandTokens[1]);          
+}
+
+UserPtr=FindFirstUser();		/* find first user */
+
+while(UserPtr != NULL) {
+	if((regexp(UserPtr->name,NameBuffer) == TRUE) && (UserPtr->loggedin == TRUE)  && ((UserPtr->flags & USER_INVISIBLE) == 0)) {			/* found user */
+		found=TRUE;
+
+		if(UserPtr->gender == MALE) {
+			sprintf(OutputMessage,"%s the %s is in %s (#%d)\r\n",UserPtr->name,GetPointerToMaleTitles(UserPtr->status),UserPtr->roomname,UserPtr->room);
+		}
+		else
+		{
+			sprintf(OutputMessage,"%s the %s is in %s (#%d)\r\n",UserPtr->name,GetPointerToMaleTitles(UserPtr->status),UserPtr->roomname,UserPtr->room);
+		}
+
+		send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+		found=TRUE;  
+	}
+
+	UserPtr=FindNextUser(UserPtr);		/* find next user */
+}
+
+if(found == FALSE) {
+	SetLastError(currentuser,UNKNOWN_USER);		/* unknown user */
+	return(-1);
+}
+
+SetLastError(currentuser,NO_ERROR);
+return(0);
+}
+
+int say_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+char *OutputMessage[BUF_SIZE];	
+
+if((TokenCount < 2)) {
+	SetLastError(currentuser,NO_PARAMS);
+	return(-1);
+}
+
+if((currentuser->flags & USER_INVISIBLE) == 0) {
+	sprintf(OutputMessage,"%s Says, \"%s\"\r\n",currentuser->name,AllParameters);
+}
+else
+{
+	sprintf(OutputMessage,"Somebody Says, \"%s\"\r\n",AllParameters);
 }
 	
-return(SendMessageToAllInRoom(currentuser->room,buf));
+return(SendMessageToAllInRoom(currentuser->room,OutputMessage));
 }
 
 int whisper_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-char *param_notfirsttwotokens[BUF_SIZE];
-int count;
-
-strcpy(param_notfirsttwotokens,CommandTokens[2]);
-
-for(count=3;count<TokenCount;count++) {
-	strcat(param_notfirsttwotokens,CommandTokens[count]);
-	strcat(param_notfirsttwotokens," ");
-}
-
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SendMessage(currentuser,CommandTokens[1],param_notfirsttwotokens));
+return(SendMessage(currentuser,CommandTokens[1],AllParameters));
 }
 
 int pose_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
@@ -282,15 +482,7 @@ if(TokenCount < 2) {
 	return(-1);
 }
 
-strcpy(param,CommandTokens[1]);
-strcat(param," ");
-
-for(count=2;count<TokenCount;count++) {
-	strcat(param,CommandTokens[count]);
-	strcat(param," ");
-}
-
-pose(currentuser,param);
+pose(currentuser,AllParameters);
 return(0);
 }
 
@@ -305,28 +497,36 @@ quit(currentuser);
 int version_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 char *OutputMessage[BUF_SIZE];
 
-sprintf(OutputMessage,"%command %d.%d\r\n",MUD_NAME,MAJOR_VERSION,MINOR_VERSION);
+sprintf(OutputMessage,"%s %d.%d\r\n",MUD_NAME,MAJOR_VERSION,MINOR_VERSION);
 send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
 return(0);
 }
 
 int describe_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-char *param_notfirsttwotokens[BUF_SIZE];
-int count;
+int ObjectID;
+room *CurrentRoom=currentuser->roomptr;
 
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-strcpy(param_notfirsttwotokens,CommandTokens[2]);
+if((char) *CommandTokens[1] == '#') {		/* setting object or  description */
+	sscanf(CommandTokens[1],"#%d",&ObjectID);	/* get object ID */
 
-for(count=3;count<TokenCount;count++) {
-	strcat(param_notfirsttwotokens,CommandTokens[count]);
-	strcat(param_notfirsttwotokens," ");
+	if(SetObjectDescription(currentuser,ObjectID,AllParametersNotFirstTwo) == -1) {	/* not object */
+		return(SetRoomDescription(currentuser,ObjectID,AllParametersNotFirstTwo));
+	}
 }
 
-return(describe(currentuser,CommandTokens[1],param_notfirsttwotokens));
+/* if setting description for self */
+if(strcmp(CommandTokens[1],"me") == 0) return(UpdateUser(currentuser,currentuser->name,"",0,0,AllParametersNotFirstTwo,0,currentuser->staminapoints,0,0,"","",0));
+
+if(strcmp(CommandTokens[1],"here") == 0) return(SetRoomDescription(currentuser,CurrentRoom->id,AllParametersNotFirstTwo));    /* if setting description for room */
+
+/* set description for other user */
+
+return(UpdateUser(currentuser,currentuser->name,"",0,0,AllParametersNotFirstTwo,0,currentuser->staminapoints,0,0,"","",0));
 }
 
 int get_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
@@ -369,11 +569,125 @@ return(attack(currentuser,CommandTokens[1]));
 }
 
 int score_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-return(DisplayScore(currentuser,CommandTokens[1]));
+user *UserPtr;
+char *OutputMessage[BUF_SIZE];
+char *name[BUF_SIZE];
+int found;
+void *titleptr;
+
+found=FALSE;
+
+if(TokenCount <= 1) {			/* find score for current user */
+	strcpy(name,currentuser->name);
+}
+else
+{
+	if(currentuser->status < WIZARD) {		/* not yet */
+		SetLastError(currentuser,NOT_YET);
+		return(-1);
+	}
+
+	strcpy(name,CommandTokens[1]);
+}
+
+if(currentuser->gender == MALE) {		/* which user title */
+	titleptr=GetPointerToMaleTitles(currentuser->status);
+}
+else
+{
+	titleptr=GetPointerToFemaleTitles(currentuser->status);
+}
+
+UserPtr=FindFirstUser();
+
+do {
+	if(regexp(UserPtr->name,name) == TRUE) {		/* found user */
+
+		sprintf(OutputMessage,"Magic Points:%d\r\nStamina Points:%d\r\nExperience Points:%d\r\nLevel: %s (%d)\r\n", \
+										UserPtr->magicpoints,\
+											UserPtr->staminapoints,\
+										UserPtr->experiencepoints,\
+										titleptr,\
+										UserPtr->status);
+
+		send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+		found=TRUE;
+	}
+
+	UserPtr=FindNextUser(UserPtr);
+
+} while(UserPtr != NULL);
+
+if(found == FALSE)  {
+	SetLastError(currentuser,UNKNOWN_USER);
+	return(-1);
+}
+
+SetLastError(currentuser,NO_ERROR);
+return(0);
 }
 
 int inv_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-return(DisplayInventory(currentuser,CommandTokens[1]));
+char *whichuser[BUF_SIZE];
+char *OutputMessage[BUF_SIZE];
+user *UserPtr;
+roomobject *RoomObjectPtr;
+int found=FALSE;
+
+if(TokenCount <= 1) {
+	strcpy(whichuser,currentuser->name);   /* use default user */
+
+}
+else
+{
+	if(currentuser->status < WIZARD) {		/* can't do this yet */
+		SetLastError(currentuser,NOT_YET);
+		return(0);
+	}
+
+	strcpy(whichuser,CommandTokens[1]);
+}
+
+UserPtr=FindFirstUser();
+
+do {
+	if((regexp(UserPtr->name,whichuser) == TRUE) && (UserPtr->loggedin == TRUE)) {	/* found user */
+
+		found=TRUE;
+
+		if(UserPtr->carryobjects == NULL) {                   /* not carrying anything */
+			sprintf(OutputMessage,"%s is carrying nothing\r\n",UserPtr->name);
+
+			send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+			continue;
+		}
+
+		sprintf(OutputMessage,"%s is carrying: ",UserPtr->name);
+		send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+
+		RoomObjectPtr=UserPtr->carryobjects;
+
+		while(RoomObjectPtr != NULL) {
+			send(currentuser->handle,RoomObjectPtr->name,strlen(RoomObjectPtr->name),0);	/* display objects in inventory */
+			send(currentuser->handle," ",1,0);
+	
+			RoomObjectPtr=RoomObjectPtr->next;
+		}
+	
+		send(currentuser->handle,"\r\n",2,0);
+	}
+
+	UserPtr=FindNextUser(UserPtr);
+} while(UserPtr != NULL);
+
+
+if(found == FALSE) {		/* user was not found */
+	SetLastError(currentuser,UNKNOWN_USER);
+	return(-1);
+}
+
+SetLastError(currentuser,NO_ERROR);
+return(0);
 }
 
 int give_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
@@ -386,7 +700,7 @@ return(GiveObjectToUser(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
 int xyzzy_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-send(currentuser->handle,"Nothing happens\r\n",17,0);
+send(currentuser->handle,NothingHappens,strlen(NothingHappens),0);
 return(0);
 }
 
@@ -429,20 +743,17 @@ if(strcmp(CommandTokens[1],"port") == 0) {
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"server") == 0) {	
+else if(strcmp(CommandTokens[1],"server") == 0) {	
 	strcpy(config.mudserver,CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"object_reset_time") == 0) {	
+else if(strcmp(CommandTokens[1],"object_reset_time") == 0) {	
 	config.objectresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"database_save_time") == 0) {	
+else if(strcmp(CommandTokens[1],"database_save_time") == 0) {	
 	config.databaseresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
@@ -453,107 +764,90 @@ if(strcmp(CommandTokens[1],"user_reset_time") == 0) {
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"database_save_time") == 0) {	
+else if(strcmp(CommandTokens[1],"database_save_time") == 0) {	
 	config.databaseresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-
-if(strcmp(CommandTokens[1],"config_save_time") == 0) {	
+else if(strcmp(CommandTokens[1],"config_save_time") == 0) {	
 	config.configsavetime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"allow_player_killing") == 0) {	
+else if(strcmp(CommandTokens[1],"allow_player_killing") == 0) {	
 	if(strcmp(CommandTokens[2],"true") == 0) config.allowplayerkilling=TRUE;
 	if(strcmp(CommandTokens[2],"false") == 0) config.allowplayerkilling=FALSE;
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"allow_new_accounts_") == 0) {	
+else if(strcmp(CommandTokens[1],"allow_new_accounts") == 0) {	
 	if(strcmp(CommandTokens[2],"true") == 0) config.allownewaccounts=TRUE;
 	if(strcmp(CommandTokens[2],"false") == 0) config.allownewaccounts=FALSE;
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"monster_reset_time") == 0) {	
+else if(strcmp(CommandTokens[1],"monster_reset_time") == 0) {	
 	config.monsterresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"ban_reset_time") == 0) {	
+else if(strcmp(CommandTokens[1],"ban_reset_time") == 0) {	
 	config.banresettime=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_warrior") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_warrior") == 0) {	
 	config.pointsforwarrior=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_hero") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_hero") == 0) {	
 	config.pointsforhero=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_warrior") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_warrior") == 0) {	
 	config.pointsforwarrior=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_champion") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_champion") == 0) {	
 	config.pointsforchampion=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_superhero") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_superhero") == 0) {	
 	config.pointsforsuperhero=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_enchanter") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_enchanter") == 0) {	
 	config.pointsforenchanter=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_sorceror") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_sorceror") == 0) {	
 	config.pointsforsorceror=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_necromancer") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_necromancer") == 0) {	
 	config.pointsfornecromancer=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_legend") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_legend") == 0) {	
 	config.pointsforlegend=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
-
-if(strcmp(CommandTokens[1],"points_for_wizard") == 0) {	
+else if(strcmp(CommandTokens[1],"points_for_wizard") == 0) {	
 	config.pointsforwizard=atoi(CommandTokens[2]);
 
 	return(UpdateConfigurationInformation(&config));
 }
 
-sprintf(buf,"Bad option %command\r\n",CommandTokens[2]);
+sprintf(buf,"Bad option %s\r\n",CommandTokens[2]);
 send(currentuser->handle,buf,strlen(buf),0);
 return(-1);
 }
@@ -564,7 +858,7 @@ if(TokenCount < 2) {
 	return(-1);
 }
 
-if(!*CommandTokens[1] && currentuser->status < WIZARD) {			/* can't do this yet */
+if(TokenCount <= 1 && currentuser->status < WIZARD) {			/* can't do this yet */
 	SetLastError(currentuser,NOT_YET);
 	return(-1);
 }
@@ -667,39 +961,190 @@ return(CreateObject(currentuser,CommandTokens[1]));
 }
 
 int delete_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+int ObjectID;
+
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(DeleteObject(currentuser,CommandTokens[1]));
+if(*CommandTokens[1] != '#') {				/* not a valid ID number */
+	SetLastError(currentuser,SYNTAX_ERROR);
+	return(-1);
+}
+
+sscanf(CommandTokens[1],"#%d",&ObjectID);
+
+return(DeleteObject(currentuser,ObjectID));
 }
 
 int rename_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+int ObjectID;
+user *UserPtr;
+
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(RenameObject(currentuser,CommandTokens[1],CommandTokens[2]));
+if(*CommandTokens[1] == '#') {				/* valid ID number */
+	if(RenameObject(currentuser,ObjectID,CommandTokens[2]) == 0) return(-1);	/* rename object */
+}
+else
+{
+	UserPtr=GetUserPointerByName(CommandTokens[1]);
+
+	if(UserPtr == NULL) {		/* user not found */
+		SetLastError(currentuser,UNKNOWN_USER);
+		return(-1);
+	}
+
+	strcpy(UserPtr->name,CommandTokens[2]);		/* set username */
+
+	return(UpdateUser(currentuser,CommandTokens[0],"",0,0,"",0,0,0,0,"","",0));
+}
+
 }
 
 int chown_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {		/* set object owner */
+int ObjectID;
+
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
+
+if(*CommandTokens[1] != '#') {				/* not a valid ID number */
+	SetLastError(currentuser,SYNTAX_ERROR);
+	return(-1);
+}
+
+sscanf(CommandTokens[1],"#%d",&ObjectID);
 
 return(SetOwner(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
 int chmod_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+int ObjectID;
+char *AttributePtr;
+int attributes=0;
+
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetObjectAttributes(currentuser,CommandTokens[1],CommandTokens[2]));
+if(*CommandTokens[1] != '#') {				/* not a valid ID number */
+	SetLastError(currentuser,SYNTAX_ERROR);
+	return(-1);
+}
+
+sscanf(CommandTokens[1],"#%d",&ObjectID);
+
+AttributePtr=CommandTokens[2];
+
+while(*AttributePtr != 0) {
+	if(*AttributePtr == '+') {			/* setting attribute */
+		AttributePtr++;
+
+		switch(*AttributePtr++) {
+			case 'd':
+				attributes |= OBJECT_DELETE_OWNER;
+				break;
+
+			case 'D':
+				attributes |= OBJECT_DELETE_PUBLIC;
+				break;
+	
+			case 'm':
+				attributes |= OBJECT_MOVEABLE_OWNER;
+				break;
+
+			case 'M':
+				attributes |= OBJECT_MOVEABLE_PUBLIC;
+				break;
+
+			case 'p':
+				attributes |= OBJECT_PICKUP_OWNER;
+				break;
+
+			case 'P':
+				attributes |= OBJECT_PICKUP_PUBLIC;
+				break;
+
+			case 'r':
+				attributes |= OBJECT_RENAME_OWNER;
+				break;
+
+			case 'R':
+				attributes |= OBJECT_RENAME_PUBLIC;
+				break;
+
+			case 't':
+				attributes |= OBJECT_TEMPORARY;
+				break;
+
+			default:
+				SetLastError(currentuser,SYNTAX_ERROR);
+				return(-1);
+			}
+	}
+	else if(*AttributePtr == '-') {
+		
+		AttributePtr++;
+
+		switch(*AttributePtr++) {
+			case 'd':
+				attributes &= OBJECT_DELETE_OWNER;
+				break;
+
+			case 'D':
+				attributes &= OBJECT_DELETE_PUBLIC;
+				break;
+
+			case 'm':
+				attributes &= OBJECT_MOVEABLE_OWNER;
+				break;	
+
+			case 'M':
+				attributes &= OBJECT_MOVEABLE_PUBLIC;
+				break;
+
+			case 'p':
+				attributes &= OBJECT_PICKUP_OWNER;
+				break;
+
+			case 'P':
+				attributes &= OBJECT_PICKUP_PUBLIC;
+				break;
+
+			case 'r':
+				attributes &= OBJECT_RENAME_OWNER;
+				break;
+
+			case 'R':
+				attributes &= OBJECT_RENAME_PUBLIC;
+				break;
+
+			case 't':
+				attributes &= OBJECT_TEMPORARY;
+				break;
+
+			default:
+				SetLastError(currentuser,SYNTAX_ERROR);
+				return(-1);
+			}
+	}
+	else
+	{
+		AttributePtr++;
+
+		SetLastError(currentuser,SYNTAX_ERROR);
+		return(-1);
+	}
+}
+
+return(SetObjectAttributes(currentuser,ObjectID,attributes));
 }
 
 int copy_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
@@ -712,40 +1157,67 @@ return(CopyObject(currentuser,CommandTokens[1],atoi(CommandTokens[2])));
 }
 
 int move_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+user *UserPtr;
+int ObjectID;
+int DestinationObjectID;
+
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-if(CopyObject(currentuser,CommandTokens[1],atoi(CommandTokens[2])) == -1) return(-1);
+if(*CommandTokens[1] != '#') {				/* not a valid ID number */
+	SetLastError(currentuser,SYNTAX_ERROR);
+	return(-1);
+}
 
-if(DeleteObject(currentuser,CommandTokens[1]) == -1) return(-1);
+sscanf(CommandTokens[1],"#%d",&ObjectID);
 
+if(*CommandTokens[2] == '#') sscanf(CommandTokens[1],"#%d",&DestinationObjectID);	/* get destination ID */
+
+if(CopyObject(currentuser,CommandTokens[1],ObjectID) == 0) return(DeleteObject(currentuser,ObjectID) == -1);
+
+/* move player */
+
+UserPtr=GetUserPointerByName(CommandTokens[1]);		/* find user */
+if(UserPtr != NULL) {			/* found user */
+	go(UserPtr,DestinationObjectID);
+
+	SetLastError(currentuser,NO_ERROR);
+	return(0);
+}
+
+/* copy room */
+
+if((GetRoomPointer(DestinationObjectID) == NULL) || (GetRoomPointer(ObjectID) == NULL)) {	/* room not found */
+	SetLastError(currentuser,BAD_ROOM);
+	return(-1);
+}
+
+memcpy(GetRoomPointer(DestinationObjectID),GetRoomPointer(ObjectID),sizeof(room));
+
+SetLastError(currentuser,NO_ERROR);
 return(0);
 }
 
 int dig_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-return(CreateRoom(currentuser,CommandTokens[1]));
+int CreateDirection=CreateRoom(currentuser,CommandTokens[1]);
+char *CreateMessage[BUF_SIZE];
+
+sprintf(CreateMessage,"A room has been created to the %s\r\n",DirectionsMessage[CreateDirection]);
+send(currentuser->handle,CreateMessage,strlen(CreateMessage),0);
+
+SetLastError(currentuser,NO_ERROR);
+return(0);
 }
 
 int force_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-char *param[BUF_SIZE];
-int count;
-
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-strcpy(param,CommandTokens[1]);
-strcat(param," ");
-
-for(count=2;count<TokenCount;count++) {
-	strcat(param,CommandTokens[count]);
-	strcat(param," ");
-}
-
-return(ForceUser(currentuser,CommandTokens[1],param));
+return(ForceUser(currentuser,CommandTokens[1],AllParametersNotFirstTwo));
 }
 
 int listban_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
@@ -772,7 +1244,7 @@ if(TokenCount < 2) {
 	return(-1);
 }
 
-return(wall(currentuser,CommandTokens[1]));
+return(wall(currentuser,AllParameters));
 }
 
 int take_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {

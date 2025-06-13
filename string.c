@@ -197,43 +197,42 @@ for(count=1;count<9;count++) {
 return;
 }
 int TokenizeLine(char *linebuf,char *tokens[][BUF_SIZE],char *split) {
-char *token;
-int tc=0;
-int count;
-char *d;
+char *TokenPtr;
+int TokenCount=0;
+char *DestPtr;
 char *splitptr;
 
 memset(tokens,0,BUF_SIZE);
 
-token=linebuf;
+TokenPtr=linebuf;
 
-d=tokens[0];
+DestPtr=tokens[0];
 
-while(*token != 0) {
+while(*TokenPtr != 0) {
 	splitptr=split;			/* point to split characters */
 
 	while(*splitptr != 0) {
 
-		if(*token == *splitptr++) {	/* end of token */
-			token++;
-			tc++;
+		if(*TokenPtr == *splitptr++) {	/* end of token */
+			TokenPtr++;
+			TokenCount++;
 
-			*d=0;		/* put null at end of token */
+			*DestPtr=0;		/* put null at end of token */
 
-			memset(tokens[tc],0,BUF_SIZE);
+			memset(tokens[TokenCount],0,BUF_SIZE);
 
-			d=tokens[tc];
+			DestPtr=tokens[TokenCount];
 			break;
    		}
  	 }	
 
-	 *d++=*token++;
+	 *DestPtr++=*TokenPtr++;
  }
 
-tc++;
-*tokens[tc]=0;
+TokenCount++;
+*tokens[TokenCount]=0;
 
-return(tc);
+return(TokenCount);
 }
 
 

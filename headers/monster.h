@@ -7,6 +7,7 @@
 #define MONSTER_H
 
 typedef struct monster {			/* monsters */
+	unsigned int id;
 	char *name[BUF_SIZE];
 	char *desc[BUF_SIZE];
 	struct room *roomptr;
@@ -27,7 +28,7 @@ typedef struct monster {			/* monsters */
 } monster;
 #endif
 
-int MoveMonster(void);
+void MoveMonster(void);
 int GenerateMonsters(void);
 int DeleteMonster(int room,int monsterno);
 int LoadMonsters(void);

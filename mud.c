@@ -86,6 +86,7 @@ char *OutputBuffer[BUF_SIZE];
 struct timeval TimeoutValue;
 time_t ObjectResetTime,DatabaseResetTime,UserResetTime,ConfigResetTime,currenttime;
 CONFIG config;
+char *NewlinePtr;
 
 #ifdef WIN32
 WSADATA wsadata;
@@ -158,16 +159,16 @@ GenerateObjects();		/* create new objects */
 GenerateMonsters();	/* create monsters */
 	
 /*
- * The main event loop, this resets the object, saves the configuration information
+ * The main event loop. This resets the object, saves the configuration information.
  * It then checks each connection in turn to see if there is data sent from the
- * user and processes it if there is
+ * user and processes it
  */
 
 while(1) {
 	 time(&currenttime);		/* get time */
 
 	 if(currenttime > ObjectResetTime) {		/* update objects */
-		 printf("mud: Updating objects\n");
+	//	 printf("mud: Updating objects\n");
 
 		  GenerateObjects();		/* create new objects */
 
@@ -176,7 +177,7 @@ while(1) {
  	}
 
 	 if(currenttime > DatabaseResetTime) {		/* update database */
-  	 	printf("mud: Saving database\n");
+  	 //	printf("mud: Saving database\n");
 
 		UpdateDatabase();
 	
@@ -185,7 +186,7 @@ while(1) {
 	 }
 
 	 if(currenttime > UserResetTime) {	/* update users */
-		printf("mud: Saving users\n");
+	//	printf("mud: Saving users\n");
 
   		UpdateUsersFile();
 
@@ -194,7 +195,7 @@ while(1) {
  	}
 
 	if(currenttime > ConfigResetTime) {		/* update config */
-		printf("mud: Updating configuration\n");
+	//	printf("mud: Updating configuration\n");
 
 		updateconfiguration(config);
 
@@ -267,7 +268,7 @@ while(1) {
 
 	  			memset(connections[SocketCount].OutputBuffer,0,BUF_SIZE);
 
-				/* get line from connection */
+				/* get line from connection */		
 
 			        if(recv(SocketCount,connections[SocketCount].OutputBuffer,BUF_SIZE,0) == -1) {	/* get data */
 					FD_CLR(SocketCount,&currentset);
@@ -276,7 +277,12 @@ while(1) {
 
 				strcat(connections[SocketCount].buf,connections[SocketCount].OutputBuffer);	/* add to buffer */
 
-				RemoveNewLine(connections[SocketCount].buf);		/* remove newline character */
+				NewlinePtr=strpbrk(connections[SocketCount].buf,"\n");
+				if(NewlinePtr == NULL) continue;	/* no newline found */
+
+				RemoveNewLine(connections[SocketCount].buf);	/* remove newline character */
+	
+				memset(connections[SocketCount].OutputBuffer,0,BUF_SIZE);
 
 				 /* state machine to determine what to do for each step */
 	
@@ -299,11 +305,15 @@ while(1) {
 						{
 							send(SocketCount,PasswordPrompt,strlen(PasswordPrompt),0);
 							connections[SocketCount].connectionstate=STATE_CHECKLOGIN; /* next */
+
+							DisableOutput(SocketCount);		/* hide text input */
 						}
 	
 						break;
 
 					case STATE_CHECKLOGIN:			/* check username and password */	
+						EnableOutput(SocketCount);		/* show text input */
+
 						strcpy(connections[SocketCount].upass,connections[SocketCount].buf);
 
 						if(LoginUser(SocketCount,connections[SocketCount].uname,connections[SocketCount].upass) == 0) {
@@ -330,14 +340,14 @@ while(1) {
 			
 						/* send welcome message */
 
-						sprintf(OutputBuffer,"Welcome %s\r\n",usernext->name);
+						sprintf(OutputBuffer,"Welcome %s\r\n",connections[SocketCount].uname);
 						send(SocketCount,OutputBuffer,strlen(OutputBuffer),0);
 
-						usernext->handle=SocketCount;
-						usernext->loggedin=TRUE;
+						connections[SocketCount].user->loggedin=TRUE;
+						connections[SocketCount].user->handle=SocketCount;
 
-						if(go(usernext,usernext->homeroom) == -1) {	/* go to room */
-							PrintError(usernext->handle,GetLastError(connections[SocketCount].user));
+						if(go(connections[SocketCount].user,connections[SocketCount].user->homeroom) == -1) {	/* go to room */
+							PrintError(connections[SocketCount].user->handle,GetLastError(connections[SocketCount].user));
 						}
 
 						memset(connections[SocketCount].buf,0,BUF_SIZE);
@@ -519,8 +529,8 @@ while(1) {
 						break;
 
 					case STATE_GETCOMMAND:		/* processing command */
-			           		if(ExecuteCommand(usernext,connections[SocketCount].buf) == -1) {
-							PrintError(usernext->handle,GetLastError(connections[SocketCount].user));
+			           		if(ExecuteCommand(connections[SocketCount].user,connections[SocketCount].buf) == -1) {
+							PrintError(connections[SocketCount].user->handle,GetLastError(connections[SocketCount].user));
 						}
 
 						connections[SocketCount].connectionstate=STATE_GETCOMMAND;	/* loop in state STATE_GETCOMMAND */
@@ -539,5 +549,17 @@ while(1) {
 void DisconnectUser(user *currentuser) {
 FD_CLR(currentuser->handle,&currentset);
 close(currentuser->handle);
+}
+
+void DisableOutput(int socket) {
+unsigned char *SuppressOutput = { 0xFF,0xFB,0x1,0xFF,0xFB,0x3,0xFF,0xFD,0x2D };
+
+send(socket,SuppressOutput,9,0);
+}
+
+void EnableOutput(int socket) {
+unsigned char *UnsuppressOutput = { 0xFF,0xFC,0x1,0xFE,0xFB,0x3,0xFF,0xFC,0x2D };
+
+send(socket,UnsuppressOutput,9,0);
 }
 

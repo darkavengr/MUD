@@ -135,25 +135,25 @@ if(found == TRUE) {
 	}
 }
 	
-for(MonsterLoopCount=0;MonsterLoopCount != rooms[currentroom->room].monstercount;MonsterLoopCount++) {
+for(MonsterLoopCount=0;MonsterLoopCount != rooms[currentroom->id].monstercount;MonsterLoopCount++) {
 
-	if(strcmp(rooms[currentroom->room].roommonsters[MonsterLoopCount].name,target) == 0) {	/* if monster matches */
+	if(strcmp(rooms[currentroom->id].roommonsters[MonsterLoopCount].name,target) == 0) {	/* if monster matches */
 		found=TRUE;
 
-		SaveStamina=rooms[currentroom->room].roommonsters[MonsterLoopCount].stamina;
+		SaveStamina=rooms[currentroom->id].roommonsters[MonsterLoopCount].stamina;
 
-		while(rooms[currentroom->room].roommonsters[MonsterLoopCount].stamina > 0 && currentuser->staminapoints > 0) {
+		while(rooms[currentroom->id].roommonsters[MonsterLoopCount].stamina > 0 && currentuser->staminapoints > 0) {
 			/* player attacks monster */
 
 			HitPoints=rand() % (racenext->strength + 1) - 0;		/* random damage */
 	
-			sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",currentuser->name,rooms[currentroom->room].roommonsters[MonsterLoopCount].name,HitPoints);
+			sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",currentuser->name,rooms[currentroom->id].roommonsters[MonsterLoopCount].name,HitPoints);
 			SendMessageToAllInRoom(currentuser->room,OutputMessage);
 
-			rooms[currentroom->room].roommonsters[MonsterLoopCount].stamina -= HitPoints;
+			rooms[currentroom->id].roommonsters[MonsterLoopCount].stamina -= HitPoints;
 
-			if(rooms[currentroom->room].roommonsters[MonsterLoopCount].stamina <= 0) { /* monster defeated */
-				sprintf(OutputMessage,"%s has killed the %s!\r\n",currentuser->name,rooms[currentroom->room].roommonsters[MonsterLoopCount].name);
+			if(rooms[currentroom->id].roommonsters[MonsterLoopCount].stamina <= 0) { /* monster defeated */
+				sprintf(OutputMessage,"%s has killed the %s!\r\n",currentuser->name,rooms[currentroom->id].roommonsters[MonsterLoopCount].name);
 				SendMessageToAllInRoom(currentuser->room,OutputMessage);
 
 				sprintf(OutputMessage,"You have gained %d stamina points\r\n",(SaveStamina*currentuser->status));
@@ -171,13 +171,13 @@ for(MonsterLoopCount=0;MonsterLoopCount != rooms[currentroom->room].monstercount
 			}
 
 			/* monster attacks user */
-			HitPoints=rand() % (rooms[currentroom->room].roommonsters[MonsterLoopCount].damage + 1) - 0;	/* random damage */
+			HitPoints=rand() % (rooms[currentroom->id].roommonsters[MonsterLoopCount].damage + 1) - 0;	/* random damage */
 
 			currentuser->staminapoints -= HitPoints;
 
 			UpdateUser(currentuser,currentuser->name,"",0,0,"",0,currentuser->staminapoints,0,0,"","",0);
 
-			sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",rooms[currentroom->room].roommonsters[MonsterLoopCount].name,currentuser->name,HitPoints);
+			sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",rooms[currentroom->id].roommonsters[MonsterLoopCount].name,currentuser->name,HitPoints);
 			SendMessageToAllInRoom(currentuser->room,OutputMessage);
 		}
 

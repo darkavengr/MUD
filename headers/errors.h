@@ -40,6 +40,8 @@
 #define ALREADY_HAVE_OBJECT	39
 #define RACE_EXISTS		40
 #define CLASS_EXISTS		41
+#define SYNTAX_ERROR		42
+#define IO_ERROR		34
 
 #define NOCONFIGFILE  1
 #define BADCONFIG     2
