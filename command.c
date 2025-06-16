@@ -505,6 +505,7 @@ return(0);
 int describe_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 int ObjectID;
 room *CurrentRoom=currentuser->roomptr;
+user *UserPtr;
 
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
@@ -520,13 +521,24 @@ if((char) *CommandTokens[1] == '#') {		/* setting object or  description */
 }
 
 /* if setting description for self */
-if(strcmp(CommandTokens[1],"me") == 0) return(UpdateUser(currentuser,currentuser->name,"",0,0,AllParametersNotFirstTwo,0,currentuser->staminapoints,0,0,"","",0));
+if(strcmp(CommandTokens[1],"me") == 0) return(UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,AllParametersNotFirstTwo,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
 
 if(strcmp(CommandTokens[1],"here") == 0) return(SetRoomDescription(currentuser,CurrentRoom->id,AllParametersNotFirstTwo));    /* if setting description for room */
 
 /* set description for other user */
 
-return(UpdateUser(currentuser,currentuser->name,"",0,0,AllParametersNotFirstTwo,0,currentuser->staminapoints,0,0,"","",0));
+if(currentuser->status < WIZARD) {
+	SetLastError(currentuser,NOT_YET);
+	return(-1);
+}
+
+UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+if(UserPtr == NULL) {			/* not found */
+	SetLastError(currentuser,UNKNOWN_USER);
+	return(-1);
+}
+
+return(UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,AllParametersNotFirstTwo,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags));
 }
 
 int get_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
@@ -710,6 +722,8 @@ return(0);
 */
 
 int setrace_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+user *UserPtr;
+
 if(currentuser->status < WIZARD) {		/* can't do this yet */
 	SetLastError(currentuser,NOT_YET);
 	return(-1);
@@ -720,8 +734,13 @@ if(TokenCount < 2) {
 	return(-1);
 }
 
-UpdateUser(currentuser,CommandTokens[1],"",0,0,"",0,0,0,0,CommandTokens[1],"",0);
-return(0);
+UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+if(UserPtr == NULL) {			/* not found */
+	SetLastError(currentuser,UNKNOWN_USER);
+	return(-1);
+}
+
+return(UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,AllParametersNotFirstTwo,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints,UserPtr->gender,CommandTokens[2],UserPtr->userclass,UserPtr->flags));
 }
 
 /*
@@ -853,35 +872,81 @@ return(-1);
 }
 
 int sethome_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-if(TokenCount < 2) {
+user *UserPtr;
+
+if(TokenCount == 1) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-if(TokenCount <= 1 && currentuser->status < WIZARD) {			/* can't do this yet */
-	SetLastError(currentuser,NOT_YET);
-	return(-1);
+if(TokenCount >= 2) {
+	if(currentuser->status < WIZARD) {			/* can't do this yet */
+		SetLastError(currentuser,NOT_YET);
+		return(-1);
+	}
+
+	UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+	if(UserPtr == NULL) {			/* not found */
+		SetLastError(currentuser,UNKNOWN_USER);
+		return(-1);
+	}
+
+	return(UpdateUser(UserPtr,UserPtr->name,UserPtr->password,atoi(CommandTokens[2]),UserPtr->status,UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags));
 }
 
-return(UpdateUser(currentuser,CommandTokens[0],"",atoi(CommandTokens[1]),0,"",0,0,0,0,"","",0));
+return(UpdateUser(currentuser,currentuser->name,currentuser->password,atoi(CommandTokens[1]),currentuser->status,currentuser->desc,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
 }
 
 int setgender_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-if(TokenCount < 2) {
+user *UserPtr;
+
+if(TokenCount == 1) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserGender(currentuser,CommandTokens[1],CommandTokens[2]));
+if(TokenCount >= 2) {
+	if(currentuser->status < WIZARD) {			/* can't do this yet */
+		SetLastError(currentuser,NOT_YET);
+		return(-1);
+	}
+
+	UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+	if(UserPtr == NULL) {			/* not found */
+		SetLastError(currentuser,UNKNOWN_USER);
+		return(-1);
+	}
+
+	return(UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints,atoi(CommandTokens[2]),UserPtr->race,UserPtr->userclass,UserPtr->flags));
+}
+
+return(UpdateUser(currentuser,currentuser->name,currentuser->password,atoi(CommandTokens[1]),currentuser->status,currentuser->desc,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
 }
 
 int setlevel_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-if(TokenCount < 2) {
+user *UserPtr;
+
+if(TokenCount == 1) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserLevel(currentuser,CommandTokens[1],CommandTokens[2]));
+if(TokenCount >= 2) {
+	if(currentuser->status < WIZARD) {			/* can't do this yet */
+		SetLastError(currentuser,NOT_YET);
+		return(-1);
+	}
+
+	UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+	if(UserPtr == NULL) {			/* not found */
+		SetLastError(currentuser,UNKNOWN_USER);
+		return(-1);
+	}
+
+	return(UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,atoi(CommandTokens[2]),UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags));
+}
+
+return(UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,atoi(CommandTokens[2]),currentuser->desc,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
 }
 
 int setclass_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
@@ -894,31 +959,83 @@ return(UpdateUser(currentuser,CommandTokens[1],"",0,0,"",0,0,0,0,"",CommandToken
 }
 
 int setxp_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-if(TokenCount < 2) {
+user *UserPtr;
+
+if(TokenCount == 1) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserPoints(currentuser,CommandTokens[1],CommandTokens[2],EXPERIENCEPOINTS));
+if(TokenCount >= 2) {
+	if(currentuser->status < WIZARD) {			/* can't do this yet */
+		SetLastError(currentuser,NOT_YET);
+		return(-1);
+	}
+
+	UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+	if(UserPtr == NULL) {			/* not found */
+		SetLastError(currentuser,UNKNOWN_USER);
+		return(-1);
+	}
+
+	return(UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints,atoi(CommandTokens[2]),UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags));
+}
+
+return(UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,currentuser->desc,currentuser->magicpoints,currentuser->staminapoints,atoi(CommandTokens[2]),currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
 }
 
 int setmp_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-if(TokenCount < 2) {
+user *UserPtr;
+
+if(TokenCount == 1) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserPoints(currentuser,CommandTokens[1],CommandTokens[2],MAGICPOINTS));
+if(TokenCount >= 2) {
+	if(currentuser->status < WIZARD) {			/* can't do this yet */
+		SetLastError(currentuser,NOT_YET);
+		return(-1);
+	}
+
+	UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+	if(UserPtr == NULL) {			/* not found */
+		SetLastError(currentuser,UNKNOWN_USER);
+		return(-1);
+	}
+
+	return(UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,UserPtr->desc,atoi(CommandTokens[2]),UserPtr->staminapoints,UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags));
+}
+
+return(UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,currentuser->desc,atoi(CommandTokens[2]),currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
 }
 
 int setsp_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-if(TokenCount < 2) {
+user *UserPtr;
+
+if(TokenCount == 1) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
-return(SetUserPoints(currentuser,CommandTokens[1],CommandTokens[2],STAMINAPOINTS));
+if(TokenCount >= 2) {
+	if(currentuser->status < WIZARD) {			/* can't do this yet */
+		SetLastError(currentuser,NOT_YET);
+		return(-1);
+	}
+
+	UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+	if(UserPtr == NULL) {			/* not found */
+		SetLastError(currentuser,UNKNOWN_USER);
+		return(-1);
+	}
+
+	return(UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,UserPtr->desc,UserPtr->magicpoints,atoi(CommandTokens[2]),UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags));
 }
+
+return(UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,currentuser->desc,currentuser->magicpoints,atoi(CommandTokens[2]),currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
+}
+
 
 int BanUserByIPAddress_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 if(TokenCount < 2) {
@@ -990,20 +1107,21 @@ if(TokenCount < 2) {
 if(*CommandTokens[1] == '#') {				/* valid ID number */
 	if(RenameObject(currentuser,ObjectID,CommandTokens[2]) == 0) return(-1);	/* rename object */
 }
-else
-{
-	UserPtr=GetUserPointerByName(CommandTokens[1]);
 
-	if(UserPtr == NULL) {		/* user not found */
-		SetLastError(currentuser,UNKNOWN_USER);
-		return(-1);
-	}
+/* renaming user */
 
-	strcpy(UserPtr->name,CommandTokens[2]);		/* set username */
-
-	return(UpdateUser(currentuser,CommandTokens[0],"",0,0,"",0,0,0,0,"","",0));
+if(currentuser->status < WIZARD) {			/* can't do this yet */
+	SetLastError(currentuser,NOT_YET);
+	return(-1);
 }
 
+UserPtr=GetUserPointerByName(CommandTokens[1]);		/* get user information */
+if(UserPtr == NULL) {			/* not found */
+	SetLastError(currentuser,UNKNOWN_USER);
+	return(-1);
+}
+
+return(UpdateUser(UserPtr,CommandTokens[2],UserPtr->password,UserPtr->homeroom,UserPtr->status,UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags));
 }
 
 int chown_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {		/* set object owner */

@@ -1,30 +1,25 @@
 int UpdateDatabase(void);
 int LoadDatabase(void);
-int SetExit(user *currentuser,int WhichRoom,int direction,int exit);
-int CreateRoom(user *currentuser,char *RoomDirection);
+int SetExit(user *currentuser,int whichroom,int direction,int exit);
+int CreateRoom(user *currentuser,char *roomdirection);
 int SetObjectAttributes(user *currentuser,unsigned int ObjectID,int attributes);
-int SetOwner(user *currentuser,unsigned int ObjectID,char *NewName);
+int SetOwner(user *currentuser,unsigned int ObjectID,char *owner);
 int CopyObject(user *currentuser,unsigned int ObjectID,int DestinationRoom);
 int GenerateObjects(void);
-int PickUpObject(user *currentuser,char *ObjectName);
-int DropObject(user *currentuser,char *ObjectName);
 int CreateObject(user *currentuser,char *ObjectName);
 int DeleteObject(user *currentuser,unsigned int ObjectID);
-int RenameObject(user *currentuser,unsigned int ObjectID,char *NewName);
-int look(user *currentuser,char *ObjectName);
+int RenameObject(user *currentuser,unsigned int ObjectID,char *newname);
 int CopyFile(char *source,char *destination);
-int describe(user *currentuser,unsigned int ObjectID,char *description);
+int SetObjectDescription(user *currentuser,unsigned int ObjectID,char *description);
 void SetDatabaseUpdateFlag(void);
 void ClearDatabaseUpdateFlag(void);
 char *GetDirectionName(int direction);
 int GetRoomFlags(int RoomNumber);
 char *GetRoomName(int RoomNumber);
 room *GetRoomPointer(int RoomNumber);
-int GetRoomMonsterEvil(int RoomNumber,int RoomMonster);
-char *GetRoomMonsterName(int RoomNumber,int RoomMonster);
 int GetNumberOfMonstersInRoom(int RoomNumber);
 int IsObjectInRoom(char *name,int RoomNumber);
 int GetNumberOfRooms(void);
 unsigned int GetNextObjectNumber(void);
-
+int SetRoomDescription(user *currentuser,int RoomNumber,char *description);
 

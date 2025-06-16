@@ -8,3 +8,6 @@
 #define SOUTHWEST		7
 #define	UP			8
 #define DOWN			9
+
+#define NUMBER_OF_DIRECTIONS	10
+

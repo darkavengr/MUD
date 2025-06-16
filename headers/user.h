@@ -32,7 +32,7 @@
 #define USER_GAGGED  2
 
 #define DEFAULT_STAMINAPOINTS  1000                               /* default number of stamina points */
-#define DEFAULT_MAGICPOINTS  1000                               /* default number of magic points */
+#define DEFAULT_MAGICPOINTS  0                               /* default number of magic points */
 
 #define MALE 			0                                                       /* genders */
 #define FEMALE 			1
@@ -107,11 +107,13 @@ int AddNewClass(user *currentuser,class *newclass);
 user *GetUserPointerByName(char *name);
 user *FindFirstUser(void);
 user *FindNextUser(user *last);
-race *FindFirstRace(void);
-race *FindNextRace(race *last);
 char *GetPointerToMaleTitles(int level);
 char *GetPointerToFemaleTitles(int level);
 void AttackUser(int roomnumber,int roommonster);
 void DisconnectAllUsers(void);
 int UpdateUsersFile(void);
+race *FindFirstRace(void);
+race *FindNextRace(race *previous);
+class *FindFirstClass(void);
+class *FindNextClass(class *previous);
 

@@ -35,14 +35,8 @@
 
 #define  MAX_BACKLOG 14
 
-extern race *races;
-extern class *classes;
-
-char *NewPasswordPrompt="Enter a password:";
 char *GenderPrompt="Gender [enter 'male' or 'female']:";
 char *DescriptionPrompt="Enter a description for yourself:";
-char *ChooseRace="Choose a player race\r\n\r\n";
-char *ChooseClass="Choose a player class\r\n\r\n";
 char *ClassPrompt="Enter player class:";
 char *ChoosePlayerClass="Choose a player class\r\n";
 char *ChoosePlayerRace="Choose a player race:\r\nName\t\Magic\t\nStrength\t\nAgility\tDexterity\tLuck\tWisdon\tIntelligence\tStamina\r\n";
@@ -76,8 +70,8 @@ int MaxSocket;
 int retval;
 int SocketCount;
 user *currentuser;
-race *racenext;
-class *classnext;
+race *RacePtr;
+class *ClassPtr;
 struct sockaddr_in clientip;
 socklen_t clientiplen;
 char *IPAddress[BUF_SIZE];
@@ -86,7 +80,7 @@ char *OutputBuffer[BUF_SIZE];
 struct timeval TimeoutValue;
 time_t ObjectResetTime,DatabaseResetTime,UserResetTime,ConfigResetTime,currenttime;
 CONFIG config;
-char *NewlinePtr;
+int CommandReturnValue;
 
 #ifdef WIN32
 WSADATA wsadata;
@@ -156,7 +150,7 @@ time(&ConfigResetTime);
 ConfigResetTime += config.configsavetime;
 
 GenerateObjects();		/* create new objects */
-GenerateMonsters();	/* create monsters */
+//GenerateMonsters();	/* create monsters */
 	
 /*
  * The main event loop. This resets the object, saves the configuration information.
@@ -203,7 +197,7 @@ while(1) {
 		ConfigResetTime += config.configsavetime;
 	}
 
-	MoveMonster();		/* move a monster */
+	//MoveMonster();		/* move a monster */
 
 	/* check for data on sockets */
 
@@ -277,8 +271,7 @@ while(1) {
 
 				strcat(connections[SocketCount].buf,connections[SocketCount].OutputBuffer);	/* add to buffer */
 
-				NewlinePtr=strpbrk(connections[SocketCount].buf,"\n");
-				if(NewlinePtr == NULL) continue;	/* no newline found */
+				if(strpbrk(connections[SocketCount].buf,"\n") == NULL) continue;	/* no newline found */
 
 				RemoveNewLine(connections[SocketCount].buf);	/* remove newline character */
 	
@@ -377,7 +370,7 @@ while(1) {
 
 						strcpy(connections[SocketCount].uname,connections[SocketCount].buf);
 
-						send(SocketCount,NewPasswordPrompt,strlen(NewPasswordPrompt),0);
+						send(SocketCount,PasswordPrompt,strlen(PasswordPrompt),0);
 						connections[SocketCount].connectionstate=STATE_GETGENDER; /* next state */
 
 						badbreak:
@@ -387,7 +380,7 @@ while(1) {
 						if(!*connections[SocketCount].buf) {
 							PrintError(currentuser->handle,NO_PASSWORD);
 
-							send(SocketCount,NewPasswordPrompt,strlen(NewPasswordPrompt),0);
+							send(SocketCount,PasswordPrompt,strlen(PasswordPrompt),0);
 
 			         			connections[SocketCount].connectionstate=STATE_GETGENDER; /* loop state */
 							break;
@@ -422,16 +415,16 @@ while(1) {
 
 						/* show list of races */
 
-						racenext=FindFirstRace();
+						RacePtr=FindFirstRace();
 
-						while(racenext != NULL) {
-							sprintf(OutputBuffer,"%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\r\n",racenext->name,\	
-							racenext->magic,racenext->strength,racenext->agility,racenext->dexterity,\
-							racenext->luck,racenext->wisdom,racenext->intelligence,racenext->stamina);
+						while(RacePtr != NULL) {
+							sprintf(OutputBuffer,"%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\r\n",RacePtr->name,\	
+							RacePtr->magic,RacePtr->strength,RacePtr->agility,RacePtr->dexterity,\
+							RacePtr->luck,RacePtr->wisdom,RacePtr->intelligence,RacePtr->stamina);
 
 							send(SocketCount,OutputBuffer,strlen(OutputBuffer),0);
 							
-							racenext=FindNextRace(racenext);
+							RacePtr=FindNextRace(RacePtr);
 						}
 			
 						send(SocketCount,RacePrompt,strlen(RacePrompt),0);
@@ -439,39 +432,39 @@ while(1) {
 						break;
 
 					case STATE_GETCLASS:					/* get race and prompt for class */
-						strcpy(connections[SocketCount].race,connections[SocketCount].buf);
+						strcpy(connections[SocketCount].class,connections[SocketCount].buf);
 	
-						racenext=races;				/* check if race exists */
+						ClassPtr=FindFirstClass();				/* check if class exists */
 
-						while(racenext != NULL) {
+						while(ClassPtr != NULL) {
 							ToUppercase(connections[SocketCount].buf);
-							ToUppercase(racenext->name);
+							ToUppercase(ClassPtr->name);
 
-							if(strcmp(racenext->name,connections[SocketCount].buf) == 0) { 
+							if(strcmp(ClassPtr->name,connections[SocketCount].buf) == 0) { 
 								connections[SocketCount].connectionstate=STATE_CREATEUSER; /* next state */
 					  			break;
 					 		}
 
-					 		racenext=racenext->next;
+					 		ClassPtr=FindNextClass(ClassPtr);
 						}
 	
-						if(racenext == NULL) {
-							PrintError(currentuser->handle,BAD_RACE);
+						if(ClassPtr == NULL) {
+							PrintError(currentuser->handle,BAD_CLASS);
 	
-							send(SocketCount,RacePrompt,strlen(RacePrompt),0);
+							send(SocketCount,ClassPrompt,strlen(ClassPrompt),0);
 							connections[SocketCount].connectionstate=STATE_GETCLASS; /* go to current state */
 							break;
 						}
 	
 						send(SocketCount,ChoosePlayerClass,strlen(ChoosePlayerClass),0);
 
-						classnext=classes;
+						ClassPtr=FindFirstClass();
 
-						while(classnext != NULL) {
-							sprintf(OutputBuffer,"%s\r\n",classnext->name);
-
+						while(ClassPtr != NULL) {
+							sprintf(OutputBuffer,"%s\r\n",ClassPtr->name);
 							send(SocketCount,OutputBuffer,strlen(OutputBuffer),0);
-							classnext=classnext->next;
+	
+							ClassPtr=FindNextClass(ClassPtr);	
 						}
 
 						send(SocketCount,ClassPrompt,strlen(ClassPrompt),0);
@@ -481,27 +474,6 @@ while(1) {
 					case STATE_CREATEUSER:					/* check class and create user */
 						strcpy(connections[SocketCount].class,connections[SocketCount].buf);
 
-						classnext=classes;
-	
-						while(classnext != NULL) {
-							ToUppercase(connections[SocketCount].class);
-							ToUppercase(classnext->name);
-	
-							if(strcmp(connections[SocketCount].class,classnext->name) == 0) break;
-                             
-							classnext=classnext->next;
-						}
-			
-						if(classnext == NULL) {		/* class not found, go back to state STATE_CREATEUSER */
-							connections[SocketCount].connectionstate=STATE_CREATEUSER;
-
-							PrintError(SocketCount,BAD_CLASS);
-							send(SocketCount,ClassPrompt,strlen(ClassPrompt),0);
-
-							break;
-		                	        }
-
-				
 						if(CreateUser(SocketCount,connections[SocketCount].uname,connections[SocketCount].upass,\
 							connections[SocketCount].gender,connections[SocketCount].description,connections[SocketCount].race,\
 							connections[SocketCount].class) == -1) {	/* can't create account */
@@ -528,11 +500,30 @@ while(1) {
 						connections[SocketCount].connectionstate=STATE_CHECKLOGIN;
 						break;
 
-					case STATE_GETCOMMAND:		/* processing command */
-			           		if(ExecuteCommand(connections[SocketCount].user,connections[SocketCount].buf) == -1) {
-							PrintError(connections[SocketCount].user->handle,GetLastError(connections[SocketCount].user));
+					case STATE_PLAYAGAIN_PROMPT:
+						if(((char) *connections[SocketCount].buf == 'y') || 
+						   ((char) *connections[SocketCount].buf == 'Y')) {
+							go(connections[SocketCount].user,connections[SocketCount].user->homeroom);
+
+							connections[SocketCount].connectionstate=STATE_GETCOMMAND;
+						}
+						else if(((char) *connections[SocketCount].buf == 'n') || 
+						   	((char) *connections[SocketCount].buf == 'N')) {
+								connections[SocketCount].user->loggedin=FALSE; /* mark as logged out */
+
+								DisconnectUser(connections[SocketCount].user);		/* disconnect user */
 						}
 
+					case STATE_GETCOMMAND:		/* processing command */
+						CommandReturnValue=ExecuteCommand(connections[SocketCount].user,connections[SocketCount].buf);
+			           		if(CommandReturnValue == -1) {
+							PrintError(connections[SocketCount].user->handle,GetLastError(connections[SocketCount].user));
+						}
+						else if(CommandReturnValue == -2) {
+							connections[SocketCount].connectionstate=STATE_PLAYAGAIN_PROMPT;
+							break;
+						}
+	
 						connections[SocketCount].connectionstate=STATE_GETCOMMAND;	/* loop in state STATE_GETCOMMAND */
 
 						send(SocketCount,">",1,0);

@@ -32,7 +32,7 @@ char *SpellHasKilled="and have killed it";
 
 int CastSpell(user *currentuser,char *spellname,char *target) {
 room *currentroom;
-user *usernext;
+user *UserPtr;
 monster *monsternext;
 char *SpellMessage[BUF_SIZE];
 int SpellFound;
@@ -96,16 +96,16 @@ if((currentroom->attr & ROOM_HAVEN) == TRUE && currentuser->status < WIZARD) {		
 	return(-1);
 }
 
-usernext=FindFirstUser();		/* find first user */
+UserPtr=FindFirstUser();		/* find first user */
 
-while(usernext != NULL) {
-	if((regexp(usernext->name,target) == TRUE) && (usernext->loggedin == TRUE) && (usernext->room == currentuser->room)) {
+while(UserPtr != NULL) {
+	if((regexp(UserPtr->name,target) == TRUE) && (UserPtr->loggedin == TRUE) && (UserPtr->room == currentuser->room)) {
 		if(config.allowplayerkilling == FALSE) {		/* can't kill player */
 			SetLastError(currentuser,SPELL_HAVEN);
 		}
 
-		if(usernext->status > WIZARD) {		/* if not user, cast spell */
-			if(usernext->gender == MALE) {
+		if(UserPtr->status > WIZARD) {		/* if not user, cast spell */
+			if(UserPtr->gender == MALE) {
 				sprintf(SpellMessage,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->name,GetPointerToMaleTitles(currentuser->status));
 				send(currentuser->handle,SpellMessage,strlen(SpellMessage),0);
 				return(0);
@@ -119,17 +119,22 @@ while(usernext != NULL) {
 
 		}
 
-		HitPoints=usernext->staminapoints-spellnext->damage;	/* deduct stamina points from user */
+		HitPoints=UserPtr->staminapoints-spellnext->damage;	/* deduct stamina points from user */
 
-		UpdateUser(currentuser,usernext->name,"",0,0,"",0,HitPoints,0,0,"","",0); /* update user stamina points */ 
-		UpdateUser(currentuser,currentuser->name,"",0,0,"",usernext->magicpoints-spellnext->spellpoints,currentuser->staminapoints,0,0,"","",0); /* ' update own spell points */
+		/* update user stamina points */ 
+		
+		UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints - HitPoints,UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags);
 
-		sprintf(SpellMessage,"%s casts a %s on %s causing %d points of damage\r\n",currentuser->name,spellnext->message,usernext->name,spellnext->damage);
+		/* update own spell points */
+
+		UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,currentuser->desc,currentuser->magicpoints-spellnext->spellpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags);
+
+		sprintf(SpellMessage,"%s casts a %s on %s causing %d points of damage\r\n",currentuser->name,spellnext->message,UserPtr->name,spellnext->damage);
 		send(currentuser->handle,SpellMessage,strlen(SpellMessage),0);
 
 	}
 
-	usernext=FindNextUser(usernext);		/* find next user */
+	UserPtr=FindNextUser(UserPtr);		/* find next user */
 }
 
 

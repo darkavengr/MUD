@@ -47,7 +47,7 @@ if(CheckPasswordStrength(password) == FALSE) {	/* weak password */
 
 strcpy(EncryptedPassword,crypt(password,CurrentUserName));
 
-return(UpdateUser(currentuser,CurrentUserName,EncryptedPassword,0,0,"",0,currentuser->staminapoints,0,0,"","",0));
+return(UpdateUser(currentuser,currentuser->name,EncryptedPassword,currentuser->homeroom,currentuser->status,currentuser->desc,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
 }
 
 int CheckPasswordStrength(char *password) {
