@@ -18,7 +18,7 @@
 #define OBJECT_EXISTS		17
 #define ROOM_NOT_FOUND		18
 #define CANT_CREATE_ROOM 	19
-#define PERMISSION_DENIED	20
+#define ACCESS_DENIED		20
 #define WEAK_PASSWORD		21
 #define SPELL_LEVEL_USER 	22
 #define SPELL_NO_TARGET		23
@@ -34,14 +34,12 @@
 #define ATTACK_HAVEN		33
 #define INVALID_HELP_TOPIC	34
 #define KILL_WIZARD		35
-#define NO_PASSWORD		36
-#define ACCESS_DENIED		37
-#define BAD_ROOM		38
-#define ALREADY_HAVE_OBJECT	39
-#define RACE_EXISTS		40
-#define CLASS_EXISTS		41
-#define SYNTAX_ERROR		42
-#define IO_ERROR		34
+#define ALREADY_HAVE_OBJECT	36
+#define RACE_EXISTS		37
+#define CLASS_EXISTS		38
+#define SYNTAX_ERROR		39
+#define IO_ERROR		40
+#define VERB_NOT_FOUND		41
 
 #define NOCONFIGFILE  1
 #define BADCONFIG     2

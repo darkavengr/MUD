@@ -38,7 +38,7 @@ char *errors[] = {
    	"Object already exists\r\n",\
 	"Room not found\r\n",\
 	"Can't create room\r\n",\
- 	"Permission denied\r\n",\
+ 	"Access denied\r\n",\
     	"Password is not strong enough\r\n",\
 	"That spell needs a higher level user to cast it\r\n",\
    	"No target for spell\r\n",\
@@ -54,13 +54,12 @@ char *errors[] = {
 	"Can't attack users in haven rooms\r\n",\
    	"Unknown help topic\r\n",\
 	"You can't kill wizards\r\n",\
-	"Access denied\r\n",\
-	"Invalid room number\r\n",\
 	"You have this object in your inventory\r\n",\
 	"Race already exists\r\n",\
 	"Class already exists\r\n",\
 	"Syntax error\r\n",\
 	"I/O error\r\n",\
+	"Verb not found\r\n",\
 };
 
 
@@ -73,6 +72,8 @@ return(user->lasterror);
 }
 
 void PrintError(int socket,int error) {
+printf("error=%d %s\n",error,errors[error]);
+
 send(socket,errors[error],strlen(errors[error]),0);
 }
 

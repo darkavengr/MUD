@@ -164,7 +164,7 @@ while(1) {
 	 if(currenttime > ObjectResetTime) {		/* update objects */
 	//	 printf("mud: Updating objects\n");
 
-		  GenerateObjects();		/* create new objects */
+		//  GenerateObjects();		/* create new objects */
 
 		time(&ObjectResetTime);			/* update reset time */
   		ObjectResetTime += config.objectresettime;
@@ -173,7 +173,7 @@ while(1) {
 	 if(currenttime > DatabaseResetTime) {		/* update database */
   	 //	printf("mud: Saving database\n");
 
-		UpdateDatabase();
+		//UpdateDatabase();
 	
 		time(&DatabaseResetTime);			/* update reset time */
 		DatabaseResetTime += config.databaseresettime;
@@ -182,7 +182,7 @@ while(1) {
 	 if(currenttime > UserResetTime) {	/* update users */
 	//	printf("mud: Saving users\n");
 
-  		UpdateUsersFile();
+  	//	UpdateUsersFile();
 
   		time(&UserResetTime);			/* update reset time */
 		UserResetTime += config.userresettime;
@@ -191,7 +191,7 @@ while(1) {
 	if(currenttime > ConfigResetTime) {		/* update config */
 	//	printf("mud: Updating configuration\n");
 
-		updateconfiguration(config);
+	//	updateconfiguration(config);
 
 		time(&ConfigResetTime);			/* update reset time */
 		ConfigResetTime += config.configsavetime;

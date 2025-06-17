@@ -82,7 +82,7 @@ unsigned int (*call_command)(user *,int,void *);		/* function pointer */
 		 {  NULL,"DROP",&drop_command },\
 		 {  NULL,"HELP",&help_command },\
 		 {  NULL,"PASSWORD",&password_command },\
-		 {  NULL,"SPELL",&spell_command },\
+		 {  NULL,"CAST",&cast_command },\
 		 {  NULL,"F",&fight_command },\
 		 {  NULL,"SCORE",&score_command },\
 		 {  NULL,"INV",&inv_command },\
@@ -131,14 +131,19 @@ char *DirectionsMessage[]={ "North ","South ","East ","West ","Northeast ","Nort
 char *ExitsMessage="\r\nExits: ";
 char *AllParameters;
 char *AllParametersNotFirstTwo;
+char *InThisRoomMessage="\r\nIn this room there is: ";
 
 int ExecuteCommand(user *currentuser,char *command) {
 char *CommandTokens[BUF_SIZE][BUF_SIZE];
 int TokenCount;
 int RoomLoop;
 int StatementCount;
+char *OutputMessage[BUF_SIZE];
 
-if(!*command) return(0);			/* no command */
+if(!*command) {			/* no command */
+	SetLastError(currentuser,NO_ERROR);
+	return(0);
+}
 
 AllParameters=strpbrk(command," ");		/* point to all parameters */
 if(AllParameters != NULL) AllParametersNotFirstTwo=strpbrk(AllParameters+1," ");
@@ -157,127 +162,124 @@ do {
 
 	/* if statement found, call it */
 
-	if(strcmp(statements[StatementCount].statement,CommandTokens[0]) == 0) {
-		return(statements[StatementCount].call_command(currentuser,TokenCount,CommandTokens));
-	}
+	if(strcmp(statements[StatementCount].statement,CommandTokens[0]) == 0) return(statements[StatementCount].call_command(currentuser,TokenCount,CommandTokens));
 
 	StatementCount++;
 
 } while(statements[StatementCount].statement != NULL);
+
+printf("TokenCount=%d\n",TokenCount);
+
+if(TokenCount > 1) {		/* do possible object verb action */
+	if(DoObjectVerbAction(currentuser,CommandTokens[0],CommandTokens[1]) == -1) {
+
+		printf("GetLastError(currentuser)=%d\n",GetLastError(currentuser));
+
+		if(GetLastError(currentuser) == VERB_NOT_FOUND) {	/* can't do that to an object */
+			sprintf(OutputMessage,"You can't %s %s\n",CommandTokens[0],CommandTokens[1]);
+
+			send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+			return(0);		/* don't invoke error handler in main() */
+		}
+	}
+	else
+	{
+		SetLastError(currentuser,NO_ERROR);
+		return(0);
+	}
+}
 
 SetLastError(currentuser,BAD_COMMAND);
 return(-1);
 }
 
 int north_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[NORTH]));
+return(go(currentuser,currentuser->roomptr->exits[NORTH]));
 }
 
 int south_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[SOUTH]));
+return(go(currentuser,currentuser->roomptr->exits[SOUTH]));
 }
 
 int east_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[EAST]));
+return(go(currentuser,currentuser->roomptr->exits[EAST]));
 }
 
 int west_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[NORTH]));
+return(go(currentuser,currentuser->roomptr->exits[NORTH]));
 }
 
 int northwest_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[NORTHWEST]));
+return(go(currentuser,currentuser->roomptr->exits[NORTHWEST]));
 }
 
 int southwest_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[SOUTHWEST]));
+return(go(currentuser,currentuser->roomptr->exits[SOUTHWEST]));
 }
 
 int southeast_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[SOUTHEAST]));
+return(go(currentuser,currentuser->roomptr->exits[SOUTHEAST]));
 }
 
 int northeast_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[NORTHEAST]));
+return(go(currentuser,currentuser->roomptr->exits[NORTHEAST]));
 }
 
 int up_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[UP]));
+return(go(currentuser,currentuser->roomptr->exits[UP]));
 }
 
 int down_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
-room *currentroom=currentuser->roomptr;
-
-return(go(currentuser,currentroom->exits[DOWN]));
+return(go(currentuser,currentuser->roomptr->exits[DOWN]));
 }
 
 int look_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 char *RoomMessage[BUF_SIZE];
 roomobject *ObjectNext;
 user *UserPtr;
-room *CurrentRoom;
 int found=FALSE;
 int RoomExitCount;
 monster *RoomMonster;
 
-CurrentRoom=currentuser->roomptr;
-	
 /* no name, so look at current room */
 
 if(TokenCount <= 1) {				/* display name */
 
-	send(currentuser->handle,CurrentRoom->name,strlen(CurrentRoom->name),0);
+	send(currentuser->handle,currentuser->roomptr->name,strlen(currentuser->roomptr->name),0);
 
-	if(currentuser->status >= WIZARD) {		/* if wizard or higher, show object number */
-		sprintf(RoomMessage," (#%x)",CurrentRoom->id);
+	if(currentuser->status >= WIZARD) {		/* if wizard or higher, show room ID number */
+		sprintf(RoomMessage," (#%x)",currentuser->roomptr->id);
 		send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
 	}
 
 	send(currentuser->handle,"\r\n",2,0);
-	send(currentuser->handle,CurrentRoom->desc,strlen(CurrentRoom->desc),0);  
+	send(currentuser->handle,currentuser->roomptr->desc,strlen(currentuser->roomptr->desc),0);  
 
-	send(currentuser->handle,ExitsMessage,strlen(ExitsMessage),0);  		/* display exits */
+  	/* display exits */
+	send(currentuser->handle,ExitsMessage,strlen(ExitsMessage),0);
 
 	for(RoomExitCount=0;RoomExitCount<11;RoomExitCount++) {
-		if(CurrentRoom->exits[RoomExitCount] != 0) send(currentuser->handle,DirectionsMessage[RoomExitCount],strlen(DirectionsMessage[RoomExitCount]),0);
+		if(currentuser->roomptr->exits[RoomExitCount] != 0) send(currentuser->handle,DirectionsMessage[RoomExitCount],strlen(DirectionsMessage[RoomExitCount]),0);
 	}
 
 	send(currentuser->handle,"\r\n",2,0);
 
-	if(CurrentRoom->roomobjects != NULL) {		/* display objects */
-		send(currentuser->handle,"\r\n",2,0);
-		send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
-		ObjectNext=CurrentRoom->roomobjects;
+	/* display objects */
+
+	if(currentuser->roomptr->roomobjects != NULL) {		/* display objects */
+		send(currentuser->handle,InThisRoomMessage,strlen(InThisRoomMessage),0);
+
+		ObjectNext=currentuser->roomptr->roomobjects;
 
 		while(ObjectNext != NULL) {
+			send(currentuser->handle,ObjectNext->name,strlen(ObjectNext->name),0);
 
 			if(currentuser->status >= WIZARD) {		/* if wizard or higher, show object number */
-				sprintf(RoomMessage," (#%x), ",ObjectNext->id);
+				sprintf(RoomMessage," (#%x)",ObjectNext->id);
 				send(currentuser->handle,RoomMessage,strlen(RoomMessage),0);
 			}
-			else
-			{
-				send(currentuser->handle,ObjectNext->name,strlen(ObjectNext->name),0);
-				send(currentuser->handle,", ",2,0);
-			}
+			
+			if(ObjectNext->next != NULL) send(currentuser->handle,", ",2,0);
 
 			ObjectNext=ObjectNext->next;
 		}
@@ -335,7 +337,7 @@ if(TokenCount <= 1) {				/* display name */
 
 /* looking at object or person */
 
-ObjectNext=CurrentRoom->roomobjects;
+ObjectNext=currentuser->roomptr->roomobjects;
 
 while(NULL != ObjectNext) {
 	if(ObjectNext == NULL) break;
@@ -422,11 +424,11 @@ while(UserPtr != NULL) {
 		found=TRUE;
 
 		if(UserPtr->gender == MALE) {
-			sprintf(OutputMessage,"%s the %s is in %s (#%d)\r\n",UserPtr->name,GetPointerToMaleTitles(UserPtr->status),UserPtr->roomname,UserPtr->room);
+			sprintf(OutputMessage,"%s the %s is in %s (#%x)\r\n",UserPtr->name,GetPointerToMaleTitles(UserPtr->status),UserPtr->roomname,UserPtr->room);
 		}
 		else
 		{
-			sprintf(OutputMessage,"%s the %s is in %s (#%d)\r\n",UserPtr->name,GetPointerToMaleTitles(UserPtr->status),UserPtr->roomname,UserPtr->room);
+			sprintf(OutputMessage,"%s the %s is in %s (#%x)\r\n",UserPtr->name,GetPointerToMaleTitles(UserPtr->status),UserPtr->roomname,UserPtr->room);
 		}
 
 		send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
@@ -504,7 +506,6 @@ return(0);
 
 int describe_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 int ObjectID;
-room *CurrentRoom=currentuser->roomptr;
 user *UserPtr;
 
 if(TokenCount < 2) {
@@ -513,7 +514,7 @@ if(TokenCount < 2) {
 }
 
 if((char) *CommandTokens[1] == '#') {		/* setting object or  description */
-	sscanf(CommandTokens[1],"#%d",&ObjectID);	/* get object ID */
+	sscanf(CommandTokens[1],"#%x",&ObjectID);	/* get object ID */
 
 	if(SetObjectDescription(currentuser,ObjectID,AllParametersNotFirstTwo) == -1) {	/* not object */
 		return(SetRoomDescription(currentuser,ObjectID,AllParametersNotFirstTwo));
@@ -523,7 +524,7 @@ if((char) *CommandTokens[1] == '#') {		/* setting object or  description */
 /* if setting description for self */
 if(strcmp(CommandTokens[1],"me") == 0) return(UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,AllParametersNotFirstTwo,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
 
-if(strcmp(CommandTokens[1],"here") == 0) return(SetRoomDescription(currentuser,CurrentRoom->id,AllParametersNotFirstTwo));    /* if setting description for room */
+if(strcmp(CommandTokens[1],"here") == 0) return(SetRoomDescription(currentuser,currentuser->roomptr->id,AllParametersNotFirstTwo));    /* if setting description for room */
 
 /* set description for other user */
 
@@ -567,12 +568,19 @@ int password_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SI
 return(ChangePassword(currentuser,CommandTokens[1]));
 }
 
-int spell_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
+int cast_command(user *currentuser,int TokenCount,char *CommandTokens[BUF_SIZE][BUF_SIZE]) {
 if(TokenCount < 2) {
 	SetLastError(currentuser,NO_PARAMS);
 	return(-1);
 }
 
+ToUppercase(CommandTokens[2]);
+
+if(strcmp(CommandTokens[2],"TO") != 0) {		/* missing to */
+	SetLastError(currentuser,SYNTAX_ERROR);
+	return(-1);
+}
+	
 return(CastSpell(currentuser,CommandTokens[1],CommandTokens[2]));
 }
 
@@ -1085,12 +1093,12 @@ if(TokenCount < 2) {
 	return(-1);
 }
 
-if(*CommandTokens[1] != '#') {				/* not a valid ID number */
+if((char) *CommandTokens[1] != '#') {				/* not a valid ID number */
 	SetLastError(currentuser,SYNTAX_ERROR);
 	return(-1);
 }
 
-sscanf(CommandTokens[1],"#%d",&ObjectID);
+sscanf(CommandTokens[1],"#%x",&ObjectID);
 
 return(DeleteObject(currentuser,ObjectID));
 }
@@ -1132,12 +1140,12 @@ if(TokenCount < 2) {
 	return(-1);
 }
 
-if(*CommandTokens[1] != '#') {				/* not a valid ID number */
+if((char) *CommandTokens[1] != '#') {				/* not a valid ID number */
 	SetLastError(currentuser,SYNTAX_ERROR);
 	return(-1);
 }
 
-sscanf(CommandTokens[1],"#%d",&ObjectID);
+sscanf(CommandTokens[1],"#%x",&ObjectID);
 
 return(SetOwner(currentuser,CommandTokens[1],CommandTokens[2]));
 }
@@ -1152,12 +1160,12 @@ if(TokenCount < 2) {
 	return(-1);
 }
 
-if(*CommandTokens[1] != '#') {				/* not a valid ID number */
+if((char) *CommandTokens[1] != '#') {				/* not a valid ID number */
 	SetLastError(currentuser,SYNTAX_ERROR);
 	return(-1);
 }
 
-sscanf(CommandTokens[1],"#%d",&ObjectID);
+sscanf(CommandTokens[1],"#%x",&ObjectID);
 
 AttributePtr=CommandTokens[2];
 
@@ -1284,14 +1292,14 @@ if(TokenCount < 2) {
 	return(-1);
 }
 
-if(*CommandTokens[1] != '#') {				/* not a valid ID number */
+if((char) *CommandTokens[1] != '#') {				/* not a valid ID number */
 	SetLastError(currentuser,SYNTAX_ERROR);
 	return(-1);
 }
 
-sscanf(CommandTokens[1],"#%d",&ObjectID);
+sscanf(CommandTokens[1],"#%x",&ObjectID);
 
-if(*CommandTokens[2] == '#') sscanf(CommandTokens[1],"#%d",&DestinationObjectID);	/* get destination ID */
+if(*CommandTokens[2] == '#') sscanf(CommandTokens[1],"#%x",&DestinationObjectID);	/* get destination ID */
 
 if(CopyObject(currentuser,CommandTokens[1],ObjectID) == 0) return(DeleteObject(currentuser,ObjectID) == -1);
 
@@ -1308,7 +1316,7 @@ if(UserPtr != NULL) {			/* found user */
 /* copy room */
 
 if((GetRoomPointer(DestinationObjectID) == NULL) || (GetRoomPointer(ObjectID) == NULL)) {	/* room not found */
-	SetLastError(currentuser,BAD_ROOM);
+	SetLastError(currentuser,OBJECT_NOT_FOUND);
 	return(-1);
 }
 

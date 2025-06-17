@@ -22,4 +22,5 @@ int IsObjectInRoom(char *name,int RoomNumber);
 int GetNumberOfRooms(void);
 unsigned int GetNextObjectNumber(void);
 int SetRoomDescription(user *currentuser,int RoomNumber,char *description);
+roomobject *FindObjectInRoomByName(int RoomNumber,char *ObjectName);
 

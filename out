@@ -1,6 +1,0 @@
-spell.c: In function ‘LoadSpells’:
-spell.c:254:21: error: ‘spell {aka struct <anonymous>}’ has no member named ‘userclass’; did you mean ‘class’?
-   strcpy(spellnext->userclass,ConfigurationTokens[1]);
-                     ^~~~~~~~~
-                     class
-make: *** [spell.o] Error 1

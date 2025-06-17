@@ -1,12 +1,12 @@
-server=192.168.178.66
+server=
 port=5000
-objectresettime=
-databasesavetime=
+objectresettime=20m
+databasesavetime=30m
 databasebackup=true
 allowplayerkilling=true
 allownewaccounts=true
-monsterresettime=
-banresettime=
+monsterresettime=10m
+banresettime=10m
 pointsforhero=800
 pointsforwarrior=400
 pointsforchampion=1600
@@ -16,3 +16,5 @@ pointsforsorceror=128000
 pointsfornecromancer=256000
 pointsforlegend=512000
 pointsforwizard=1024000
+maxobjectsperroom=5
+

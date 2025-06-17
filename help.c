@@ -47,7 +47,7 @@ FILE *handle;
 char *HelpFile[BUF_SIZE];
 
 if(!*HelpTopic) {		                      /* get help file */
-	sprintf(HelpFile,"%s/%s",ReadBuffer,"help/help.txt");
+	strcpy(HelpFile,"help/help.txt");
 }
 else
 {
@@ -56,8 +56,7 @@ else
 
 handle=fopen(HelpFile,"rb");
 if(!handle) {                 /* can't open file */
-	SetLastError(currentuser,NO_PARAMS);  
-	free(ReadBuffer);
+	SetLastError(currentuser,INVALID_HELP_TOPIC);  
 	return(-1);
 }
 

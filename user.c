@@ -1413,7 +1413,7 @@ if(currentuser->status < WIZARD) {      /* not wizard */
 }
 
 if(RoomNumber > GetNumberOfRooms()) {			/* can't find room */
-	SetLastError(currentuser,BAD_ROOM);
+	SetLastError(currentuser,OBJECT_NOT_FOUND);
 	return(-1);
 }
 

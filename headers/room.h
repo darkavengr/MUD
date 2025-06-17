@@ -1,13 +1,14 @@
 #include "monster.h"
-#define OBJECT_ID		0
-#define OBJECT_NAME 		1                                                  /* array entry for object info */
-#define OBJECT_STAMINAPOINTS	2
-#define OBJECT_MAGICPOINTS 	3
-#define OBJECT_ATTACKPOINTS	4
-#define OBJECT_GENERATEPROB	5
-#define OBJECT_DESCRIPTION	6
-#define OBJECT_OWNER		7
-#define OBJECT_ATTR		8
+#define OBJECT_NAME 		0                                                 /* array entry for object info */
+#define OBJECT_STAMINAPOINTS	1
+#define OBJECT_MAGICPOINTS 	2
+#define OBJECT_ATTACKPOINTS	3
+#define OBJECT_GENERATEPROB	4
+#define OBJECT_DESCRIPTION	5
+#define OBJECT_VERB		6
+#define OBJECT_VERB_MESSAGE	7
+#define OBJECT_OWNER		8
+#define OBJECT_ATTR		9
 
 #define OBJECT_DELETE_OWNER	1                                          /* object properties */
 #define OBJECT_DELETE_PUBLIC	2
@@ -43,10 +44,12 @@ typedef struct roomobject {			/* objects */
  int staminapoints;
  int magicpoints;
  int attr;
+ char *verb[BUF_SIZE];
+ char *verbmessage[BUF_SIZE];
  struct roomobject *next;
 } roomobject;
 
-typedef struct {				/* rooms */
+typedef struct room {				/* rooms */
  unsigned int id;
  char *name[BUF_SIZE];
  char *owner[BUF_SIZE];

@@ -1,25 +1,25 @@
 Wizard commands:
 
-kill		[user]			-- kills a person
-create		[object]		-- creates a object
-delete		[object]		-- deletes a object
-rename		[object] [newname]	-- renames a object
-chown		[object] [newowner]	-- changes objects owner
-chmod		[object] [attributes]	-- sets objects attributes 
-move		[object] [location]	-- moves a object
-dig					-- creates a new room
-					-- creates a new monster
-addmonster	[name] [desc] [stamina] [damage] [class]
-					-- adds a new weapon
-addweapon	[name] [desc] [damage]	[level] [class]
-					-- add a new spell
-addspell	[name] [desc] [message] [points] [damage] [level] [class]
-invisible 	[on | off]		-- go invisble
-force		[user] [command]	-- force user to perform command
-go		[location]		-- teleport to location
-wall		[message]		-- send message to all users
-banishmonster				-- banish monster in room
-take		[user] [object]		-- take object from user
+kill		[user]				-- kills a person
+create		#object ID number		-- creates a object
+delete		#object ID number		-- deletes a object
+rename		#object ID number [new name]	-- renames a object
+chown		#object ID number [new owner]	-- changes objects owner
+chmod		#object ID number [attributes]	-- sets objects attributes 
+move		#object ID number [location]	-- moves a object
+dig						-- creates a new room
+						-- creates a new monster
+addmonster	[name] [description] [stamina] [damage] [class]
+						-- adds a new weapon
+addweapon	[name] [description] [damage]	[level] [class]
+						-- add a new spell
+addspell	[name] [description] [message] [points] [damage] [level] [class]
+invisible 	[on | off]			-- go invisble
+force		[user] [command]		-- force user to perform command
+go		[location]			-- teleport to location
+wall		[message]			-- send message to all users
+banishmonster					-- banish monster in room
+take		[user] #object ID number	-- take object from user
 
 Archwizard commands:
 

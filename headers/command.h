@@ -25,7 +25,7 @@ int get_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE
 int drop_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int help_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int password_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
-int spell_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
+int cast_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int fight_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int score_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
 int inv_command(user *currentuser,int tc,char *command_tokens[BUF_SIZE][BUF_SIZE]);
