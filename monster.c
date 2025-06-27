@@ -44,9 +44,10 @@ if(GetNumberOfRooms() == 0) return;
 RoomNumber=1+rand() % GetNumberOfRooms();		/* which room */
 
 printf("random room=%d\n",RoomNumber);
-printf("number of monsters in room %d=%d\n",RoomNumber,GetNumberOfMonstersInRoom());
 
 if(GetNumberOfMonstersInRoom(RoomNumber) == 0) return;	/* no monsters in room */
+
+printf("number of monsters in room %d=%d\n",RoomNumber,GetNumberOfMonstersInRoom());
 
 WhichMonster=rand() % GetNumberOfMonstersInRoom(RoomNumber);	/* which monster */
 
@@ -59,42 +60,45 @@ printf("WhichMonster=%d\n",WhichMonster);
 MonsterPtr=FindFirstMonsterInRoom(RoomNumber);
 
 while(MonsterPtr != NULL) {
-	if(MonsterCount++ == WhichMonster) break;
+	if(MonsterCount++ == WhichMonster) {
+		printf("Move monster 2\n");
+		printf("MonsterPtr=%lX\n",MonsterPtr);
+
+		AttackProbability=rand() % MonsterPtr->evil;
+
+		printf("Monster attack probability=%d/%d\n",AttackProbability,MonsterPtr->evil);
+
+		if(AttackProbability == 1) AttackUser(RoomNumber,WhichMonster);
+
+		/* move monster */
+
+		MoveProbability=rand() % (MonsterPtr->moveodds + 1)+1;
+
+		printf("Move monster 3\n");
+
+		if(MoveProbability == 1) {
+			do {
+				MoveDirection=rand() % NUMBER_OF_DIRECTIONS;
+
+				printf("Move monster 3.1\n");
+
+				if(GetRoomExit(RoomNumber,MoveDirection) != 0 && (GetRoomAttributes(RoomNumber) & ROOM_HAVEN) == 0) {
+					printf("Move monster 3.2\n");
+
+					CopyMonsterToRoom(RoomNumber,GetRoomExit(RoomNumber,MoveDirection),MonsterPtr);
+					break;
+				}
+
+			} while(GetRoomExit(RoomNumber,MoveDirection) != 0 && (GetRoomAttributes(RoomNumber) & ROOM_HAVEN) == 0);
+
+		}
+
+		printf("Monster moved\n");
+	}
 
 	MonsterPtr=FindNextMonsterInRoom(MonsterPtr);
 }
 
-printf("Move monster 2\n");
-
-printf("MonsterPtr=%lX\n",MonsterPtr);
-
-AttackProbability=(rand() % MonsterPtr->evil + 1)+1;
-if(AttackProbability == 1) AttackUser(RoomNumber,WhichMonster);
-
-/* move monster */
-
-MoveProbability=rand() % (MonsterPtr->moveodds + 1)+1;
-
-printf("Move monster 3\n");
-
-if(MoveProbability == 1) {
-	do {
-		MoveDirection=rand() % NUMBER_OF_DIRECTIONS;
-
-		printf("Move monster 3.1\n");
-
-		if(GetRoomExit(RoomNumber,MoveDirection) != 0 && (GetRoomAttributes(RoomNumber) & ROOM_HAVEN) == 0) {
-			printf("Move monster 3.2\n");
-
-			CopyMonsterToRoom(RoomNumber,GetRoomExit(RoomNumber,MoveDirection),WhichMonster);
-			break;
-		}
-
-	} while(GetRoomExit(RoomNumber,MoveDirection) != 0 && (GetRoomAttributes(RoomNumber) & ROOM_HAVEN) == 0);
-
-}
-printf("Monster moved\n");
-return;
 }
 		
 int GenerateMonsters(void) {
@@ -287,13 +291,8 @@ monster *MonsterPtr;
 
 MonsterPtr=FindFirstMonsterInRoom(RoomNumber);
 
-printf("ID=%d\n",MonsterID);
-
 while(MonsterPtr != NULL) {
-	if(MonsterPtr->id == MonsterID) {
-		printf("name=%s\n",MonsterPtr->name);
-		return(MonsterPtr->evil);		/* found monster */
-	}
+	if(MonsterPtr->id == MonsterID) return(MonsterPtr->evil);		/* found monster */
 
 	MonsterPtr=FindNextMonsterInRoom(MonsterPtr);
 }

@@ -16,7 +16,7 @@ addweapon	[name] [description] [damage]	[level] [class]
 addspell	[name] [description] [message] [points] [damage] [level] [class]
 invisible 	[on | off]			-- go invisble
 force		[user] [command]		-- force user to perform command
-go		[location]			-- teleport to location
+go		#room_number			-- teleport to location
 wall		[message]			-- send message to all users
 banishmonster					-- banish monster in room
 take		[user] #object ID number	-- take object from user

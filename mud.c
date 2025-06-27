@@ -150,7 +150,7 @@ time(&ConfigResetTime);
 ConfigResetTime += config.configsavetime;
 
 GenerateObjects();		/* create new objects */
-//GenerateMonsters();	/* create monsters */
+GenerateMonsters();	/* create monsters */
 	
 /*
  * The main event loop. This resets the object, saves the configuration information.
@@ -162,9 +162,9 @@ while(1) {
 	 time(&currenttime);		/* get time */
 
 	 if(currenttime > ObjectResetTime) {		/* update objects */
-	//	 printf("mud: Updating objects\n");
+		// printf("mud: Updating objects\n");
 
-		//  GenerateObjects();		/* create new objects */
+		  GenerateObjects();		/* create new objects */
 
 		time(&ObjectResetTime);			/* update reset time */
   		ObjectResetTime += config.objectresettime;
@@ -173,7 +173,7 @@ while(1) {
 	 if(currenttime > DatabaseResetTime) {		/* update database */
   	 //	printf("mud: Saving database\n");
 
-		//UpdateDatabase();
+		UpdateDatabase();
 	
 		time(&DatabaseResetTime);			/* update reset time */
 		DatabaseResetTime += config.databaseresettime;
@@ -182,7 +182,7 @@ while(1) {
 	 if(currenttime > UserResetTime) {	/* update users */
 	//	printf("mud: Saving users\n");
 
-  	//	UpdateUsersFile();
+  		UpdateUsersFile();
 
   		time(&UserResetTime);			/* update reset time */
 		UserResetTime += config.userresettime;
@@ -191,13 +191,13 @@ while(1) {
 	if(currenttime > ConfigResetTime) {		/* update config */
 	//	printf("mud: Updating configuration\n");
 
-	//	updateconfiguration(config);
+		updateconfiguration(config);
 
 		time(&ConfigResetTime);			/* update reset time */
 		ConfigResetTime += config.configsavetime;
 	}
 
-	//MoveMonster();		/* move a monster */
+	MoveMonster();		/* move a monster */
 
 	/* check for data on sockets */
 
@@ -264,12 +264,35 @@ while(1) {
 
 				/* get line from connection */		
 
-			        if(recv(SocketCount,connections[SocketCount].OutputBuffer,BUF_SIZE,0) == -1) {	/* get data */
-					FD_CLR(SocketCount,&currentset);
-	  				break;
-	 			}
+				if((connections[SocketCount].connectionstate == STATE_CHECKLOGIN) || (connections[SocketCount].connectionstate == STATE_GETNEWPASS)) {	
+					retval=recv(SocketCount,connections[SocketCount].OutputBuffer,1,0);
+					if(retval == -1) {
+						FD_CLR(SocketCount,&currentset);
+			  			break;
+			 		}
+					
+					/* send backspace, then space, then another backspace to overwrite character */
+					if(strlen(connections[SocketCount].OutputBuffer) > 0) {
+						send(SocketCount,"\010",1,0);
+						send(SocketCount," ",1,0);
+						send(SocketCount,"\010",1,0);
 
-				strcat(connections[SocketCount].buf,connections[SocketCount].OutputBuffer);	/* add to buffer */
+						strcat(connections[SocketCount].buf,connections[SocketCount].OutputBuffer);	/* add to buffer */
+					}
+
+				}
+				else
+				{
+					retval=recv(SocketCount,connections[SocketCount].OutputBuffer,BUF_SIZE,0);
+					if(retval == -1) {	/* get data */
+						FD_CLR(SocketCount,&currentset);
+			  			break;
+			 		}
+
+					if(strlen(connections[SocketCount].OutputBuffer) > 0) {
+						strcat(connections[SocketCount].buf,connections[SocketCount].OutputBuffer);	/* add to buffer */
+					}
+				}
 
 				if(strpbrk(connections[SocketCount].buf,"\n") == NULL) continue;	/* no newline found */
 
@@ -297,14 +320,15 @@ while(1) {
 						else
 						{
 							send(SocketCount,PasswordPrompt,strlen(PasswordPrompt),0);
-							connections[SocketCount].connectionstate=STATE_CHECKLOGIN; /* next */
+							connections[SocketCount].connectionstate=STATE_CHECKLOGIN;
 
 							DisableOutput(SocketCount);		/* hide text input */
+							printf("waiting for password\n");
 						}
 	
 						break;
 
-					case STATE_CHECKLOGIN:			/* check username and password */	
+					case STATE_CHECKLOGIN:			/* check username and password */
 						EnableOutput(SocketCount);		/* show text input */
 
 						strcpy(connections[SocketCount].upass,connections[SocketCount].buf);
@@ -314,6 +338,7 @@ while(1) {
 						}	
 						else
 						{
+
 							PrintError(SocketCount,INVALID_LOGIN);
 
 					 		if(config.allownewaccounts == TRUE) {
@@ -543,14 +568,22 @@ close(currentuser->handle);
 }
 
 void DisableOutput(int socket) {
-unsigned char *SuppressOutput = { 0xFF,0xFB,0x1,0xFF,0xFB,0x3,0xFF,0xFD,0x2D };
+char *response[BUF_SIZE];
 
-send(socket,SuppressOutput,9,0);
+send(socket,"\377",1,0);				/* disable local echo */
+send(socket,"\373",1,0);
+send(socket,"\001",1,0);
+
+recv(socket,response,3,0);				/* get response */			
 }
 
 void EnableOutput(int socket) {
-unsigned char *UnsuppressOutput = { 0xFF,0xFC,0x1,0xFE,0xFB,0x3,0xFF,0xFC,0x2D };
+char *response[BUF_SIZE];
 
-send(socket,UnsuppressOutput,9,0);
+send(socket,"\377",1,0);				/* enable local echo */
+send(socket,"\374",1,0);
+send(socket,"\001",1,0);
+
+recv(socket,response,3,0);				/* get response */			
 }
 

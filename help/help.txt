@@ -1,31 +1,28 @@
-Commands avaliable:
+Commands to move around:
+		-- Move in these directions
+north, south, east, west, northeast, northwest, southeast, southwest, up, down	
+home		-- Go to your home room
 
-:		Emote
-chmod		Set object or room attributes
-chown		Change object or room owner
-describe	Describe object or room
-down		Go down
-drop		Drop object
-east		Go east
-fight		Fight monster or player
-get		Pick up object
-help		Get help
-home		Go to home room
-look		Look at room or object
-north		Go north
-northeast	Go northeast 
-northwest	Go northwest
-password 	Change password
-pose		Emote something
-quit		Quit
-say		Say something
-score		Display score
-south		Go south
-southeast	Go southeast
-southwest	Go southwest
-spell		Cast a spell
-up		Go up
-version		Display version
-west		Go west
-whisper		Send to message to someone
+Commands to handle objects:
+drop		-- Drop object
+get		-- Pick up object
+look		-- Look at room or object
+
+Commands to communicate:
+:
+pose
+		-- Emote
+say		-- Say something
+whisper		-- Send to message to someone
+
+Commands to use magic:
+cast		-- Cast a spell
+
+Other commands:
+password 	-- Change password
+quit		-- Quit
+score		-- Display score
+version		-- Display version
+
+Type help [command] to see more help for [command].
 
