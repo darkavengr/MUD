@@ -66,7 +66,7 @@ GetConfigurationInformation(&config);
 /*
 * can't attack in haven rooms or attack wizards
 */
-if((currentroom->attr & ROOM_HAVEN) && currentuser->status < WIZARD) {
+if((currentroom->attributes & ROOM_HAVEN) && currentuser->userlevel < WIZARD) {
 	SetLastError(currentuser,ATTACK_HAVEN);
 	return(-1);
 }
@@ -76,60 +76,58 @@ UserPtr=GetUserPointerByName(target);		/* find user */
 if(UserPtr != NULL) found=TRUE;			/* found user */
 
 if(found == TRUE) {
-	if(config.allowplayerkilling == FALSE) {	/* no player on player killing */
-		sprintf(OutputMessage,"Can't attack %s because player versus player combat is not allowed\r\n",UserPtr->name);
-		send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+	if(config.AllowPlayerKilling == FALSE) {	/* no player on player killing */
+		snprintf(OutputMessage,BUF_SIZE,"Can't attack %s because player versus player combat is not allowed\r\n",UserPtr->username);
+		send(currentuser->socket,OutputMessage,strlen(OutputMessage),0);
 		return(-1);
 	}
 
 	while(UserPtr->staminapoints > 0 && currentuser->staminapoints > 0) {
 
 		/* user one attacks user two */
-		HitPoints=rand() % (currentuser->race->strength + 1) - 0;		/* random damage */
+		HitPoints=rand() % (currentuser->race.strength + 1) - 0;		/* random damage */
 	
-		if(UserPtr->status >= WIZARD) {
-			sprintf(OutputMessage,"%s tries to attack %s but it just bounces off\r\n",UserPtr->next,currentuser->name);
+		if(UserPtr->userlevel >= WIZARD) {
+			snprintf(OutputMessage,BUF_SIZE,"%s tries to attack %s but it just bounces off\r\n",UserPtr->next,currentuser->username);
 
 			SendMessageToAllInRoom(currentuser->room,OutputMessage);
 			return(0);
 		}
 		else
 		{
-			sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",currentuser->name,UserPtr->name,HitPoints);
+			snprintf(OutputMessage,BUF_SIZE,"%s attacks %s causing %d points of damage\r\n",currentuser->username,UserPtr->username,HitPoints);
 			SendMessageToAllInRoom(UserPtr->room,OutputMessage);
 
 			UserPtr->staminapoints -= HitPoints;
 	
  			currentuser->staminapoints += HitPoints;
-			currentuser->experiencepoints += (HitPoints*currentuser->status);
+			currentuser->experiencepoints += (HitPoints*currentuser->userlevel);
 
 			/* update target user */
-			UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags);
+			UpdateUser(UserPtr,UserPtr->username,UserPtr->username,UserPtr->password,UserPtr->homeroom,UserPtr->userlevel,UserPtr->description,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints,UserPtr->gender,&UserPtr->race,&UserPtr->userclass,UserPtr->flags);
 
 			/* update source user */
-			UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,currentuser->desc,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags);
+			UpdateUser(currentuser,currentuser->username,currentuser->username,currentuser->password,currentuser->homeroom,currentuser->userlevel,currentuser->description,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,&currentuser->race,&currentuser->userclass,currentuser->flags);
 		}
 
 		/* user two attacks user one */
 
-		if(currentuser->status >= WIZARD) {
-			sprintf(OutputMessage,"%s tries to attack %s but it just bounces off\r\n",currentuser->name,UserPtr->name);
+		if(currentuser->userlevel >= WIZARD) {
+			snprintf(OutputMessage,BUF_SIZE,"%s tries to attack %s but it just bounces off\r\n",currentuser->username,UserPtr->username);
 			SendMessageToAllInRoom(currentuser->room,OutputMessage);
 			return(0);
 		}
 		else
 		{
-			HitPoints=rand() % (currentuser->race->strength + 1) - 0;		/* random damage */
+			HitPoints=rand() % (currentuser->race.strength + 1) - 0;		/* random damage */
 
-			sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",UserPtr->name,currentuser->name,HitPoints);
+			snprintf(OutputMessage,BUF_SIZE,"%s attacks %s causing %d points of damage\r\n",UserPtr->username,currentuser->username,HitPoints);
 			SendMessageToAllInRoom(currentuser->room,OutputMessage);
 
 			currentuser->staminapoints -= HitPoints;
-			currentuser->experiencepoints += (HitPoints*currentuser->status);
+			currentuser->experiencepoints += (HitPoints*currentuser->userlevel);
 
-			UpdateUser(currentuser,UserPtr->name,"",0,0,"",0,UserPtr->staminapoints,0,0,"","",0);
-			UpdateUser(currentuser,UserPtr->name,"",0,0,"",0,currentuser->staminapoints,currentuser->experiencepoints,0,"","",0);
-
+			UpdateUser(currentuser,currentuser->username,currentuser->username,currentuser->password,currentuser->homeroom,currentuser->userlevel,currentuser->description,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,&currentuser->race,&currentuser->userclass,currentuser->flags);
 		}
 
 	}
@@ -147,26 +145,28 @@ while(MonsterPtr != NULL) {
 		while(MonsterPtr->stamina > 0 && currentuser->staminapoints > 0) {
 			/* player attacks monster */
 
-			HitPoints=rand() % (currentuser->race->strength + 1) - 0;		/* random damage */
+			HitPoints=rand() % (currentuser->race.strength + 1) - 0;		/* random damage */
 	
-			sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",currentuser->name,MonsterPtr->name,HitPoints);
+			snprintf(OutputMessage,BUF_SIZE,"%s attacks %s causing %d points of damage\r\n",currentuser->username,MonsterPtr->name,HitPoints);
 			SendMessageToAllInRoom(currentuser->room,OutputMessage);
 
 			MonsterPtr->stamina -= HitPoints;
 
 			if(MonsterPtr->stamina <= 0) { /* monster defeated */
-				sprintf(OutputMessage,"%s has killed the %s!\r\n",currentuser->name,MonsterPtr->name);
+				snprintf(OutputMessage,BUF_SIZE,"%s has killed the %s!\r\n",currentuser->username,MonsterPtr->name);
 				SendMessageToAllInRoom(currentuser->room,OutputMessage);
 
-				sprintf(OutputMessage,"You have gained %d stamina points\r\n",(SaveStamina*currentuser->status));
-				send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+				snprintf(OutputMessage,BUF_SIZE,"You have gained %d stamina points\r\n",(SaveStamina*currentuser->userlevel));
+				send(currentuser->socket,OutputMessage,strlen(OutputMessage),0);
 
 				currentuser->staminapoints += SaveStamina;
 
-				sprintf(OutputMessage,"You have gained %d experience points\r\n",(SaveStamina*currentuser->status));
-				send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+				snprintf(OutputMessage,BUF_SIZE,"You have gained %d experience points\r\n",(SaveStamina*currentuser->userlevel));
+				send(currentuser->socket,OutputMessage,strlen(OutputMessage),0);
 
-				currentuser->experiencepoints += (SaveStamina*currentuser->status);
+				currentuser->experiencepoints += (SaveStamina*currentuser->userlevel);
+
+				UpdateUser(currentuser,currentuser->username,currentuser->username,currentuser->password,currentuser->homeroom,currentuser->userlevel,currentuser->description,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,&currentuser->race,&currentuser->userclass,currentuser->flags);
 
 				DeleteMonster(currentuser->room,MonsterPtr->id);
 				return(0);
@@ -177,9 +177,9 @@ while(MonsterPtr != NULL) {
 
 			currentuser->staminapoints -= HitPoints;
 
-			UpdateUser(currentuser,currentuser->name,"",0,0,"",0,currentuser->staminapoints,0,0,"","",0);
+			UpdateUser(currentuser,currentuser->username,currentuser->username,currentuser->password,currentuser->homeroom,currentuser->userlevel,currentuser->description,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,&currentuser->race,&currentuser->userclass,currentuser->flags);
 
-			sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",MonsterPtr->name,currentuser->name,HitPoints);
+			snprintf(OutputMessage,BUF_SIZE,"%s attacks %s causing %d points of damage\r\n",MonsterPtr->name,currentuser->username,HitPoints);
 			SendMessageToAllInRoom(currentuser->room,OutputMessage);
 		}
  
@@ -188,9 +188,10 @@ while(MonsterPtr != NULL) {
 }
 
 if(found == FALSE) {
-	SetLastError(currentuser,UNKNOWN_USER);		/* missing player */
+	SetLastError(currentuser,UNKNOWN_USER);
 	return(-1);
 }
 
 return(0);
 }
+

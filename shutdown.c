@@ -19,30 +19,32 @@
 #include "errors.h"
 #include "user.h"
 
-char *shutdownmsg="WARNING: server shutdown\r\n";
+char *DefaultShutdownMessage="WARNING: Server is shutting down NOW!\r\n";
 
 int ShutdownServer(user *currentuser,char *shutdownmessage) {
 room *currentroom;
 
 currentroom=currentuser->roomptr;
 
-if(currentuser->status < ARCHWIZARD) {		/* not yet */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < DUNGEONMASTER) {		/* not yet */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
 if(!*shutdownmessage) {			/* use default message */
-	wall(currentuser,shutdownmsg);
+	wall(currentuser,DefaultShutdownMessage);
 }
 else
 {
 	wall(currentuser,shutdownmessage);	/* send warning */
 }
 
-DisconnectAllUsers();		/* disconnect all user */
+DisconnectUser(currentuser,"*");		/* disconnect all users */
+
+CloseDatabase();		/* close database */
 
 #ifdef _WIN32
-WSACleanup();			/* windoze needs wsacleanup */
+WSACleanup();			/* Windoze needs WSACleanup() */
 #endif
 
 exit(0);				/* terminate server */

@@ -1,27 +1,73 @@
 Wizard commands:
 
-kill		[user]				-- kills a person
-create		#object ID number		-- creates a object
-delete		#object ID number		-- deletes a object
-rename		#object ID number [new name]	-- renames a object
-chown		#object ID number [new owner]	-- changes objects owner
-chmod		#object ID number [attributes]	-- sets objects attributes 
-move		#object ID number [location]	-- moves a object
-dig						-- creates a new room
-						-- creates a new monster
+** Handling objects:
+
+chmod	#ID [attributes] -- Sets objects attributes 
+chown	#ID [new owner]	 -- Changes objects owner
+create	[name]		 -- Creates an object
+delete	#ID		 -- Deletes an object
+move	#ID [location]	 -- Moves an object
+rename	#ID [new name]	 -- Renames an object
+
+** Handling rooms:
+dig			-- Creates a new room
+
+			-- Sets a room's exit
+setexit #ID [direction] #TargetID
+
+** Handling users:
+kill	[user]				-- Kills a person. ARCHWIZARD+ ONLY
+kick	[user]				-- Kick user off MUD server
+force	[user] [command]		-- Force user to perform command
+gag	[user]				-- Gag a user
+ungag	[user]				-- Ungag a user
+ban	[IP address]			-- Ban IP address
+unban	[IP address]			-- Unban IP address
+take	[object name]			-- Take object from user
+setrace	[user] [race]			-- Set user race
+sethome	[user] #ID			-- Set user home room
+setgender [user] [gender]		-- Set user gender
+setlevel [user]	[level]			-- Set user level
+setclass [user]	[class]			-- Set user class
+setxp [user] [number of points]		-- Set user experience points
+setmp [user] [number of points]		-- Set user magic points
+setsp [user] [number of points]		-- Set user stamina points
+
+					-- List banned IP addresses
+listbans {IP address regular expression}
+
+** Adding new types:
+					-- Creates a new monster
 addmonster	[name] [description] [stamina] [damage] [class]
-						-- adds a new weapon
+
+					-- Adds a new weapon
 addweapon	[name] [description] [damage]	[level] [class]
-						-- add a new spell
+
+					-- Add a new spell
 addspell	[name] [description] [message] [points] [damage] [level] [class]
-invisible 	[on | off]			-- go invisble
-force		[user] [command]		-- force user to perform command
-go		#room_number			-- teleport to location
-wall		[message]			-- send message to all users
-banishmonster					-- banish monster in room
-take		[user] #object ID number	-- take object from user
 
-Archwizard commands:
+					-- Add a new race
+addrace	[name] [magic] [strength] [agility] [luck] [wisdom] [intelligence] [stamina]
 
-reload					-- reload configuration
+					-- Add a new class
+addclass	[name]
+
+** Communication:
+wall	[message]			-- Send message to all connected users
+
+** Concealment:
+invisible 				-- Go invisible
+visible 				-- Go visible
+
+** Movement:
+go	#room_number			-- Teleport to location
+
+** Handling monsters:
+banishmonster				-- Banish monster in room
+
+** Handling configuration:
+reload					-- Reload configuration and database. ARCHWIZARD+ ONLY
+
+** system:
+shutdown				-- Shutdown system. ARCHWIZARD+ ONLY
 

@@ -6,7 +6,6 @@
  #include <netinet/in.h>
  #include <arpa/inet.h>
  #include <sys/stat.h>
- #include <crypt.h>
 #endif
 
 #ifdef _WIN32
@@ -14,21 +13,21 @@
 #endif
 
 #include <string.h>
+#include "errors.h"
 
 #include "user.h"
 
 char *errors[] = { 	
-	"NO error\r\n",\
+	"No error\r\n",\
 	"Out of memory\r\n",\
 	"Object not found\r\n",\
-	"You can't do that yet\r\n",\
    	"Username is required\r\n",\
 	"That username already exists\r\n",\
 	"Gender must be either male or female\r\n",\
    	"Unknown player class\r\n",\
 	"Unknown race\r\n",\
 	"You must enter a password\r\n",\
-	"User BANNED\r\n",\
+	"User is banned\r\n",\
    	"Invalid username or password\r\n",\
 	"Player versus player combat not allowed\r\n",\
 	"I don't understand that\r\n",\
@@ -49,7 +48,7 @@ char *errors[] = {
 	"Unknown user\r\n",\
 	"Invalid level\r\n",\
    	"You can't go that way\r\n",\
-	"This person cannot be killed\r\n",\
+	"That person cannot be killed\r\n",\
 	"GAME OVER. You have 0 stamina points and are dead\r\n",\
 	"Can't attack users in haven rooms\r\n",\
    	"Unknown help topic\r\n",\
@@ -60,6 +59,7 @@ char *errors[] = {
 	"Syntax error\r\n",\
 	"I/O error\r\n",\
 	"Verb not found\r\n",\
+	"File not found\r\n",\
 };
 
 

@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <sqlite3.h>
+#include <stdbool.h>
 
 #define _XOPEN_SOURCE
 #define _GNU_SOURCE
@@ -24,8 +26,6 @@
 // #define inet_ntop InetNtop
 #endif
 
-#include <crypt.h>
-
 #include "bool.h"
 #include "help.h"
 #include "ban.h"
@@ -34,13 +34,13 @@
 #include "errors.h"
 #include "user.h"
 #include "config.h"
-#include "database.h"
+#include "world.h"
+#include "getconfig.h"
+#include "string.h"
+#include "password.h"
 
-user *users=NULL;
-ban *bans=NULL;
-ban *bans_last=NULL;
-race *races=NULL;
-class *classes=NULL;
+user *LoggedInUsers=NULL;
+user *LoggedInUsers_end=NULL;
 
 /* titles */
 char *MaleUserLevelNames[] = {"","Novice","Warrior","Hero","Champion","Superhero","Enchanter","Sorceror","Necromancer", \
@@ -49,259 +49,124 @@ char *MaleUserLevelNames[] = {"","Novice","Warrior","Hero","Champion","Superhero
 char *FemaleUserLevelNames[] = {"","Novice","Warrior","Heroine","Champion","Superheroine","Enchanteress","Sorceroress", \
 			"Legend","Witch","Arch Witch","Dungeon Master" };
 
-char *BanListPrompt="Press ENTER to see more bans or q to quit:";
-char *BanConfigurationFile="config/ban.mud";
-char *ClassConfigurationFile="config/classes.mud";
-char *UserConfigurationFile="config/users.mud";
-char *RaceConfigurationFile="config/races.mud";
-char *ObjectConfigurationFile="config/reset.mud";
 char *GoodbyeMessage="Goodbye.";
 char *PlayAgainMessage="Play again (y/n)?";
 int UserUpdated;
 
-int BanUserByName(user *currentuser,char *username) {
-user *UserPtr;
+int ListBans(user *currentuser,char *ipaddress) {
+char *IPAddress[BUF_SIZE];
+char *reason[BUF_SIZE];
+char *buf[BUF_SIZE];
+sqlite3_stmt *SQLStatementHandle;
+int returncode;
 
-if(currentuser->status < WIZARD) {		/* not yet */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < WIZARD) {             /* can't do this unless wizard or higher level */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
-UserPtr=users;		/* find user */
-
-while(UserPtr != NULL) {
-	if(regexp(UserPtr->name,username) == TRUE) {	/* found ip address */
-		BanUserByIPAddress(currentuser,UserPtr->ipaddress);
-		UpdateBanFile();
-		return(0);
-	}
-
-	UserPtr=UserPtr->next;
-}
-
-SetLastError(currentuser,UNKNOWN_USER);
-return(-1);
-}
-
-int BanUserByIPAddress(user *currentuser,char *ipaddress) {
-ban *banlist;
-
-if(currentuser->status < WIZARD) {		/* not yet */
-	SetLastError(currentuser,NOT_YET);
-	return(-1);
-}
-
-banlist=bans;
-
-while(banlist != NULL) {
-	if(*banlist->ipaddress && strcmp(banlist->ipaddress,ipaddress) == 0) {		/* ip address already banned */
-		SetLastError(currentuser,ALREADY_BANNED);
-		return(-1);
-	}
-
-	banlist=banlist->next;
-}
-
-if(bans == NULL) {
-	bans=calloc(1,sizeof(ban));	/* add new link */
-	if(bans == NULL) {		/* can't allocate */
-		SetLastError(currentuser,NO_MEM);
-		return(-1);
-	}
-
-	bans_last=bans;
+if(strlen(ipaddress) == 0) {		/* no IP address */
+	strncpy(IPAddress,"%",BUF_SIZE);
 }
 else
-{
-	bans_last->next=calloc(1,sizeof(ban));	/* add new link */
-	if(bans_last->next == NULL) {		/* can't allocate */
-		SetLastError(currentuser,NO_MEM);
-		return(-1);
-	}
-
-	bans_last=bans_last->next;
+{						
+	WildcardToSQLWildcard(ipaddress,IPAddress);
 }
 
-strcpy(bans_last->ipaddress,ipaddress);
-bans_last->next=NULL;
-
-return(0);
-}
-
-int UpdateBanFile(void) {
-FILE *handle;
-ban *bannext;
-
-handle=fopen(BanConfigurationFile,"w");
-if(handle == NULL) return(-1);		/* can't open */
-
-bannext=bans;
-while(bannext != NULL) {
-	fprintf(handle,"%s\r\n",bannext->ipaddress);		/* write ip address */
-	bannext=bannext->next;
-}
-
-fclose(handle);
-return(0);
-}
-
-int ListBans(user *currentuser,char *banname) {
-int count=0;
-ban *bannext;
-char *name[BUF_SIZE];
-char *OutputMessage[BUF_SIZE];
-
-if(currentuser->status < WIZARD) {		/* not yet */
-	SetLastError(currentuser,NOT_YET);
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT * FROM BANS WHERE IPAddress LIKE ?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {	/* prepare SQL statement */
+	SetLastError(currentuser,IO_ERROR);
 	return(-1);
 }
 
-if(!*banname) {		/* nop name */
-	strcpy(name,"*");
-}
-else
-{
-	strcpy(name,banname);
-}
+sqlite3_bind_text(SQLStatementHandle,1,IPAddress,strlen(IPAddress),NULL);		/* bind IP address to first parameter */
 
-bannext=bans;
-while(bannext != NULL) {
+while(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {
+	strncpy(IPAddress,sqlite3_column_text(SQLStatementHandle,BAN_IPADDRESS_COLUMN),BUF_SIZE);
+	strncpy(reason,sqlite3_column_text(SQLStatementHandle,BAN_REASON_COLUMN),BUF_SIZE);
 
-	if(regexp(bannext->ipaddress,name) == TRUE) {	/* ban found */
-		sprintf(OutputMessage,"%s\r\n",bannext->ipaddress);
-
-		send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
-	}
-	
-	bannext=bannext->next;
+	sprintf(buf,"%s %s\r\n",IPAddress,reason);
+	send(currentuser->socket,buf,strlen(buf),0);
 }
 
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
 return(0);
 }
 
-int UnBanUserByIPAddress(user *currentuser,char *ipaddress) {
-ban *next;
-ban *last;
+int BanUserByIPAddress(user *currentuser,char *ipaddress,char *reason) {
+char *IPAddress[BUF_SIZE];
+sqlite3_stmt *SQLStatementHandle;
 
-next=bans;
-
-while(next != NULL) {
-	last=next;
-
-	if(*next->ipaddress && strcmp(next->ipaddress,ipaddress) == 0) {		/* ip address already banned */
-
-		if(next == bans) {		/* first in list */
-			bans=bans->next;
-		}
-		else if(next->next == NULL) {	/* last in list */
-			last->next=NULL;
-		}
-		else
-		{
-			last->next=next->next;
-		}
-
-		free(next);
-		return(0);
-	}
-
-	next=next->next;
-}
-
-SetLastError(currentuser,UNKNOWN_USER);
-return(-1);
-}
-
-int LoadBans(void) {
-ban *bannext;
-char *LineBuffer[BUF_SIZE];
-int LineCount;
-FILE *handle;
-
-bannext=bans;
-LineCount=0;
-
-handle=fopen(BanConfigurationFile,"rb");
-if(handle == NULL) {                                           /* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",BanConfigurationFile);
+if(currentuser->userlevel < WIZARD) {             /* can't do this unless wizard or higher level */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
-do {
-	fgets(LineBuffer,BUF_SIZE,handle);		/* get and parse line */
-
-	RemoveNewLine(LineBuffer);		/* remove newline character */
-
-	if((char) *LineBuffer != '#')  {		/* skip comments */
-
-		if(bans == NULL) {			/* first ban */
-			bans=calloc(1,sizeof(ban));
-			if(bans == NULL) {
-				perror("\nmud:");
-				exit(NOMEM);
-			}
-
-			bannext=bans;
-		}
-		else
-		{
-			bannext->next=calloc(1,sizeof(ban));
-			bannext=bannext->next;
-
-			if(bannext == NULL) {
-				perror("\nmud:");
-				exit(NOMEM);
-			}
-
-		}
-	
-		strcpy(bannext->ipaddress,LineBuffer);
-
-		bannext->next=calloc(1,sizeof(ban));	/* add new link */
-		if(bannext->next == NULL) break;
-
-		bannext=bannext->next;
-	}
-
-} while(!feof(handle));
-
-fclose(handle);
-return(0);
+/* prepare SQL statement */
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"INSERT INTO BANS (IPADDRESS,REASON) VALUES (?,?);",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	SetLastError(currentuser,IO_ERROR);
+	return(-1);
 }
 
-int CheckIfBanned(char *name) {
-ban *next;
+sqlite3_bind_text(SQLStatementHandle,1,ipaddress,strlen(ipaddress),NULL);		/* bind IP address to first parameter */
+sqlite3_bind_text(SQLStatementHandle,2,reason,strlen(reason),NULL);		/* bind IP address to second parameter */
 
-next=bans;
-
-while(next != NULL) { 
-	if(regexp(next->ipaddress,name) == TRUE) return(TRUE);
-
-	next=next->next;
-}
-
-return(FALSE);
-}
-
-	
-/*
-*force user to do something
-*/
-
-int ForceUser(user *currentuser,char *username,char *command) {
-user *UserPtr;
-
-if(currentuser->status < WIZARD) {             /* can't do this unless wizard or higher level */
-	SetLastError(currentuser,NOT_YET);
+if(sqlite3_step(SQLStatementHandle) == SQLITE_DONE) {		/* inserted OK */
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
 	return(0);
 }
 
-UserPtr=users;
+SetLastError(currentuser,ALREADY_BANNED);
 
-while(UserPtr != NULL) {
-	if(regexp(username,UserPtr->name) == TRUE && UserPtr->loggedin == TRUE) return(ExecuteCommand(UserPtr,command));    /* do command */ 
-		
-	UserPtr=UserPtr->next;
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(-1);
+}
+
+int UnBanUserByIPAddress(user *currentuser,char *ipaddress) {
+char *IPAddress[BUF_SIZE];
+char *reason[BUF_SIZE];
+sqlite3_stmt *SQLStatementHandle;
+
+if(currentuser->userlevel < WIZARD) {             /* can't do this unless wizard or higher level */
+	SetLastError(currentuser,ACCESS_DENIED);
+	return(-1);
+}
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"DELETE FROM BANS WHERE IPAddress=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	SetLastError(currentuser,IO_ERROR);
+	return(-1);
+}
+
+sqlite3_bind_text(SQLStatementHandle,1,ipaddress,strlen(ipaddress),NULL);		/* bind IP address to first parameter */
+
+if(sqlite3_step(SQLStatementHandle) == SQLITE_DONE) {		/* deleted OK */
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(0);
+}
+
+SetLastError(currentuser,OBJECT_NOT_FOUND);
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(-1);
+}
+	
+/*
+* force user to do something
+*/
+
+int ForceUser(user *currentuser,char *username,char *command) {
+user *userptr;
+
+if(currentuser->userlevel < WIZARD) {             /* can't do this unless wizard or higher level */
+	SetLastError(currentuser,ACCESS_DENIED);
+	return(-1);
+}
+
+userptr=LoggedInUsers;
+
+while(userptr != NULL) {
+	if(regexp(username,userptr->username) == TRUE) return(ExecuteCommand(userptr,command));    /* do command */ 
+
+	userptr=userptr->next;
 }
 
 return(0);
@@ -309,31 +174,31 @@ return(0);
 
 /* give object to user */
 
-int GiveObjectToUser(user *currentuser,char *username,char *objectname) {
-user *UserPtr;
+int GiveObjectToUser(user *currentuser,char *objectname,char *username) {
+user *userptr;
 roomobject *RoomObjectPtr;
-roomobject *ourobjectlast;
 roomobject *temp;
-int found=0;
-int  ObjectFound=0;
+bool UserFound=FALSE;
+bool  ObjectFound=FALSE;
 roomobject *ourobject;
+roomobject *SaveObjectPtr;
 
 /*
 * find user
 */
 
-UserPtr=users;
+userptr=LoggedInUsers;
 
-while(UserPtr != NULL) {
-	if(regexp(UserPtr->name,username) == TRUE) {		/* found object */
-		found=TRUE;
+while(userptr != NULL) {
+	if(regexp(userptr->username,username) == TRUE) {		/* found object */
+		UserFound=TRUE;
 		break;
 	}
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
-if(found == FALSE) {
+if(UserFound == FALSE) {
 	SetLastError(currentuser,UNKNOWN_USER);
 	return(-1);
 }
@@ -343,60 +208,71 @@ if(found == FALSE) {
 */
 
 ourobject=currentuser->carryobjects;
-ourobjectlast=ourobject;
 
 while(ourobject != NULL) {
 	if(regexp(ourobject->name,objectname) == TRUE) {		/* found object */
-	
-		if(UserPtr->carryobjects != NULL) {				/* find end */				
-			UserPtr->carryobjects=calloc(1,sizeof(roomobject));
-			if(RoomObjectPtr->next == NULL) {		/* can't allocate */
-				SetLastError(currentuser,NO_MEM);
-				return(-1);	
-			}
 
-			UserPtr->carryobjects_last=UserPtr->carryobjects;
-		}
-		else
-		{						
-			UserPtr->carryobjects_last->next=calloc(1,sizeof(roomobject));	/* allocate objects */ 
-			if(UserPtr->carryobjects_last->next == NULL) {		/* can't allocate */
+		ObjectFound=TRUE;
+
+		if(SetInventoryObjectOwnerInDatabase(userptr->username,ourobject->name) == -1) return(-1);
+
+		if(userptr->carryobjects == NULL) {				/* find end */
+			userptr->carryobjects=calloc(1,sizeof(roomobject));
+			if(RoomObjectPtr->next == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);
 				return(-1);
 			}
 
-			UserPtr->carryobjects_last=UserPtr->carryobjects_last->next;
-		}    
+			userptr->carryobjects_last=userptr->carryobjects;
+		}
+		else
+		{
+			userptr->carryobjects_last->next=calloc(1,sizeof(roomobject));	/* allocate objects */ 
+			if(userptr->carryobjects_last->next == NULL) {		/* can't allocate */
+				SetLastError(currentuser,NO_MEM);
+				return(-1);
+			}
+		}
 
+		userptr->carryobjects_last=userptr->carryobjects_last->next;
 
-		memcpy(UserPtr->carryobjects_last,ourobject,sizeof(roomobject));	/* copy data */
-	
+		memcpy(userptr->carryobjects_last,ourobject,sizeof(roomobject));	/* copy data */
+
 		/* remove object from source player's inventory */
 		if(ourobject == currentuser->carryobjects) {		/* first object */
-			ourobject=ourobject->next;
+			SaveObjectPtr=ourobject;
 
-			free(currentuser->carryobjects);   
-			currentuser->carryobjects=ourobject;
+			currentuser->carryobjects=currentuser->carryobjects->next;
+
+			if(ourobject != NULL) ourobject->prev=NULL;
+
+			free(SaveObjectPtr);   
 		}
+		else if(ourobject->next == NULL) {		/* last object */
+			SaveObjectPtr=ourobject;
 
-		if(ourobject->next == NULL) {		/* last object */
-			free(ourobject);	
+			ourobject->prev->next=NULL;
+
+			free(SaveObjectPtr);
+	
+			currentuser->carryobjects_last->prev->next=NULL;				
+
+			ourobject=ourobject->prev;
 		}
-
-		if(ourobject != currentuser->carryobjects && ourobject->next != NULL) {      
-			ourobjectlast->next=ourobject->next;	/* skip over over object */
+		else
+		{     
+			ourobject->prev->next=ourobject->next;
 			free(ourobject);
-		}
 
-		ObjectFound=TRUE;
+			ourobject=ourobject->prev;
+		}
 	}
 
-	ourobjectlast=ourobject;
 	ourobject=ourobject->next;
 }
 
 if(ObjectFound == FALSE) {
-	SetLastError(currentuser,UNKNOWN_USER); /* no object found */
+	SetLastError(currentuser,OBJECT_NOT_FOUND);
 	return(-1);
 }
 
@@ -408,68 +284,118 @@ return(0);
 */
 int KillUser(user *currentuser,char *username) {
 room *roomnext;
-user *UserPtr;
+user *userptr;
 monster *monsternext;
 char *OutputMessage[BUF_SIZE];
 int found=FALSE;
 int count;
 room *currentroom;
-char *UserInventoryFile[BUF_SIZE];
+sqlite3_stmt *SQLStatementHandle;
+user *saveuserptr;
+int KillSocket;
 
 currentroom=currentuser->roomptr;
 
-if(currentuser->status < WIZARD) {             /* can't do this unless wizard of higher level */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < WIZARD) {             /* can't do this unless wizard of higher level */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
-UserPtr=users;
-while(UserPtr != NULL) {
-	if(regexp(UserPtr->name,username) == TRUE && UserPtr->loggedin == TRUE) {		/* found user */
+found=FALSE;
+
+userptr=LoggedInUsers;
+while(userptr != NULL) {
+	if(regexp(userptr->username,username) == TRUE) {		/* found user */
 		found=TRUE;
 
-		if(currentuser->status < UserPtr->status ) {  /* wizards can't be killed */
+		if(currentuser->userlevel < userptr->userlevel ) {  /* wizards can't be killed */
 			SetLastError(currentuser,KILL_WIZARD);
 			return(-1);
 		}
 
-		if(UserPtr->gender == MALE) {
-			sprintf(OutputMessage,"You were given the finger of death by %s the %s\r\n",currentuser->name,MaleUserLevelNames[currentuser->status]);
+		if(userptr->gender == MALE) {
+			sprintf(OutputMessage,"You were given the finger of death by %s the %s\r\n",currentuser->username,MaleUserLevelNames[currentuser->userlevel]);
 		}
 		else
 		{
-			sprintf(OutputMessage,"You were given the finger of death by %s the %s\r\n",currentuser->name,FemaleUserLevelNames[currentuser->status]);
+			sprintf(OutputMessage,"You were given the finger of death by %s the %s\r\n",currentuser->username,FemaleUserLevelNames[currentuser->userlevel]);
 		}
 
-		send(UserPtr->handle,OutputMessage,strlen(OutputMessage),0);
-		close(UserPtr->handle);
+		send(userptr->socket,OutputMessage,strlen(OutputMessage),0);
 
-		UserPtr->next=UserPtr->last;
-		free(UserPtr);
+		KillSocket=userptr->socket;
 
-		UpdateUser(UserPtr,username,"",0,0,"",0,0,0,0,"","",0);          /* remove user */
+		/* remove user from list of logged in users */
 
-		sprintf(UserInventoryFile,"config/%s.inv",UserPtr->name);		/* get absolute path of user inventory */
-		unlink(UserInventoryFile);		/* delete inventory file */
+		if(userptr == LoggedInUsers) {		/* first user */
+			saveuserptr=userptr;
 
-		return(-1);		
+			userptr=userptr->next;
+			if(userptr != NULL) userptr->prev=NULL;
+	
+			free(saveuserptr);
+			
+		}
+		else if(userptr->next == NULL) {		/* last user */
+			saveuserptr=userptr;
+			userptr->prev->next=NULL;
+
+			free(saveuserptr);
+
+			LoggedInUsers_end->prev->next=NULL;				
+			userptr=userptr->prev;
+		}
+		else {
+			userptr->prev->next=userptr->next;	/* skip over over object */
+			free(userptr);
+
+			userptr=userptr->prev;
+		}
+
+		/* delete user */
+		if(sqlite3_prepare_v2(GetDatabaseHandle(),"DELETE FROM USERS WHERE USERNAME=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+			SetLastError(currentuser,IO_ERROR);
+			return(-1);
+		}
+
+		sqlite3_bind_text(SQLStatementHandle,1,username,strlen(username),NULL);
+
+		if(sqlite3_step(SQLStatementHandle) != SQLITE_DONE) {
+			if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+			return(-1);
+		}		
+
+		/* Delete from inventory */
+
+		if(sqlite3_prepare_v2(GetDatabaseHandle(),"DELETE FROM INVENTORY WHERE OWNER=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+			SetLastError(currentuser,IO_ERROR);
+			return(-1);
+		}
+
+		sqlite3_bind_text(SQLStatementHandle,1,username,strlen(username),NULL);
+
+		if(sqlite3_step(SQLStatementHandle) != SQLITE_DONE) {
+			if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+			return(-1);
+		}
+
+		shutdown(KillSocket, SHUT_RDWR);		/* shutdown socket */
 	}
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 /*
 * if monster
 */
 
-found=FALSE;
-
-for(count=0;count<currentroom->monstercount;count++) {
-	if(regexp(username,currentroom->roommonsters[count].name) == TRUE) {		/* found monster */
-		DeleteMonster(currentroom->id,count);
-		found=TRUE;
+if(found == FALSE) {
+	for(count=0;count<currentroom->monstercount;count++) {
+		if(regexp(username,currentroom->roommonsters[count].name) == TRUE) {		/* found monster */
+			DeleteMonster(currentroom->id,count);
+			found=TRUE;
+		}
 	}
-
 }
 
 if(found == FALSE) {
@@ -485,40 +411,39 @@ return(0);
 */
 
 int pose(user *currentuser,char *message) {
-user *UserPtr;
+user *userptr;
 char *OutputMessage[BUF_SIZE];
 
-UserPtr=users;
+userptr=LoggedInUsers;
 
-while(UserPtr != NULL) {
+while(userptr != NULL) {
 
-	if(UserPtr->room == currentuser->room) {	/* in same room */
-		sprintf(OutputMessage,"*%s %s\r\n",currentuser->name,message);
+	if(userptr->room == currentuser->room) {	/* in same room */
+		sprintf(OutputMessage,"*%s %s\r\n",currentuser->username,message);
 
-		SendMessageToAllInRoom(UserPtr->room,OutputMessage);	/* send message */
+		SendMessageToAllInRoom(userptr->room,OutputMessage);	/* send message */
 	}
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 return(0);
 }
 
 /*
-* disconnect user
+* quit
 */
 
 void quit(user *currentuser) {
 char *OutputMessage[BUF_SIZE];
 
-sprintf(OutputMessage,"%s has disconnected\r\n",currentuser->name);
+sprintf(OutputMessage,"%s has disconnected\r\n",currentuser->username);
 
 SendMessageToAllInRoom(currentuser->room,OutputMessage);
-currentuser->loggedin=FALSE; /* mark as logged out */
 
-send(currentuser->handle,GoodbyeMessage,strlen(GoodbyeMessage),0);
+send(currentuser->socket,GoodbyeMessage,strlen(GoodbyeMessage),0);
 
-DisconnectUser(currentuser);		/* disconnect user */
+DisconnectUser(currentuser,currentuser->username);		/* disconnect user */
 }
 
 /*
@@ -526,14 +451,14 @@ DisconnectUser(currentuser);		/* disconnect user */
 */
 
 int SendMessageToAllInRoom(int room,char *message) {
-user *UserPtr;
+user *userptr;
 
-UserPtr=users;
+userptr=LoggedInUsers;
 
-while(UserPtr != NULL) {
-	if((UserPtr->room == room) && (UserPtr->loggedin == TRUE)) send(UserPtr->handle,message,strlen(message),0);	/* found user */
+while(userptr != NULL) {
+	if(userptr->room == room) send(userptr->socket,message,strlen(message),0);	/* found user */
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 return(0);
@@ -545,13 +470,13 @@ return(0);
 
 int SendMessage(user *currentuser,char *username,char *message) {
 char *OutputMessage[BUF_SIZE];
-user *UserPtr;
+user *userptr;
 int found=FALSE;
 
-UserPtr=users;
+userptr=LoggedInUsers;
 
-while(UserPtr != NULL) {
-	if(regexp(username,UserPtr->name) == TRUE) {		/* found user */
+while(userptr != NULL) {
+	if(regexp(username,userptr->username) == TRUE) {		/* found user */
 
 		if(currentuser->flags & USER_INVISIBLE) {
 			sprintf(OutputMessage,"Somebody whispers, %s\r\n",username,message);
@@ -562,10 +487,10 @@ while(UserPtr != NULL) {
 		}
 
 		found=TRUE;
-		send(currentuser->handle,OutputMessage,strlen(OutputMessage),0);
+		send(currentuser->socket,OutputMessage,strlen(OutputMessage),0);
 	}
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 if(found == FALSE) {			/* unknown user */
@@ -580,16 +505,18 @@ return(0);
 * take object from user
 */
 
-int TakeObject(user *currentuser,char *username,char *object) {
-user *UserPtr;
-roomobject *RoomObjectPtr;
-roomobject *RoomObjectLast;
-roomobject *myobj;
-int found=0;
-int  ObjectFound=0;
 
-if(currentuser->status < WIZARD) {             /* can't do this unless wizard of higher level */
-	SetLastError(currentuser,NOT_YET);
+int TakeObject(user *currentuser,char *objectname,char *username) {
+user *userptr;
+roomobject *RoomObjectPtr;
+roomobject *temp;
+bool UserFound=FALSE;
+bool  ObjectFound=FALSE;
+roomobject *theirobject;
+roomobject *SaveObjectPtr;
+
+if(currentuser->userlevel < WIZARD) {             /* can't do this unless wizard or higher level */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
@@ -597,19 +524,19 @@ if(currentuser->status < WIZARD) {             /* can't do this unless wizard of
 * find user
 */
 
-UserPtr=users;
+userptr=LoggedInUsers;
 
-while(UserPtr != NULL) {
-	if(regexp(UserPtr->name,username) == TRUE) {		/* found user */
-		found=TRUE;
+while(userptr != NULL) {
+	if(regexp(userptr->username,username) == TRUE) {		/* found object */
+		UserFound=TRUE;
 		break;
 	}
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
-if(found == FALSE) {
-	SetLastError(currentuser,NOT_YET);
+if(UserFound == FALSE) {
+	SetLastError(currentuser,UNKNOWN_USER);
 	return(-1);
 }
 
@@ -617,16 +544,15 @@ if(found == FALSE) {
 * find object
 */
 
-RoomObjectPtr=UserPtr->carryobjects;
+theirobject=userptr->carryobjects;
 
-while(RoomObjectPtr != NULL) {
+while(theirobject != NULL) {
+	if(regexp(theirobject->name,objectname) == TRUE) {		/* found object */
+		ObjectFound=TRUE;
 
-	RoomObjectLast=RoomObjectPtr;
+		if(SetInventoryObjectOwnerInDatabase(userptr->username,theirobject->name) == -1) return(-1);
 
-	if(regexp(RoomObjectPtr->name,object) == TRUE) {		/* found object */
-
-		if(currentuser->carryobjects == NULL) {				/* find end */				
-			
+		if(currentuser->carryobjects == NULL) {				/* find end */
 			currentuser->carryobjects=calloc(1,sizeof(roomobject));
 			if(currentuser->carryobjects == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);
@@ -636,247 +562,161 @@ while(RoomObjectPtr != NULL) {
 			currentuser->carryobjects_last=currentuser->carryobjects;
 		}
 		else
-		{						
-			currentuser->carryobjects_last->next=calloc(1,sizeof(roomobject));	/* allocate objects */ 		
+		{
+			currentuser->carryobjects_last->next=calloc(1,sizeof(roomobject));	/* allocate objects */ 
 			if(currentuser->carryobjects_last->next == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);
 				return(-1);
 			}
-		
-			currentuser->carryobjects=currentuser->carryobjects_last->next;
-		}    
-	
-		memcpy(currentuser->carryobjects_last,RoomObjectPtr,sizeof(roomobject));	/* copy data */
-	
-		if(RoomObjectPtr == UserPtr->carryobjects) {		/* first object */
-			RoomObjectPtr=RoomObjectPtr->next;
-	
-			free(UserPtr->carryobjects);   
-			UserPtr->carryobjects=RoomObjectPtr;
+
+			currentuser->carryobjects_last=currentuser->carryobjects_last->next;
 		}
-		else if(RoomObjectPtr != UserPtr->carryobjects && RoomObjectPtr->next != NULL) {      
-			RoomObjectLast->next=RoomObjectPtr->next;	/* skip over over object */        
-			free(RoomObjectPtr);
+
+		memcpy(currentuser->carryobjects_last,theirobject,sizeof(roomobject));	/* copy data */
+
+		/* remove object from the source player's inventory */
+		if(theirobject == userptr->carryobjects) {		/* first object */
+			SaveObjectPtr=theirobject;
+
+			theirobject=theirobject->next;
+
+			if(theirobject != NULL) theirobject->prev=NULL;
+
+			free(SaveObjectPtr);   
 		}
-		else if(RoomObjectPtr == UserPtr->carryobjects && RoomObjectPtr->next != NULL) {		/* last object */          
-			 free(RoomObjectPtr);	
-		}
+		else if(theirobject->next == NULL) {		/* last object */
+			SaveObjectPtr=theirobject;
+
+			theirobject->prev->next=NULL;
+
+			free(SaveObjectPtr);
 	
-		ObjectFound=TRUE;
+			currentuser->carryobjects_last->prev->next=NULL;				
+
+			theirobject=theirobject->prev;
+		}
+		else
+		{     
+			theirobject->prev->next=theirobject->next;
+			free(theirobject);
+
+			theirobject=theirobject->prev;
+		}
 	}
 
-	RoomObjectPtr=RoomObjectPtr->next;
+	theirobject=theirobject->next;
 }
 
 if(ObjectFound == FALSE) {
-	SetLastError(currentuser,UNKNOWN_USER); /* no object found */
+	SetLastError(currentuser,OBJECT_NOT_FOUND);
 	return(-1);
 }
 
 return(0);
 }
 
+
 /*
 * update user info
 */
 
-int UpdateUser(user *currentuser,char *username,char *password,int homeroom,int userlevel,char *description,int magicpoints,int staminapoints,int experiencepoints,int gender,char *racex,char *classx,int flags) {
+int UpdateUser(user *currentuser,char *username,char *newusername,char *password,int homeroom,int userlevel,char *description,int magicpoints,int staminapoints,int experiencepoints,int gender,char *racex,char *classx,int flags) {
 int dead=0;
 int count;
-char *tokens[BUF_SIZE][BUF_SIZE];
-user *UserPtr;
+user *userptr;
 roomobject *RoomObjectPtr;
 char *OutputMessage[BUF_SIZE];
-int newlevel;
-race *racenext;
-class *classnext;
+race newrace;
+userclass newclass;
 CONFIG config;
+sqlite3_stmt *SQLStatementHandle;
 
 if(homeroom < 0) homeroom=0;			/* sanity check */
 if(userlevel < 0) userlevel=0;
 if(magicpoints < 0) magicpoints=0;
 if(staminapoints < 0) staminapoints=0;
 if(experiencepoints < 0) experiencepoints=0;
+
 GetConfigurationInformation(&config);
 
-UserPtr=users;
-while(UserPtr != NULL) {
+userptr=LoggedInUsers;
+while(userptr != NULL) {
 
-/*
-* if the new entry value is 0 then it is ignored and the value is unchanged,
-if the stamina points are 0 the user is killed and will not be included in the updated file
-*/
+/* If the stamina points are 0 the user is killed */
 
-	if(regexp(UserPtr->name,username) == TRUE) {			/* found user */
+	if(regexp(userptr->username,username) == TRUE) {			/* found user */
+		strncpy(userptr->username,newusername,BUF_SIZE);
+		strncpy(userptr->password,crypt(password,newusername),BUF_SIZE);
+		strncpy(userptr->description,description,BUF_SIZE);
+		userptr->userlevel=userlevel;
+		userptr->gender=gender;
+		userptr->homeroom=homeroom;
+		userptr->magicpoints=magicpoints;
+		userptr->staminapoints=staminapoints;
+		userptr->experiencepoints=experiencepoints;
 
-		strcpy(UserPtr->name,username);
-		if(*password) strcpy(UserPtr->password,password);
-	
-		UserPtr->homeroom=homeroom;
-		UserPtr->status=userlevel;
-		UserPtr->magicpoints=magicpoints;
+		if(GetRace(racex,&newrace) == -1) {		/* update race */
+			SetLastError(currentuser,INVALID_RACE);
+			return(-1);
+		}
 
-		UserPtr->flags=flags;
+		strncpy(userptr->race.name,&newrace.name,BUF_SIZE);
 
-		UserPtr->staminapoints=staminapoints;
+		if(GetClass(classx,&newclass) == -1) {		/* update class */
+			SetLastError(currentuser,INVALID_CLASS);
+			return(-1);
+		}
+
+		strncpy(userptr->userclass.name,&newclass.name,BUF_SIZE);
+		userptr->flags=flags;
+
 
 		/*
 		* the user is dead, long live the user
 		*/
 
-		if(UserPtr->staminapoints <= 0 && (UserPtr->status < WIZARD)) {
-			printf("User is DEAD\n");
+		if(userptr->staminapoints <= 0 && (userptr->userlevel < WIZARD)) {
 
-			UserPtr->staminapoints=DEFAULT_STAMINAPOINTS;		/* reset user */
-			UserPtr->magicpoints=DEFAULT_MAGICPOINTS;
-			UserPtr->experiencepoints=0;
-			UserPtr->status=NOVICE;
-			UserPtr->homeroom=1;
-			
-			sprintf(OutputMessage,"%s was killed\n",UserPtr->name);
-			SendMessageToAllInRoom(UserPtr->room,OutputMessage);
-
-			DropObject(UserPtr,"*"); 		/* drop objects carried by user */
-
-			UserUpdated=TRUE;
-
-			send(currentuser->handle,PlayAgainMessage,strlen(PlayAgainMessage),0);
-			
-			return(-2);		/* signal that the player is dead */
 		}
 
-		/* adjust new level */
-
-		 if(experiencepoints > 0) {
-			if(experiencepoints < config.pointsforwarrior) newlevel=NOVICE;
-			if((experiencepoints >= config.pointsforwarrior) && (experiencepoints < config.pointsforhero)) newlevel=WARRIOR;
-			if((experiencepoints >= config.pointsforhero) && (experiencepoints < config.pointsforchampion)) newlevel=HERO;
-			if((experiencepoints >= config.pointsforchampion) && (experiencepoints < config.pointsforsuperhero)) newlevel=CHAMPION;
-			if((experiencepoints >= config.pointsforsuperhero) && (experiencepoints < config.pointsforenchanter)) newlevel=SUPERHERO;
-			if((experiencepoints >= config.pointsforenchanter) && (experiencepoints < config.pointsforsorceror)) newlevel=ENCHANTER;
-			if((experiencepoints >= config.pointsforsorceror) && (experiencepoints < config.pointsfornecromancer)) newlevel=SORCEROR;
-			if((experiencepoints >= config.pointsfornecromancer) && (experiencepoints < config.pointsforlegend)) newlevel=NECROMANCER;
-			if((experiencepoints >= config.pointsforlegend) && (experiencepoints < config.pointsforwizard)) newlevel=LEGEND;
-			if((experiencepoints >= config.pointsforwizard)) newlevel=WIZARD;
-
-			if(newlevel > UserPtr->status || newlevel < UserPtr->status) {		/* new level */
-				UserPtr->status=newlevel;
-	
-				if(UserPtr->gender == MALE) {
-					sprintf(OutputMessage,"You are now a %s!\n",MaleUserLevelNames[newlevel]);
-				}
-				else
-				{
-					sprintf(OutputMessage,"You are now a %s!\n",FemaleUserLevelNames[newlevel]);
-				}
-			}
-
-			send(UserPtr->handle,OutputMessage,strlen(OutputMessage),0);
-		}
-		
-
-		UserPtr->experiencepoints=experiencepoints;
-
-		if(gender > 0) UserPtr->gender=gender;
-
-		if(*racex) {
-			racenext=races;				/* find race */
-
-			while(racenext != NULL) {
-				if(strcmp(racenext->name,racex) == 0) {		/* found race */
-					UserPtr->race=racenext;
-					break;
-				}
-
-				racenext=racenext->next;
-			}
-		}
-
-		if(*classx) {
-			classnext=classes;				/* find class */
-
-			while(classnext != NULL) {
-				if(strcmp(classnext->name,classx) == 0) {		/* found class */
-					UserPtr->userclass=classnext;
-					break;
-				}
-	
-				classnext=classnext->next;
-			}
-		}
-
-		if(*description) strcpy(UserPtr->desc,description);
-
-		UserUpdated=TRUE;
 	}
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
-SetDatabaseUpdateFlag();			/* set database updated flag */
-return(0);
+
+/* Update user */
+
+/* prepare statement SQL */
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"UPDATE USERS SET username=?,password=?,homeroom=?,userlevel=?,desc=?,magicpoints=?,staminapoints=?,experiencepoints=?,gender=?,race=?,class=?,flags=? WHERE username=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	SetLastError(currentuser,IO_ERROR);
+	return(-1);
 }
 
-/*
-* update users file
-*/
+/* bind parameters */
+sqlite3_bind_text(SQLStatementHandle,1,newusername,strlen(newusername),NULL);
+sqlite3_bind_text(SQLStatementHandle,2,password,strlen(password),NULL);
+sqlite3_bind_int(SQLStatementHandle,3,homeroom);
+sqlite3_bind_int(SQLStatementHandle,4,userlevel);
+sqlite3_bind_text(SQLStatementHandle,5,description,strlen(description),NULL);
+sqlite3_bind_int(SQLStatementHandle,6,magicpoints);
+sqlite3_bind_int(SQLStatementHandle,7,staminapoints);
+sqlite3_bind_int(SQLStatementHandle,8,experiencepoints);
+sqlite3_bind_int(SQLStatementHandle,9,gender);
+sqlite3_bind_text(SQLStatementHandle,10,racex,strlen(racex),NULL);
+sqlite3_bind_text(SQLStatementHandle,11,classx,strlen(classx),NULL);
+sqlite3_bind_int(SQLStatementHandle,12,flags);
+sqlite3_bind_text(SQLStatementHandle,13,username,strlen(username),NULL);
 
-int UpdateUsersFile(void) {
-FILE *handle;
-FILE *handleinv;
-user *UserPtr;
-roomobject *RoomObjectPtr;
-race *racenext;
-class *classnext;
-char *InventoryFile[BUF_SIZE];
-char *GenderString[BUF_SIZE];
-
-handle=fopen(UserConfigurationFile,"w");
-if(handle == NULL) return(-1);
-
-UserPtr=users;
-
-while(UserPtr != NULL) {
-
-	racenext=UserPtr->race;				/* find race */
-	classnext=UserPtr->userclass;
-
-	if(UserPtr->gender == MALE) {		/* gender */
-		strcpy(GenderString,"male");
-	}
-	else
-	{
-		strcpy(GenderString,"female");
-	}
-
-	fprintf(handle,"%s:%s:%d:%d:%s:%d:%d:%d:%s:%s:%s:%d\n",UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,\
-						UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints,UserPtr->experiencepoints, \
-						GenderString,racenext->name,classnext->name,UserPtr->flags);
-
-	/* update inventory file */
-
-	sprintf(InventoryFile,"config/%s.inv",UserPtr->name);			/* get path */
-
-	handleinv=fopen(InventoryFile,"w");
-	if(handleinv != NULL) {		/* can't open */
-		RoomObjectPtr=UserPtr->carryobjects;
-
-		while(RoomObjectPtr != NULL) {
-			fprintf(handleinv,"%s:%d:%d:%d:%d:%s\n",RoomObjectPtr->name,RoomObjectPtr->staminapoints,RoomObjectPtr->magicpoints,\
-
-			RoomObjectPtr->attackpoints,RoomObjectPtr->generateprob,RoomObjectPtr->desc);			
-
-			RoomObjectPtr=RoomObjectPtr->next;
-		}
-
-		fclose(handleinv);
-	}
-		
-	UserPtr=UserPtr->next;
+if(sqlite3_step(SQLStatementHandle) == SQLITE_DONE) {		/* update OK */
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(0);
 }
 
-fclose(handle);
-return(0);
+SetLastError(currentuser,UNKNOWN_USER);
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(-1);
 }
 
 /*
@@ -884,14 +724,14 @@ return(0);
 */
 
 int SetUserPoints(user *currentuser,char *username,char *amountstr,int which) {
-user *UserPtr;
+user *userptr;
 int amount;
 
-UserPtr=users;
+userptr=LoggedInUsers;
 
-while(UserPtr != NULL) {
+while(userptr != NULL) {
 
-	if(regexp(UserPtr->name,username) == TRUE) {	/* if user found */
+	if(regexp(userptr->username,username) == TRUE) {	/* if user found */
 
 		/* adding/subtracting/setting points */
 
@@ -906,17 +746,17 @@ while(UserPtr != NULL) {
 		}
 	
 		if(which == MAGICPOINTS) {
-			return(UpdateUser(currentuser,UserPtr->name,"",0,0,"",UserPtr->magicpoints+amount,0,0,0,"","",0));
+			return(UpdateUser(currentuser,userptr->username,userptr->username,userptr->password,userptr->homeroom,userptr->userlevel,userptr->description,userptr->magicpoints+amount,userptr->staminapoints,userptr->experiencepoints,userptr->gender,userptr->race.name,userptr->userclass.name,userptr->flags));
 		}
 		else if(which == STAMINAPOINTS) {
-			return(UpdateUser(currentuser,UserPtr->name,"",0,0,"",0,UserPtr->staminapoints+amount,0,0,"","",0));
+			return(UpdateUser(currentuser,userptr->username,userptr->username,userptr->password,userptr->homeroom,userptr->userlevel,userptr->description,userptr->magicpoints,userptr->staminapoints+amount,userptr->experiencepoints,userptr->gender,userptr->race.name,userptr->userclass.name,userptr->flags));
 		}
 		else if(which == EXPERIENCEPOINTS) {
-			return(UpdateUser(currentuser,UserPtr->name,"",0,0,"",0,0,UserPtr->experiencepoints+amount,0,"","",0));
+			return(UpdateUser(currentuser,userptr->username,userptr->username,userptr->password,userptr->homeroom,userptr->userlevel,userptr->description,userptr->magicpoints+amount,userptr->staminapoints,userptr->experiencepoints+amount,userptr->gender,userptr->race.name,userptr->userclass.name,userptr->flags));
 		}
 	}
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 SetLastError(currentuser,UNKNOWN_USER);		/* user not found */
@@ -927,45 +767,43 @@ return(-1);
 * set user level */
 
 int SetUserLevel(user *currentuser,char *username,char *levelstr) {
-user *UserPtr;
+user *userptr;
 int level;
 
-if(currentuser->status < WIZARD) {     /* not wizard */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < WIZARD) {     /* not wizard */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
-UserPtr=users;
-while(UserPtr != NULL) {
+userptr=LoggedInUsers;
+while(userptr != NULL) {
 
-	if(regexp(UserPtr->name,username) == TRUE) {		/* found user */
+	if(regexp(userptr->username,username) == TRUE) {		/* found user */
 	
 		if((char) *levelstr == '+') {			/* add points */
 			sscanf(levelstr,"+%d",&level);
 
-			if(UserPtr->status+level > 12) {
+			if(userptr->userlevel+level > 12) {
 				SetLastError(currentuser,INVALID_LEVEL);
 				return(-1);
 			}
 	
-			 if(UserPtr->status+level > currentuser->status) {		/* can't set level above own level */
-				SetLastError(currentuser,NOT_YET);
+			 if(userptr->userlevel+level > currentuser->userlevel) {		/* can't set level above own level */
+				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			 }
 
-			UpdateUser(currentuser,username,"",0,UserPtr->status+level,"",0,0,0,0,"","",0);   /* set level */
-			return(0);
+			return(UpdateUser(currentuser,userptr->username,userptr->username,userptr->password,userptr->homeroom,userptr->userlevel+level,userptr->description,userptr->magicpoints,userptr->staminapoints,userptr->experiencepoints,userptr->gender,userptr->race.name,userptr->userclass.name,userptr->flags));
 		}
 		else if((char) *levelstr == '-') {			/* subtract points */
 			sscanf(levelstr,"-%d",&level);
 
-			if((UserPtr->status-level <= 0) || (UserPtr->status+level <= 0)) {
+			if((userptr->userlevel-level <= 0) || (userptr->userlevel+level <= 0)) {
 				SetLastError(currentuser,INVALID_LEVEL);
 				return(-1);
 			}
-	
-			UpdateUser(currentuser,username,"",0,UserPtr->status-level,"",0,0,0,0,"","",0);   /* set level */
-			return(0);
+
+			return(UpdateUser(currentuser,userptr->username,userptr->username,userptr->password,userptr->homeroom,userptr->userlevel,userptr->description,userptr->magicpoints,userptr->staminapoints,userptr->experiencepoints,userptr->gender,userptr->race.name,userptr->userclass.name,userptr->flags));	
 		}
 		else {
 			level=atoi(levelstr);
@@ -975,12 +813,11 @@ while(UserPtr != NULL) {
 				return(-1);
 			}
 
-			UpdateUser(currentuser,username,"",0,level,"",0,0,0,0,"","",0);   /* set level */
-			return(0);
+			return(UpdateUser(currentuser,userptr->username,userptr->username,userptr->password,userptr->homeroom,level,userptr->description,userptr->magicpoints,userptr->staminapoints,userptr->experiencepoints,userptr->gender,userptr->race.name,userptr->userclass.name,userptr->flags));
 		}
 	}
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 return(0);
@@ -989,295 +826,51 @@ return(0);
 
 /* set gender */
 int SetUserGender(user *currentuser,char *username,char *gender) {
+user *userptr;
 
-if(currentuser->status < WIZARD) {		/* can't do this yet */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < WIZARD) {		/* can't do this yet */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
-if(strcmp(gender,"male") == 0) {
-	return(UpdateUser(currentuser,username,"",0,0,"",0,0,0,MALE,"","",0));
-}
-else if(strcmp(gender,"female") == 0) {
-	return(UpdateUser(currentuser,username,"",0,0,"",0,0,0,FEMALE,"","",0));
+userptr=LoggedInUsers;
+
+while(userptr != NULL) {
+	if(strncmp(userptr->username,username,BUF_SIZE) == 0) {
+
+		if(strncmp(gender,"male",BUF_SIZE) == 0) {
+			return(UpdateUser(currentuser,userptr->username,userptr->username,userptr->password,userptr->homeroom,userptr->userlevel,userptr->description,userptr->magicpoints,userptr->staminapoints,userptr->experiencepoints,MALE,userptr->race.name,userptr->userclass.name,userptr->flags));
+		}
+		else if(strncmp(gender,"female",BUF_SIZE) == 0) {
+			return(UpdateUser(currentuser,userptr->username,userptr->username,userptr->password,userptr->homeroom,userptr->userlevel,userptr->description,userptr->magicpoints,userptr->staminapoints,userptr->experiencepoints,FEMALE,userptr->race.name,userptr->userclass.name,userptr->flags));
+		}
+
+		userptr=userptr->next;
+	}
 }
 
-SetLastError(currentuser,BAD_GENDER);
+SetLastError(currentuser,INVALID_GENDER);
 return(-1);
 }
 
-int LoadRaces(void) {
-race *racenext;
-FILE *handle;
-int LineCount;
-char *RaceTokens[BUF_SIZE][BUF_SIZE];
-char *LineBuffer[BUF_SIZE];
-int ErrorCount=0;
-
-racenext=races;
-LineCount=0;
-
-handle=fopen(RaceConfigurationFile,"rb");
-if(handle == NULL) {                                           /* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",RaceConfigurationFile);
-	exit(NOCONFIGFILE);
-}
-
-while(!feof(handle)) {
-	fgets(LineBuffer,BUF_SIZE,handle);		/* get and parse line */
-
-	if((char) *LineBuffer == '#')  continue;		/* skip comments */
-	if((char) *LineBuffer == '\n')  continue;		/* skip newline */
-
-	RemoveNewLine(LineBuffer);		/* remove newline character */
-
-	LineCount++;
-
-	TokenizeLine(LineBuffer,RaceTokens,":\n");				/* tokenize line */
-
-	if(strcmp(RaceTokens[0],"begin_race") == 0) {	/* end */
-
-		if(races == NULL) {			/* first race */
-			races=calloc(1,sizeof(race));
-			if(races == NULL) {
-				perror("\nmud:");
-				exit(NOMEM);
-			}
-
-			racenext=races;
-		}
-		else
-		{
-			racenext->next=calloc(1,sizeof(race));
-			racenext=racenext->next;
-
-			if(racenext == NULL) {
-				perror("\nmud:");
-				exit(NOMEM);
-			}
-
-		}
-
-		strcpy(racenext->name,RaceTokens[1]);
-		continue;			
-	}
-	else if(strcmp(RaceTokens[0],"intelligence") == 0) {	/* race points used */
-		racenext->intelligence=atoi(RaceTokens[1]);
-		continue;			
-	}
-	else if(strcmp(RaceTokens[0],"strength") == 0) {
-		racenext->strength=atoi(RaceTokens[1]);
-		continue;			
-	}
-	else if(strcmp(RaceTokens[0],"wisdom") == 0) {
-		racenext->wisdom=atoi(RaceTokens[1]);
-		continue;			
-	}  
-	else if(strcmp(RaceTokens[0],"dexterity") == 0) {
-		racenext->dexterity=atoi(RaceTokens[1]);
-		continue;			
-	}
-	else if(strcmp(RaceTokens[0],"luck") == 0) {
-		racenext->luck=atoi(RaceTokens[1]);
-		continue;			
-	}
-	else if(strcmp(RaceTokens[0],"magic") == 0) {
-		racenext->magic=atoi(RaceTokens[1]);
-		continue;			
-	}  
-	else if(strcmp(RaceTokens[0],"agility") == 0) {
-		racenext->agility=atoi(RaceTokens[1]);
-		continue;			
-	}
-	else if(strcmp(RaceTokens[0],"stamina") == 0) {
-		racenext->stamina=atoi(RaceTokens[1]);
-		continue;			
-	}
-	else if(strcmp(RaceTokens[0],"end") == 0) {
-		;;
-	}
-	else
-	{
-		printf("\nmud: %d: uknown configuration option %s in %s\n",LineCount,RaceTokens[0],RaceConfigurationFile);		/* unknown configuration option */
-		ErrorCount++;
-	}
-}
-
-
-fclose(handle);
-return(ErrorCount);
-}
-
-
-int LoadClasses(void) {
-class *classnext;
-FILE *handle;
-int LineCount;
-char *RaceTokens[10][BUF_SIZE];
-char *LineBuffer[BUF_SIZE];
-int ErrorCount=0;
-
-classnext=classes;
-LineCount=0;
-
-handle=fopen(ClassConfigurationFile,"rb");
-if(handle == NULL) {                                           /* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",ClassConfigurationFile);
-
-	exit(NOCONFIGFILE);
-}
-
-while(!feof(handle)) {
-	fgets(LineBuffer,BUF_SIZE,handle);		/* get and parse line */
-
-	RemoveNewLine(LineBuffer);		/* remove newline character */
-
-	LineCount++;
-
-	if(classes == NULL) {			/* first class */
-		classes=calloc(1,sizeof(class));
-		if(classes == NULL) {
-			perror("\nmud:");
-			exit(NOMEM);
-		}
-
-		classnext=classes;
-	}
-	else
-	{
-		classnext->next=calloc(1,sizeof(class));
-		classnext=classnext->next;
-
-		if(classnext == NULL) {
-			perror("\nmud:");
-			exit(NOMEM);
-		}
-	}
-
-
-	strcpy(classnext->name,LineBuffer);
-}
-
-fclose(handle);
-return(ErrorCount);
-}
-
-int LoadUsers(void) {
-user *UserPtr;
-FILE *handle;
-int LineCount;
-char *UserTokens[BUF_SIZE][BUF_SIZE];
-char *LineBuffer[BUF_SIZE];
-int ErrorCount=0;
-class *userclass;
-class *classlast;
-race *racelast;
-race *userrace;
-
-handle=fopen(UserConfigurationFile,"rb");
-if(handle == NULL) {                                           /* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",UserConfigurationFile);
-	exit(NOCONFIGFILE);
-}
-
-LineCount=0;
-
-while(!feof(handle)) {
-	fgets(LineBuffer,BUF_SIZE,handle);
-
-	if(strlen(LineBuffer) < 2) continue;		/* ignore empty lines */
-
-	if(feof(handle)) break;		/* at end */
-
-	RemoveNewLine(LineBuffer);		/* remove newline character */
-
-	TokenizeLine(LineBuffer,UserTokens,":\n");				/* tokenize line */
-
-	if(users == NULL) {			/* first user */
-		users=calloc(1,sizeof(user));
-		if(users == NULL) {
-			perror("\nmud:");
-			exit(NOMEM);
-		}
-
-		UserPtr=users;
-	}
-	else
-	{
-		UserPtr->next=calloc(1,sizeof(user));
-		UserPtr=UserPtr->next;
-
-		if(UserPtr == NULL) {
-			perror("\nmud:");
-			exit(NOMEM);
-		}
-
-	}
-
-	strcpy(UserPtr->name,UserTokens[USERNAME]);
-	strcpy(UserPtr->password,UserTokens[PASSWORD]);
-	UserPtr->homeroom=atoi(UserTokens[HOMEROOM]);
-	UserPtr->status=atoi(UserTokens[USERLEVEL]);
-	strcpy(UserPtr->desc,UserTokens[DESCRIPTION]);
-	UserPtr->magicpoints=atoi(UserTokens[MAGICPOINTS]);
-	UserPtr->staminapoints=atoi(UserTokens[STAMINAPOINTS]);
-	UserPtr->experiencepoints=atoi(UserTokens[EXPERIENCEPOINTS]);
-	UserPtr->gender=atoi(UserTokens[GENDER]);
-	UserPtr->handle=0;
-	UserPtr->flags=atoi(UserTokens[USERFLAGS]);
-	UserPtr->next=NULL;
-
-	userrace=races;		/* load race */
-	racelast=races;
-
-	while(userrace != NULL) {
-		if(strcmp(userrace->name,UserTokens[RACE]) == 0) {		/* FOund race */
-			UserPtr->race=racelast;
-			break;
-		}
-	}
-	racelast=userrace;
-	userrace=userrace->next;
-}
-
-/* find user class from class name */
-
-userclass=classes;		/* load class */
-classlast=classes;
-
-while(userclass != NULL) {
-	if(strcmp(userclass->name,UserTokens[CLASS]) == 0) {		/* FOund class */
-		UserPtr->userclass=classlast;
-		break;
-	}
-
-	classlast=userclass;
-	userclass=userclass->next;
-}
-
-/* update inventory file */
-
-fclose(handle);
-return(ErrorCount);
-}
 
 int SetVisibleMode(user *currentuser,char *name,int mode) {
-user *next=users;
+user *next=LoggedInUsers;
 
-if(currentuser->status < WIZARD) {     /* not wizard */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < WIZARD) {     /* not wizard */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
 while(next != NULL) {
-	if(strcmp(next->name,name) == 0) {
+	if(strncmp(next->username,name,BUF_SIZE) == 0) {
 
 		if(mode == 0) {			/* go visible */
 			next->flags &= USER_INVISIBLE;
 		}
 		else
 		{
-			next->flags |= USER_INVISIBLE;
+			next->flags &= ~USER_INVISIBLE;
 		}
 
 		return(0);
@@ -1291,10 +884,10 @@ return(-1);
 }
 
 int GagUser(user *currentuser,char *name,int mode) {
-user *next=users;
+user *next=LoggedInUsers;
 
-if(currentuser->status < WIZARD) {     /* not wizard */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < WIZARD) {     /* not wizard */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
@@ -1304,7 +897,7 @@ if(*name) {
 else
 {
 	while(next != NULL) {
-		if(strcmp(next->name,name) == 0) break;
+		if(strncmp(next->username,name,BUF_SIZE) == 0) break;
 
 		next=next->next;
 	}
@@ -1331,25 +924,21 @@ return(0);
 */
 
 int wall(user *currentuser,char *message) {
-user *UserPtr;
+user *userptr;
 char *OutputMessage[BUF_SIZE];
 
-if(currentuser->status < WIZARD) {		/* only wizard or higher users can send global message */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < WIZARD) {		/* only wizard or higher users can send global message */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
-UserPtr=users;
+userptr=LoggedInUsers;
 
-while(UserPtr != NULL) {
-	
-	if(UserPtr->loggedin == TRUE) {
-		sprintf(OutputMessage,"[GLOBAL MESSAGE] %s\n",message);
+while(userptr != NULL) {
+	sprintf(OutputMessage,"[GLOBAL MESSAGE] %s\n",message);
+	send(userptr->socket,OutputMessage,strlen(OutputMessage),0);			/* send message to every user */
 
-		send(UserPtr->handle,OutputMessage,strlen(OutputMessage),0);			/* send message to every user */
-	}
-
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 return(0);
@@ -1360,32 +949,32 @@ room *roomnext;
 char *OutputMessage[BUF_SIZE];
 
 if(RoomNumber == 0) {		/* invalid room */
-	SetLastError(currentuser,BAD_DIRECTION);
+	SetLastError(currentuser,INVALID_DIRECTION);
 	return(-1);
 }
 
 if(currentuser->room != RoomNumber) {	/* send leaving message */
-	sprintf(OutputMessage,"%s has left\r\n",currentuser->name);
+	sprintf(OutputMessage,"%s has left\r\n",currentuser->username);
 	SendMessageToAllInRoom(currentuser->room,OutputMessage);
 }
 
 if(GetRoomAttributes(RoomNumber) & ROOM_PRIVATE) {
-	SetLastError(currentuser,BAD_DIRECTION);
+	SetLastError(currentuser,INVALID_DIRECTION);
 	return(-1);
 }	
 
-strcpy(currentuser->roomname,GetRoomName(RoomNumber));
+strncpy(currentuser->roomname,GetRoomName(RoomNumber),BUF_SIZE);
 
 currentuser->room=RoomNumber;
 currentuser->roomptr=GetRoomPointer(RoomNumber); 		/* save pointer to current room */
 
-sprintf(OutputMessage,"%s has entered\r\n",currentuser->name);
+sprintf(OutputMessage,"%s has entered\r\n",currentuser->username);
 SendMessageToAllInRoom(currentuser->room,OutputMessage);
 
 look_command(currentuser,0,NULL);				/* look at new room */
 
 if(GetRoomAttributes(RoomNumber) & ROOM_DEAD) {
-	UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,currentuser->desc,currentuser->magicpoints,0,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags);
+	UpdateUser(currentuser,currentuser->username,currentuser->username,currentuser->password,currentuser->homeroom,currentuser->userlevel,currentuser->description,currentuser->magicpoints,0,currentuser->experiencepoints,currentuser->gender,&currentuser->race,&currentuser->userclass,currentuser->flags);
 	return(-1);
 }	
 
@@ -1396,7 +985,7 @@ int MoveObject(user *currentuser,char *ObjectName,int RoomNumber) {
 roomobject *RoomObjectPtr;
 roomobject *DestinationObject;
 int destination;
-user *UserPtr;
+user *userptr;
 room *currentroom;
 room *DestinationRoom;
 int FoundRoom=FALSE;
@@ -1407,8 +996,8 @@ GetConfigurationInformation(&config);
 
 currentroom=currentuser->roomptr;
 
-if(currentuser->status < WIZARD) {      /* not wizard */
-	SetLastError(currentuser,NOT_YET);
+if(currentuser->userlevel < WIZARD) {      /* not wizard */
+	SetLastError(currentuser,ACCESS_DENIED);
 	return(-1);
 }
 
@@ -1423,24 +1012,24 @@ RoomObjectPtr=currentroom->roomobjects;
 
 while(RoomObjectPtr != NULL) {
 	if(regexp(RoomObjectPtr->name,ObjectName) == 0 ) {				/* if object matches */
-		
-		if(currentuser->status < ARCHWIZARD) {
-			if((strcmp(currentroom->owner,currentuser->name) == 0) && (currentroom->attr & OBJECT_MOVEABLE_PUBLIC) == 0) {
+
+		if(currentuser->userlevel < ARCHWIZARD) {
+			if((strncmp(currentroom->owner,currentuser->username,BUF_SIZE) == 0) && (currentroom->attributes & OBJECT_MOVEABLE_PUBLIC) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
 
-			if((strcmp(currentroom->owner,currentuser->name) == 0) && (currentroom->attr & OBJECT_MOVEABLE_OWNER) == 0) {
+			if((strncmp(currentroom->owner,currentuser->username,BUF_SIZE) == 0) && (currentroom->attributes & OBJECT_MOVEABLE_OWNER) == 0) {
 				SetLastError(currentuser,ACCESS_DENIED);
 				return(-1);
 			}
 		}
 
-		if(DestinationRoom->roomobjects != NULL) {				/* find end */				
+		if(DestinationRoom->roomobjects != NULL) {				/* find end */
 			DestinationObject=DestinationRoom->roomobjects;
 
 			while(DestinationObject->next != NULL) DestinationObject=DestinationObject->next; 
-			
+
 			DestinationObject->next=calloc(1,sizeof( roomobject));	/* allocate objects */ 
 
 			if(DestinationObject->next == NULL) {		/* can't allocate */
@@ -1451,7 +1040,7 @@ while(RoomObjectPtr != NULL) {
 			DestinationObject=DestinationObject->next;
 		}
 		else
-		{						
+		{
 			DestinationRoom->roomobjects=calloc(1,sizeof( roomobject));	/* allocate objects */ 
 			DestinationObject=DestinationRoom->roomobjects;
 
@@ -1460,10 +1049,10 @@ while(RoomObjectPtr != NULL) {
 				return(-1);
 			}
 		}
-	
+
 		memcpy(DestinationObject,RoomObjectPtr,sizeof( roomobject));		/* copy object */
 		DeleteObject(currentuser,ObjectName);                                  /* delete object */
-	
+
 		found=TRUE;
 	}
 
@@ -1473,299 +1062,254 @@ while(RoomObjectPtr != NULL) {
 return(0);
 }
 
-
 int LoginUser(int messagesocket,char *username,char *password) {
-char *encryptedpassword[BUF_SIZE];
-char *RaceTokens[BUF_SIZE][BUF_SIZE];
-FILE *handle;
-char *UserLine[BUF_SIZE];
-user *UserPtr;
-user *userlast;
-roomobject *RoomObjectPtr;
-roomobject *RoomObjectLast;
-int count;
+int ErrorCount=0;
+char *hashedpassword[BUF_SIZE];
 struct sockaddr_in clientip;
 socklen_t clientiplen;
 char *ipaddress[BUF_SIZE];
-char *UserInventoryFile[BUF_SIZE];
+sqlite3_stmt *SQLStatementHandle;
+roomobject *carryptr=NULL;
+char *temp[BUF_SIZE];
+int returnvalue;
+char *classname[BUF_SIZE];
+char *racename[BUF_SIZE];
+int returncode;
 
-clientiplen=sizeof(struct sockaddr_in);			/* get ip address */
+clientiplen=sizeof(struct sockaddr_in);			/* get IP address */
 getpeername(messagesocket,(struct sockaddr*)&clientip,&clientiplen);
 
-strcpy(ipaddress,inet_ntoa(clientip.sin_addr));
+strncpy(ipaddress,inet_ntoa(clientip.sin_addr),BUF_SIZE);
 
-strcpy(encryptedpassword,crypt(password,username));
+if(HashPassword(username,password,hashedpassword) == -1) return(-1);	/* hash password */	
 
-UserPtr=users;
-userlast=users;
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT * FROM USERS WHERE USERNAME=? AND PASSWORD=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {	/* prepare SQL statement */
+	return(-1);
+}
 
-while(UserPtr != NULL) {
-/* check username and password */
-	if(strcmp(username,UserPtr->name) == 0 && strcmp(encryptedpassword,UserPtr->password) == 0) {
-		strcpy(UserPtr->ipaddress,ipaddress);	/* IP address */
+/* bind parameters */
+sqlite3_bind_text(SQLStatementHandle,1,username,strlen(username),NULL);
+sqlite3_bind_text(SQLStatementHandle,2,hashedpassword,strlen(hashedpassword),NULL);
 
-		UserPtr->loggedin=TRUE;		/* user is logged in */
-		UserPtr->handle=messagesocket;		/* TCP socket */
-		UserPtr->room=UserPtr->homeroom;	/* room */
-		UserPtr->roomptr=GetRoomPointer(UserPtr->homeroom);
+returncode=sqlite3_step(SQLStatementHandle);
 
-		/*
-		* load user inventory
-		*/
+if(returncode == SQLITE_ERROR) {
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(-1);
+}
 
-		sprintf(UserInventoryFile,"config/%s.inv",UserPtr->name);		/* get absolute path of user inventory */
+if(returncode == SQLITE_ROW) {
+	/* get user information */
 
-		UserPtr->carryobjects=calloc(1,sizeof( roomobject));		/* allocate objects */
-		if(UserPtr->carryobjects == NULL) {
-			PrintError(messagesocket,NO_MEM);
-			return(-1);		/* can't allocate */
-		}
+	if(LoggedInUsers == NULL) {		/* no logged in users */
+		LoggedInUsers=malloc(sizeof(user));
+		if(LoggedInUsers == NULL) return(-1);
 
-		RoomObjectPtr=UserPtr->carryobjects;
+		LoggedInUsers->prev=NULL;
+		LoggedInUsers_end=LoggedInUsers;
+	}
+	else
+	{
+		LoggedInUsers_end->next=malloc(sizeof(user));
+		if(LoggedInUsers_end->next == NULL) return(-1);		/* allocation error */
 
-		handle=fopen(UserInventoryFile,"rb");
-		if(handle != NULL) {
-			while(!feof(handle)) {
-				fgets(UserLine,BUF_SIZE,handle);	
-				if(feof(handle)) break;
-	
-				RemoveNewLine(UserLine);		/* remove newline character */
+		LoggedInUsers_end->next->prev=LoggedInUsers_end;	/* previous user */
 
-				TokenizeLine(UserLine,RaceTokens,":");		/* tokenize line */
-				strcpy(RoomObjectPtr->name,RaceTokens[OBJECT_NAME]);
-				RoomObjectPtr->staminapoints=atoi(RaceTokens[OBJECT_STAMINAPOINTS]);
-				RoomObjectPtr->magicpoints=atoi(RaceTokens[OBJECT_MAGICPOINTS]);
-				RoomObjectPtr->attr=atoi(RaceTokens[OBJECT_ATTR]);
-				RoomObjectPtr->attackpoints=atoi(RaceTokens[OBJECT_ATTACKPOINTS]);
-				RoomObjectPtr->generateprob=atoi(RaceTokens[OBJECT_GENERATEPROB]);
-				strcpy(RoomObjectPtr->desc,RaceTokens[OBJECT_DESCRIPTION]);
-				strcpy(RoomObjectPtr->owner,RaceTokens[OBJECT_OWNER]);
-
-				RoomObjectPtr->next=calloc(1,sizeof( roomobject));		/* allocate objects */
-				if(UserPtr->carryobjects == NULL) {
-					PrintError(messagesocket,NO_MEM);
-					return(-1);		/* can't allocate */
-				}
-
-				RoomObjectPtr=RoomObjectPtr->next;
-			}
-		
-			RoomObjectPtr->next=NULL;
-
-			fclose(handle);
-
-			if(go(UserPtr,UserPtr->homeroom) == -1) return(-1);
-		}
-
-		return(0);
+		LoggedInUsers_end=LoggedInUsers_end->next;
 	}
 
+	strncpy(LoggedInUsers_end->username,sqlite3_column_text(SQLStatementHandle,USERNAME),BUF_SIZE);
+	strncpy(LoggedInUsers_end->password,sqlite3_column_text(SQLStatementHandle,PASSWORD),BUF_SIZE);
+	strncpy(LoggedInUsers_end->description,sqlite3_column_text(SQLStatementHandle,DESCRIPTION),BUF_SIZE);
+	LoggedInUsers_end->userlevel=sqlite3_column_int(SQLStatementHandle,USERLEVEL);
+	LoggedInUsers_end->gender=sqlite3_column_int(SQLStatementHandle,GENDER);
+	LoggedInUsers_end->homeroom=sqlite3_column_int(SQLStatementHandle,HOMEROOM);
+	LoggedInUsers_end->magicpoints=sqlite3_column_int(SQLStatementHandle,MAGICPOINTS);
+	LoggedInUsers_end->staminapoints=sqlite3_column_int(SQLStatementHandle,STAMINAPOINTS);
+	LoggedInUsers_end->experiencepoints=sqlite3_column_int(SQLStatementHandle,EXPERIENCEPOINTS);
+	strncpy(racename,sqlite3_column_text(SQLStatementHandle,RACE),BUF_SIZE);
+	strncpy(classname,sqlite3_column_text(SQLStatementHandle,CLASS),BUF_SIZE);
+	LoggedInUsers_end->flags=sqlite3_column_int(SQLStatementHandle,USERFLAGS);
+	LoggedInUsers_end->next=NULL;
 
-	UserPtr=UserPtr->next;
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+
+	if(GetRace(racename,&LoggedInUsers_end->race) == -1) return(-1);	/* get user race */
+	if(GetClass(classname,&LoggedInUsers_end->userclass) == -1) return(-1);	/* get user class */
+
+	/*
+	* load user inventory
+	*/
+
+	LoggedInUsers_end->carryobjects=NULL;
+
+	if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT * FROM INVENTORY WHERE OWNER=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {	/* prepare SQL statement */
+		return(-1);
+	}
+
+	/* bind parameters */
+	sqlite3_bind_text(SQLStatementHandle,1,username,strlen(username),NULL);
+
+	while(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {
+	
+		if(LoggedInUsers_end->carryobjects == NULL) {
+			LoggedInUsers_end->carryobjects=calloc(1,sizeof(roomobject));		/* allocate objects */
+			if(LoggedInUsers_end->carryobjects == NULL) return(-1);		/* can't allocate */
+
+			LoggedInUsers_end->carryobjects_last=LoggedInUsers_end->carryobjects;
+			LoggedInUsers_end->carryobjects_last->prev=NULL;
+
+		}
+		else
+		{
+			LoggedInUsers_end->carryobjects_last->next=calloc(1,sizeof(roomobject));		/* allocate objects */
+			if(LoggedInUsers_end->carryobjects_last->next == NULL) return(-1);		/* can't allocate */
+
+			LoggedInUsers_end->carryobjects_last->next->prev=LoggedInUsers_end->carryobjects_last;
+
+			LoggedInUsers_end->carryobjects_last=LoggedInUsers_end->carryobjects_last->next;
+		}
+
+		strncpy(LoggedInUsers_end->carryobjects_last->name,sqlite3_column_text(SQLStatementHandle,INVOBJECT_NAME),BUF_SIZE);
+		LoggedInUsers_end->carryobjects_last->attributes=sqlite3_column_int(SQLStatementHandle,INVOBJECT_ATTRIBUTES);
+		strncpy(LoggedInUsers_end->carryobjects_last->description,sqlite3_column_text(SQLStatementHandle,INVOBJECT_DESCRIPTION),BUF_SIZE);
+		strncpy(LoggedInUsers_end->carryobjects_last->owner,sqlite3_column_text(SQLStatementHandle,INVOBJECT_OWNER),BUF_SIZE);
+
+		LoggedInUsers_end->carryobjects_last->next=NULL;
+	}
+
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+
+	if(go(LoggedInUsers_end,LoggedInUsers_end->homeroom) == -1) {
+		return(-1);
+	}
+
+	return(0);
 }
 
 return(-1);
 }
 
-int CreateUser(int socket,char *name,char *pass,int gender,char *description,char *racex,char *classx) {
-user *UserPtr;
-user *userlast;
+int CreateUser(int socket,char *username,char *password,char *description,int userlevel,int gender,int homeroom,int magicpoints,int staminapoints,int experiencepoints,char *racex,char *classx,int flags) {
 struct sockaddr_in clientip;
 socklen_t clientiplen;
 char *ipaddress[BUF_SIZE];
-race *racenext;
-class *classnext;
-race *racelast;
-class *classlast;
+sqlite3_stmt *SQLStatementHandle;
+char *hashedpassword[BUF_SIZE];
 
-if(UserPtr == NULL) {
-	users=calloc(1,sizeof(user));		/* add to end */
-	UserPtr=users;
-	userlast=users;
-}
-else
-{
-	userlast=UserPtr;
-	UserPtr=users;
+if(HashPassword(username,password,hashedpassword) == -1) return(-1);	/* hash password */	
 
-	while(UserPtr != NULL) {
-		userlast=UserPtr;
-		UserPtr=UserPtr->next;
-	}
-
-	userlast->next=calloc(1,sizeof(user));		/* add to end */
-	if(userlast->next == NULL) return(-1);
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"INSERT INTO USERS (username,password,homeroom,userlevel,desc,magicpoints,staminapoints,experiencepoints,gender,race,class,flags) VAlUES (?,?,?,?,?,?,?,?,?,?,?,?);",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	printf("mud: %s\n",sqlite3_errmsg(GetDatabaseHandle()));
+	return(-1);
 }
 
-UserPtr=userlast->next;
+/* bind parameters */
 
-strcpy(UserPtr->name,name);
-strcpy(UserPtr->password,pass);
-strcpy(UserPtr->desc,description);
-UserPtr->status=NOVICE;
-UserPtr->homeroom=1;
-UserPtr->room=1;
-UserPtr->gender=gender;
-UserPtr->magicpoints=DEFAULT_MAGICPOINTS;
-UserPtr->staminapoints=DEFAULT_STAMINAPOINTS;
-UserPtr->experiencepoints=0;
-UserPtr->loggedin=TRUE;
-UserPtr->handle=socket;
-UserPtr->flags=0;
-UserPtr->roomptr=GetRoomPointer(1);
+sqlite3_bind_text(SQLStatementHandle,1,username,strlen(username),NULL);
+sqlite3_bind_text(SQLStatementHandle,2,hashedpassword,strlen(hashedpassword),NULL);
+sqlite3_bind_int(SQLStatementHandle,3,homeroom);
+sqlite3_bind_int(SQLStatementHandle,4,userlevel);
+sqlite3_bind_text(SQLStatementHandle,5,description,strlen(description),NULL);
+sqlite3_bind_int(SQLStatementHandle,6,magicpoints);
+sqlite3_bind_int(SQLStatementHandle,7,staminapoints);
+sqlite3_bind_int(SQLStatementHandle,8,experiencepoints);
+sqlite3_bind_int(SQLStatementHandle,9,gender);
+sqlite3_bind_text(SQLStatementHandle,10,racex,strlen(racex),NULL);
+sqlite3_bind_text(SQLStatementHandle,11,classx,strlen(classx),NULL);
+sqlite3_bind_int(SQLStatementHandle,12,flags);
 
-racenext=races;			/* find race */
-racelast=races;
-
-while(racenext != NULL) {
-	if(strcmp(racenext->name,racex) == 0) {		/* found race */
-		UserPtr->race=racelast->next;
-		break;
-	}
-
-	racenext=racenext->next;
+if(sqlite3_step(SQLStatementHandle) != SQLITE_DONE) {
+	printf("mud: %s\n",sqlite3_errmsg(GetDatabaseHandle()));
+	
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(-1);
 }
 
-classnext=classes;			/* find class */
-classlast=classes;
-
-while(classnext != NULL) {
-	if(strcmp(classnext->name,classx) == 0) break;		/* found race */
-
-	classnext=classnext->next;
-}
-
-UserPtr->userclass=classlast->next;
-UserPtr->carryobjects=NULL;
-UserPtr->last=userlast;
-
-clientiplen=sizeof(struct sockaddr_in);			/* get ip address */
-getpeername(socket,(struct sockaddr*)&clientip,&clientiplen);
-strcpy(UserPtr->ipaddress,inet_ntoa(clientip.sin_addr));
-
-UpdateUsersFile();		/* update users file */
 return(0);
 }
 
 int AddNewRace(user *currentuser,race *newrace) {
-race *raceptr;
-race *racelast;
+sqlite3_stmt *SQLStatementHandle;
 
-if(races == NULL) {
-	races=calloc(1,sizeof(race));
-	if(races == NULL) {
-		SetLastError(currentuser,NO_MEM);
-		return(-1);
-	}
-
-	raceptr=races;
-}
-else
-{
-	/* check if race exists */
-
-	raceptr=races;
-
-	while(raceptr != NULL) {
-		racelast=raceptr;
-
-		if(strcmp(raceptr->name,newrace->name) == 0) {
-			SetLastError(currentuser,RACE_EXISTS);
-			return(-1);
-		}
-
-		raceptr=raceptr->next;
-	}
-
-	racelast->next=calloc(1,sizeof(race));		/*  add new */
-	if(racelast->next == NULL) {
-		SetLastError(currentuser,NO_MEM);
-		return(-1);
-	}
-
-	raceptr=racelast->next;
+if(currentuser->userlevel < WIZARD) {		/* can't do that */
+	SetLastError(currentuser,ACCESS_DENIED);  
+	return(-1);
 }
 
-memcpy(raceptr,newrace,sizeof(race));		/* add new race */
+/* prepare SQL statement */
 
-SetLastError(currentuser,NO_ERROR);
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"INSERT INTO RACES (name,magic,strength,agility,dexterity,luck,wisdom,intelligence,stamina) VAlUES (?,?,?,?,?,?, ?,?,?);",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	SetLastError(currentuser,IO_ERROR);
+	return(-1);
+}
+
+/* bind parameters */
+sqlite3_bind_text(SQLStatementHandle,1,newrace->name,strlen(newrace->name),NULL);
+sqlite3_bind_int(SQLStatementHandle,2,newrace->magic);
+sqlite3_bind_int(SQLStatementHandle,3,newrace->strength);
+sqlite3_bind_int(SQLStatementHandle,4,newrace->agility);
+sqlite3_bind_int(SQLStatementHandle,5,newrace->dexterity);
+sqlite3_bind_int(SQLStatementHandle,6,newrace->luck);
+sqlite3_bind_int(SQLStatementHandle,7,newrace->wisdom);
+sqlite3_bind_int(SQLStatementHandle,8,newrace->intelligence);
+sqlite3_bind_int(SQLStatementHandle,9,newrace->stamina);
+
+if(sqlite3_step(SQLStatementHandle) != SQLITE_DONE) {
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(-1);
+}
+
 return(0);
 }
 
-int AddNewClass(user *currentuser,class *newclass) {
-class *classptr;
-class *classlast;
+int AddNewClass(user *currentuser,userclass *newclass) {
+sqlite3_stmt *SQLStatementHandle;
 
-if(classes == NULL) {
-	classes=calloc(1,sizeof(class));
-	if(classes == NULL) {
-		SetLastError(currentuser,NO_MEM);
-		return(-1);
-	}
-
-	classptr=classes;
-}
-else
-{
-	/* check if class exists */
-
-	classptr=classes;
-
-	while(classptr != NULL) {
-		classlast=classptr;
-
-		if(strcmp(classptr->name,newclass->name) == 0) {
-			SetLastError(currentuser,CLASS_EXISTS);
-			return(-1);
-		}
-
-		classptr=classptr->next;
-	}
-
-	classlast->next=calloc(1,sizeof(class));		/*  add new */
-	if(classlast->next == NULL) {
-		SetLastError(currentuser,NO_MEM);
-		return(-1);
-	}
-
-	classptr=classlast->next;
+if(currentuser->userlevel < WIZARD) {		/* can't do that */
+	SetLastError(currentuser,ACCESS_DENIED);  
+	return(-1);
 }
 
-memcpy(classptr,newclass,sizeof(class));		/* add new class */
+/* prepare SQL statement */
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"INSERT INTO CLASSES (name) VAlUES (?);",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	SetLastError(currentuser,IO_ERROR);
+	return(-1);
+}
+
+/* bind parameters */
+sqlite3_bind_text(SQLStatementHandle,1,newclass->name,strlen(newclass->name),NULL);
+
+if(sqlite3_step(SQLStatementHandle) != SQLITE_DONE) {
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(-1);
+}
 
 SetLastError(currentuser,NO_ERROR);
 return(0);
 }
 
 user *GetUserPointerByName(char *name) {
-user *UserPtr;
+user *userptr;
 
-/* renaming user */
-UserPtr=users;
+userptr=LoggedInUsers;
 
-while(UserPtr != NULL) {
+while(userptr != NULL) {
 
-	if(regexp(UserPtr->name,name) == TRUE) return(UserPtr);		/* found user */
+	if(regexp(userptr->username,name) == TRUE) return(userptr);		/* found user */
 
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 return(NULL);
 }
 
 user *FindFirstUser(void) {
-return(users);
+return(LoggedInUsers);
 }
 
 user *FindNextUser(user *last) {
-return(last->next);
-}
-
-race *FindFirstRace(void) {
-return(races);
-}
-
-race *FindNextRace(race *last) {
 return(last->next);
 }
 
@@ -1774,39 +1318,27 @@ return(MaleUserLevelNames[level]);
 }
 
 char *GetPointerToFemaleTitles(int level) {
-return(MaleUserLevelNames[level]);
+return(FemaleUserLevelNames[level]);
 }
 
 void AttackUser(int RoomNumber,int roommonster) {
-user *UserPtr=users;
+user *userptr=LoggedInUsers;
 int HitPoints;
 char *OutputMessage[BUF_SIZE];
 
-while(UserPtr != NULL) {
-	if(UserPtr->room == RoomNumber) {		/* user is in room */
+while(userptr != NULL) {
+	if(userptr->room == RoomNumber) {		/* user is in room */
 		HitPoints=rand() % (GetRoomMonsterEvil(RoomNumber,roommonster) + 1) - 0;		/* random damage */
 
-		sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",GetRoomMonsterName(RoomNumber,roommonster),UserPtr->name,HitPoints);
+		sprintf(OutputMessage,"%s attacks %s causing %d points of damage\r\n",GetRoomMonsterName(RoomNumber,roommonster),userptr->username,HitPoints);
 		SendMessageToAllInRoom(RoomNumber,OutputMessage);
 
-		UserPtr->staminapoints -= HitPoints;
+		userptr->staminapoints -= HitPoints;
 
-		UpdateUser(UserPtr,UserPtr->name,"",0,0,"",0,UserPtr->staminapoints,0,0,"","",0);
-
+		UpdateUser(userptr,userptr->username,userptr->username,userptr->password,userptr->homeroom,userptr->userlevel,userptr->description,userptr->magicpoints,userptr->staminapoints,userptr->experiencepoints,userptr->gender,userptr->race.name,userptr->userclass.name,userptr->flags);
 	}
 
-	UserPtr=UserPtr->next;
-}
-
-return;
-}
-
-void DisconnectAllUsers(void) {
-user *UserPtr=users;
-
-while(UserPtr != NULL) {
-	close(UserPtr->handle);		/* close tcp connections */
-	UserPtr=UserPtr->next;
+	userptr=userptr->next;
 }
 
 return;
@@ -1816,14 +1348,16 @@ return;
 int PickUpObject(user *currentuser,char *ObjectName) {
 roomobject *UserCarryObjectsPtr;
 char *ErrorMessage[BUF_SIZE];
+sqlite3_stmt *SQLStatementHandle;
+roomobject *roomobjectptr=currentuser->roomptr->roomobjects;
+roomobject *SaveObject;
 
 /* check if user is already carrying this object */
-
 UserCarryObjectsPtr=currentuser->carryobjects;
 
 while(UserCarryObjectsPtr != NULL) {
+	if(strncmp(UserCarryObjectsPtr->name,ObjectName,BUF_SIZE) == 0) {	/* already picked up object */
 
-	if(regexp(UserCarryObjectsPtr->name,ObjectName) == TRUE) {	/* already picked up object */
 		SetLastError(currentuser,ALREADY_HAVE_OBJECT);
 		return(-1);
 	}
@@ -1851,48 +1385,100 @@ else
 	}
 
 	currentuser->carryobjects_last=currentuser->carryobjects_last->next;
+}
 
-	strcpy(currentuser->carryobjects_last->name,ObjectName);		/* add item */
+strncpy(currentuser->carryobjects_last->name,ObjectName,BUF_SIZE);		/* add item */
 
-	if(UserCarryObjectsPtr->magicpoints > 0) {
-		sprintf(ErrorMessage,"You have gained %d magic points!\r\n",UserCarryObjectsPtr->magicpoints);
-		send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
+if(currentuser->carryobjects_last->magicpoints > 0) {
+	sprintf(ErrorMessage,"You have gained %d magic points!\r\n",currentuser->carryobjects_last->magicpoints);
+	send(currentuser->socket,ErrorMessage,strlen(ErrorMessage),0);
+}
+
+if(currentuser->carryobjects_last->staminapoints > 0) {
+	sprintf(ErrorMessage,"You have gained %d stamina points!\r\n",currentuser->carryobjects_last->staminapoints);
+	send(currentuser->socket,ErrorMessage,strlen(ErrorMessage),0);
+}  
+
+currentuser->carryobjects_last->magicpoints=0;
+currentuser->carryobjects_last->staminapoints=0;
+currentuser->carryobjects_last->next=NULL;
+
+/* delete from room */
+while(roomobjectptr != NULL) {
+	if(roomobjectptr->id == currentuser->carryobjects_last->id) {		/* found object */
+		if(roomobjectptr == currentuser->roomptr->roomobjects) {	/* first */
+			SaveObject=roomobjectptr;
+
+			roomobjectptr=roomobjectptr->next;
+
+			if(roomobjectptr != NULL) roomobjectptr->prev=NULL;
+
+			free(SaveObject);
+		}
+		else if(roomobjectptr->next == NULL) {				/* last */
+			SaveObject=roomobjectptr;
+
+			roomobjectptr->prev->next=NULL;
+
+			free(SaveObject);
+		}																																																																											
+		else
+		{
+			roomobjectptr->prev->next=roomobjectptr->next;
+			currentuser->roomptr->roomobjects_last->prev->next=NULL;
+
+			free(roomobjectptr);
+		}
+
+		break;
 	}
 
-	if(UserCarryObjectsPtr->staminapoints > 0) {
-		sprintf(ErrorMessage,"You have gained %d stamina points!\r\n",UserCarryObjectsPtr->staminapoints);
-		send(currentuser->handle,ErrorMessage,strlen(ErrorMessage),0);
-	}  
+	roomobjectptr=roomobjectptr->next;
+}
+	
+/* update database */
 
-	UserCarryObjectsPtr->magicpoints=0;
-	UserCarryObjectsPtr->staminapoints=0;
-	UserCarryObjectsPtr->next=NULL;
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"INSERT INTO INVENTORY VALUES (?,?,?,?);",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	printf("mud: %s\n",sqlite3_errmsg(GetDatabaseHandle()));
+
+	SetLastError(currentuser,IO_ERROR);
+	return(-1);
+}
+
+sqlite3_bind_int(SQLStatementHandle,1,currentuser->carryobjects_last->id);
+sqlite3_bind_text(SQLStatementHandle,2,currentuser->carryobjects_last->name,strlen(currentuser->carryobjects_last->name),NULL);
+sqlite3_bind_int(SQLStatementHandle,3,currentuser->carryobjects_last->attributes);
+sqlite3_bind_text(SQLStatementHandle,4,currentuser->carryobjects_last->description,strlen(currentuser->carryobjects_last->description),NULL);
+sqlite3_bind_text(SQLStatementHandle,5,currentuser->carryobjects_last->owner,strlen(currentuser->carryobjects_last->owner),NULL);
+
+if(sqlite3_step(SQLStatementHandle) != SQLITE_DONE) {
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(-1);
 }
 
 SetLastError(currentuser,NO_ERROR);
 return(0);
 }
 
-
 int DropObject(user *currentuser,char *ObjectName) {
 roomobject *UserCarryObjectsPtr;
-roomobject *UserCarryObjectsLast;
 room *CurrentRoom;
 char *ObjectsList[BUF_SIZE];
 int found=FALSE;
+roomobject *SaveObjectPtr;
 
 /* check permissions */
 
 CurrentRoom=currentuser->roomptr;
 
-if(currentuser->status < ARCHWIZARD) {
-	if((CurrentRoom->attr & ROOM_CREATE_OWNER) == 0) {
+if(currentuser->userlevel < ARCHWIZARD) {
+	if((CurrentRoom->attributes & ROOM_CREATE_OWNER) == 0) {
 		SetLastError(currentuser,CANT_CREATE_OBJECTS_HERE);  
 		return(-1);
 	}
 	else
 	{
-		if((CurrentRoom->attr & ROOM_CREATE_PUBLIC) == 0) {
+		if((CurrentRoom->attributes & ROOM_CREATE_PUBLIC) == 0) {
 			SetLastError(currentuser,CANT_CREATE_OBJECTS_HERE);  
 			return(-1);
 		}
@@ -1900,11 +1486,13 @@ if(currentuser->status < ARCHWIZARD) {
 }
 
 UserCarryObjectsPtr=currentuser->carryobjects;		/* point to carried objects */
-UserCarryObjectsLast=UserCarryObjectsPtr;
 
 while(UserCarryObjectsPtr != NULL) {
-	
+	if(UserCarryObjectsPtr == NULL) break;
+
 	if(regexp(UserCarryObjectsPtr->name,ObjectName) == TRUE) {	/* found object */
+		found=TRUE;
+
 		/* add to list of objects in room */
 
 		if(CurrentRoom->roomobjects == NULL) {					       
@@ -1918,42 +1506,46 @@ while(UserCarryObjectsPtr != NULL) {
 		}
 		else
 		{
-			CurrentRoom->roomobjects_last=calloc(1,sizeof(roomobject));	/* allocate objects */
-			if(CurrentRoom->roomobjects_last == NULL) {		/* can't allocate */
+			CurrentRoom->roomobjects_last->next=calloc(1,sizeof(roomobject));	/* allocate objects */
+			if(CurrentRoom->roomobjects_last->next == NULL) {		/* can't allocate */
 				SetLastError(currentuser,NO_MEM);  
 				return(-1);
 			}
+
+			CurrentRoom->roomobjects_last=CurrentRoom->roomobjects_last->next;
 		}
 
-		CurrentRoom->roomobjects_last->next=CurrentRoom->roomobjects_last;
+		memcpy(CurrentRoom->roomobjects_last,UserCarryObjectsPtr,sizeof(roomobject));	/* copy object */
+		CurrentRoom->roomobjects_last->id=GetNextObjectNumber();	/* generate new ID number for dropped object */
+		
+		/* remove object from inventory */
+
+		if(UserCarryObjectsPtr == currentuser->carryobjects) {		/* first object */
+			SaveObjectPtr=UserCarryObjectsPtr;
+
+			UserCarryObjectsPtr=UserCarryObjectsPtr->next;
+			if(UserCarryObjectsPtr != NULL) UserCarryObjectsPtr->prev=NULL;
+	
+			free(SaveObjectPtr);
+			
+		}
+		else if(UserCarryObjectsPtr->next == NULL) {		/* last object */
+			SaveObjectPtr=UserCarryObjectsPtr;
+
+			UserCarryObjectsPtr->prev->next=NULL;
+			free(SaveObjectPtr);
+
+			currentuser->carryobjects_last->prev->next=NULL;				
+			UserCarryObjectsPtr=UserCarryObjectsPtr->prev;
+		}
+		else {
+			UserCarryObjectsPtr->prev->next=UserCarryObjectsPtr->next;	/* skip over over object */
+			free(UserCarryObjectsPtr);
+
+			UserCarryObjectsPtr=UserCarryObjectsPtr->prev;
+		}
 	}
 
-	CurrentRoom->roomobjects_last=CurrentRoom->roomobjects_last->next;
-
-	memcpy(CurrentRoom->roomobjects_last,UserCarryObjectsPtr,sizeof(roomobject));	/* copy object */
-	CurrentRoom->roomobjects_last->id=GetNextObjectNumber();	/* generate new ID number for dropped object */
-				
-	if(UserCarryObjectsPtr == currentuser->carryobjects) {		/* first object */
-		UserCarryObjectsPtr=UserCarryObjectsPtr->next;
-
-		free(currentuser->carryobjects);   
-		currentuser->carryobjects=UserCarryObjectsPtr;
-		found=TRUE;
-	}
-
-	if(UserCarryObjectsPtr->next == NULL) {		/* last object */
-		found=TRUE;
-	      	free(UserCarryObjectsPtr);	
-	}
-
-	if(UserCarryObjectsPtr != currentuser->carryobjects && UserCarryObjectsPtr->next != NULL) {      
-		UserCarryObjectsLast->next=UserCarryObjectsPtr->next;	/* skip over over object */
-		free(UserCarryObjectsPtr);
-	}
-
-	found=TRUE;
-
-	UserCarryObjectsLast=UserCarryObjectsPtr;
 	UserCarryObjectsPtr=UserCarryObjectsPtr->next;
 }
 
@@ -1962,15 +1554,196 @@ if(found == FALSE) {
 	return(-1);
 }
 
+
 SetLastError(currentuser,NO_ERROR);
 return(0);
 }
 
-class *FindFirstClass(void) {
-return(classes);
+int GetRace(char *name,race *out) {
+sqlite3_stmt *SQLStatementHandle;
+char *nameout[BUF_SIZE];
+
+ToUppercase(name,nameout);
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT * FROM RACES WHERE UPPER(NAME)=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {	/* prepare SQL statement */
+	return(-1);
 }
 
-class *FindNextClass(class *previous) {
-return(previous->next);
+/* bind parameters */
+sqlite3_bind_text(SQLStatementHandle,1,nameout,strlen(nameout),NULL);
+
+if(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {
+	strncpy(out->name,sqlite3_column_text(SQLStatementHandle,RACE_NAME_COLUMN),BUF_SIZE);
+	out->magic=sqlite3_column_int(SQLStatementHandle,RACE_MAGIC_COLUMN);
+	out->strength=sqlite3_column_int(SQLStatementHandle,RACE_STRENGTH_COLUMN);
+	out->agility=sqlite3_column_int(SQLStatementHandle,RACE_AGILITY_COLUMN);
+	out->dexterity=sqlite3_column_int(SQLStatementHandle,RACE_DEXTERITY_COLUMN);
+	out->luck=sqlite3_column_int(SQLStatementHandle,RACE_LUCK_COLUMN);
+	out->wisdom=sqlite3_column_int(SQLStatementHandle,RACE_WISDOM_COLUMN);
+	out->intelligence=sqlite3_column_int(SQLStatementHandle,RACE_INTELLIGENCE_COLUMN);
+	out->stamina=sqlite3_column_int(SQLStatementHandle,RACE_STAMINA_COLUMN);
+
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(0);
+}
+
+return(-1);
+}
+
+int GetClass(char *name,userclass *out) {
+sqlite3_stmt *SQLStatementHandle;
+char *nameout[BUF_SIZE];
+
+ToUppercase(name,nameout);
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT * FROM CLASSES WHERE UPPER(NAME)=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {	/* prepare SQL statement */
+	return(-1);
+}
+
+sqlite3_bind_text(SQLStatementHandle,1,nameout,strlen(nameout),NULL);
+
+if(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {
+	strncpy(out->name,sqlite3_column_text(SQLStatementHandle,CLASS_NAME_COLUMN),BUF_SIZE);
+
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(0);
+}
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(-1);
+}
+
+int SetInventoryObjectOwnerInDatabase(char *owner,char *name) {
+sqlite3_stmt *SQLStatementHandle;
+
+/* prepare statement SQL */
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"UPDATE INVENTORY SET owner=? WHERE name=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) return(-1);
+
+/* bind parameters */
+sqlite3_bind_text(SQLStatementHandle,1,owner,strlen(owner),NULL);
+sqlite3_bind_text(SQLStatementHandle,2,name,strlen(name),NULL);
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(0);
+}
+
+int CheckIfBanned(char *ipaddress) {
+sqlite3_stmt *SQLStatementHandle;
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT IPADDRESS FROM BANS WHERE EXISTS IPAddress=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {	/* prepare SQL statement */
+	return(-1);
+}
+
+sqlite3_bind_text(SQLStatementHandle,1,ipaddress,strlen(ipaddress),NULL);		/* bind IP address to first parameter */
+
+if(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {		/* is banned */
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(TRUE);
+}
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(FALSE);
+}
+
+int RemoveFromInventoryInDatabase(user *currentuser,char *ObjectName,char *owner) {
+sqlite3_stmt *SQLStatementHandle;
+
+/* remove from database */
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"DELETE FROM INVENTORY WHERE NAME=? AND OWNER=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	SetLastError(currentuser,IO_ERROR);
+	return(-1);
+}
+
+sqlite3_bind_text(SQLStatementHandle,1,ObjectName,strlen(ObjectName),NULL);
+sqlite3_bind_text(SQLStatementHandle,2,currentuser->username,strlen(currentuser->username),NULL);
+
+if(sqlite3_step(SQLStatementHandle) == SQLITE_DONE) {		/* deleted OK */
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(0);
+}
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+
+SetLastError(currentuser,OBJECT_NOT_FOUND);
+return(-1);
+}
+
+int CheckIfUserExists(char *username) {
+sqlite3_stmt *SQLStatementHandle;
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT USERNAME FROM USERS WHERE USERNAME=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	return(-1);
+}
+
+sqlite3_bind_text(SQLStatementHandle,1,username,strlen(username),NULL);
+
+if(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {		/* username exists */
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(TRUE);
+}
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(FALSE);
+}
+
+int CheckIfRaceExists(char *name) {
+sqlite3_stmt *SQLStatementHandle;
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT NAME FROM RACES WHERE NAME=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	return(-1);
+}
+
+sqlite3_bind_text(SQLStatementHandle,1,name,strlen(name),NULL);
+
+if(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {		/* username exists */
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(TRUE);
+}
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(FALSE);
+}
+
+int CheckIfClassExists(char *name) {
+sqlite3_stmt *SQLStatementHandle;
+
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT NAME FROM CLASSES WHERE NAME=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {
+	return(-1);
+}
+
+sqlite3_bind_text(SQLStatementHandle,1,name,strlen(name),NULL);
+
+if(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {		/* username exists */
+	if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+	return(TRUE);
+}
+
+if(SQLStatementHandle != NULL) sqlite3_finalize(SQLStatementHandle);
+return(FALSE);
+}
+
+int DisconnectUser(user *currentuser,char *username) {
+user *userptr;
+bool UserFound=FALSE;
+
+userptr=LoggedInUsers;
+
+while(userptr != NULL) {
+	if(regexp(userptr->username,username) == TRUE) {
+		shutdown(userptr->socket,SHUT_RDWR);		/* shutdown socket */
+
+		UserFound=TRUE;
+	}
+		
+	userptr=userptr->next;
+}
+
+if(UserFound == FALSE) {		/* no user found */
+	SetLastError(currentuser,UNKNOWN_USER);
+	return(-1);
+}
+
+return(0);
 }
 

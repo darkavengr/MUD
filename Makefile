@@ -1,25 +1,27 @@
 CC = gcc
-OBJFILES=attack.o command.o  database.o error.o getconfig.o help.o lookup.o monster.o mud.o password.o shutdown.o spell.o string.o  user.o
+OBJFILES=user.o attack.o command.o world.o error.o getconfig.o help.o lookup.o monster.o mud.o password.o shutdown.o spell.o string.o
 OUTFILE=mud
+
 GENOUTFILE=genpass
+GENOBJFILES= hashpassword.o genpass.o
 
 ifeq ($(OS),Windows_NT)
 	FLAGS = -llibcrypt
 	OUTFILE += ".exe"
 	GENOUTFILE += ".exe"
 else
-	FLAGS= -lcrypt
+	FLAGS= -lcrypt -lsqlite3
 endif
 
 all: mud genpass
 
-mud: $(OBJFILES)
-	$(CC) -w $(OBJFILES) -o $(OUTFILE) $(FLAGS)
+mud: $(OBJFILES) hashpassword.o
+	$(CC) -w $(OBJFILES)  hashpassword.o -o $(OUTFILE) $(FLAGS)
 
-genpass:
-	$(CC) -w -Iheaders genpass.c -o $(GENOUTFILE) $(FLAGS)
+genpass: $(GENOBJFILES)
+	$(CC) -w genpass.o hashpassword.o -o $(GENOUTFILE) $(FLAGS)
 
-$(OBJFILES): %.o: %.c
+$(OBJFILES) $(GENOBJFILES): %.o: %.c
 	$(CC) -c -w -Iheaders $< -o $@
 
 clean:

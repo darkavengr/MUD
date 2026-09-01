@@ -1,4 +1,5 @@
 int ChangePassword(user *currentuser,char *username,char *password);
 int CheckPasswordStrength(char *password);
-void getpassword(int msgsocket,char *buf);
+
+#define MINIMUM_PASSWORD_LENGTH	10
 

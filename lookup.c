@@ -46,7 +46,7 @@ he=gethostbyname(address);				/* get ip address */
 if(he == NULL) return(-1);
 
 addr_list=(struct in_addr **) he->h_addr_list;
-strcpy(buf,inet_ntoa(*addr_list[0]));
+strncpy(buf,inet_ntoa(*addr_list[0]),BUF_SIZE);
 return(0);
 }
 

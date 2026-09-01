@@ -19,25 +19,28 @@
 #include "winsock.h"
 #endif
 
+#include <crypt.h>
+
 #include "bool.h"
 #include "errors.h"
 #include "user.h"
+#include "password.h"
 
 int ChangePassword(user *currentuser,char *username,char *password) {
 char *EncryptedPassword[BUF_SIZE];
 char *CurrentUserName[BUF_SIZE];
 
 if(!*username) {
-	strcpy(CurrentUserName,currentuser->name);		/* use default user and password */
+	strncpy(CurrentUserName,currentuser->username,BUF_SIZE);		/* use default user and password */
 }
 else
 {
-	if(currentuser->status < WIZARD) {		/* can't set other password unless a wizard */
-		SetLastError(currentuser,NOT_YET);
+	if(currentuser->userlevel < WIZARD) {		/* can't set other password unless a wizard */
+		SetLastError(currentuser,ACCESS_DENIED);
 		return(-1);
 	}
 
-	strcpy(CurrentUserName,username);		/* use default user and password */
+	strncpy(CurrentUserName,username,BUF_SIZE);		/* use default user and password */
 }
 
 if(CheckPasswordStrength(password) == FALSE) {	/* weak password */
@@ -45,13 +48,25 @@ if(CheckPasswordStrength(password) == FALSE) {	/* weak password */
 	return(-1);
 }
 
-strcpy(EncryptedPassword,crypt(password,CurrentUserName));
+strncpy(EncryptedPassword,crypt(password,CurrentUserName),BUF_SIZE);
 
-return(UpdateUser(currentuser,currentuser->name,EncryptedPassword,currentuser->homeroom,currentuser->status,currentuser->desc,currentuser->magicpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags));
+return(UpdateUser(currentuser,username,
+		  username,
+		  EncryptedPassword,
+		  currentuser->homeroom,
+		  currentuser->userlevel,
+		  currentuser->description,
+		  currentuser->magicpoints,
+		  currentuser->staminapoints,
+		  currentuser->experiencepoints,
+		  currentuser->gender,
+		  &currentuser->race,
+		  &currentuser->userclass,
+		  currentuser->flags));
 }
 
 int CheckPasswordStrength(char *password) {
-if(strlen(password)  < 10) return(FALSE);
+if(strlen(password)  < MINIMUM_PASSWORD_LENGTH) return(FALSE);
 
 if(strpbrk(password,"abcdefghijklmnopqrstuvwxyz") == NULL) return(FALSE);
 if(strpbrk(password,"ABCDEFGHIJKLMNOPQRSTUVWXYZ") == NULL) return(FALSE);
@@ -59,27 +74,5 @@ if(strpbrk(password,"0123456789") == NULL) return(FALSE);
 if(strpbrk(password,"!\"£$%^&*()_-+={}[]:;@'~#<>,.?/|\¬`") == NULL) return(FALSE);
 
 return(TRUE);
-}
-
-
-
-void getpassword(int msgsocket,char *buf) {
-char passchar;
-char *bufptr=buf;
-
-while(1) {
-	if(recv(msgsocket,*&passchar,1,0) == -1) return(-1);	/* read data */
-
-	send(msgsocket,"\b \b",3,0);
-
-	 if(passchar == '\n') {
-	 	*bufptr=0;
-	 	return;
-	 }
-	
-	 *bufptr++=passchar;
-	}
-
-return(0);
 }
 

@@ -1,0 +1,6 @@
+KICK [user] {message}
+
+Kicks a user off the MUD server.
+
+Wizards+ only.
+

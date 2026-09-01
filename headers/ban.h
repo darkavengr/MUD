@@ -8,3 +8,7 @@ typedef struct {
 } ban;
 #endif
 
+#define BAN_IPADDRESS_COLUMN	0
+#define BAN_REASON_COLUMN	1
+
+

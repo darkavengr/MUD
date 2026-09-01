@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <sqlite3.h>
 
 #ifdef __linux__
 #include <netdb.h>
@@ -25,9 +26,7 @@
 #include "errors.h"
 #include "user.h"
 #include "config.h"
-		
-spell *spells=NULL;
-char *SpellsConfigurationFile="config/spells.mud";
+
 char *SpellHasKilled="and have killed it";
 
 int CastSpell(user *currentuser,char *spellname,char *target) {
@@ -35,11 +34,12 @@ room *currentroom;
 user *UserPtr;
 monster *monsternext;
 char *SpellMessage[BUF_SIZE];
-int SpellFound;
 int HitPoints;
 int MonsterCount;
 CONFIG config;
-spell *spellnext;
+sqlite3_stmt *SQLStatementHandle;
+spell foundspell;
+int returncode;
 
 GetConfigurationInformation(&config);
 
@@ -54,44 +54,46 @@ currentroom=currentuser->roomptr;
 * find spell
 */
 
-spellnext=spells;
-while(spellnext != NULL) {
+if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT * FROM SPELLS WHERE NAME=?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {	/* prepare SQL statement */
+	SetLastError(currentuser,IO_ERROR);
+	return(-1);
+}
 
-	if(strcmp(spellnext->name,spellname) == 0) {			/* found spell */
-		if((currentuser->status < spellnext->level) && currentuser->status < WIZARD) {		/* spell required a higher level user */
-			SetLastError(currentuser,SPELL_LEVEL_USER);
-			return(-1);
-		}
+sqlite3_bind_text(SQLStatementHandle,1,spellname,strlen(spellname),NULL);		/* bind spell name to first parameter */
+
+while(sqlite3_step(SQLStatementHandle) == SQLITE_ROW) {
+	strncpy(foundspell.name,sqlite3_column_text(SQLStatementHandle,SPELL_NAME_COLUMN),BUF_SIZE);
+	foundspell.spellpoints=sqlite3_column_int(SQLStatementHandle,SPELL_POINTS_COLUMN);
+	foundspell.damage=sqlite3_column_int(SQLStatementHandle,SPELL_DAMAGE_COLUMN);
+	strncpy(foundspell.message,sqlite3_column_text(SQLStatementHandle,SPELL_MESSAGE_COLUMN),BUF_SIZE);
+	foundspell.level=sqlite3_column_int(SQLStatementHandle,SPELL_LEVEL_COLUMN);
+	strncpy(foundspell.class,sqlite3_column_text(SQLStatementHandle,SPELL_CLASS_COLUMN),BUF_SIZE);
+} 
+
+
+if(returncode != SQLITE_DONE) {		/* spell not found */
+	SetLastError(currentuser,SPELL_NOT_FOUND);
+	return(-1);
+}
+
+sqlite3_finalize(SQLStatementHandle);
 
 /*
 * work out how many spell points are needed and display error message if not enough
 */
 
-		if(currentuser->magicpoints-spellnext->spellpoints <= 0) {
-
-			if(currentuser->status < WIZARD) {
-				SetLastError(currentuser,INSUFFICIENT_MAGIC_POINTS);
-				return(-1);
-			}
-		}
-	
-		SpellFound=TRUE;			/* found spell */
-		break;
+if(currentuser->magicpoints - foundspell.spellpoints <= 0) {
+	if(currentuser->userlevel < WIZARD) {
+		SetLastError(currentuser,INSUFFICIENT_MAGIC_POINTS);
+		return(-1);
 	}
-
-	spellnext=spellnext->next;
 }
-
-if(SpellFound == FALSE) {	/* no spell */
-	SetLastError(currentuser,SPELL_NOT_FOUND);
-	return(-1);
-}
-
+	
 /*
 * casting spell on user
 */
 
-if((currentroom->attr & ROOM_HAVEN) == TRUE && currentuser->status < WIZARD) {		/* can't put spells on users in haven rooms */
+if(((currentroom->attributes & ROOM_HAVEN) == TRUE) && (currentuser->userlevel < WIZARD)) {		/* can't put spells on users in haven rooms */
 	SetLastError(currentuser,SPELL_HAVEN);
 	return(-1);
 }
@@ -99,38 +101,39 @@ if((currentroom->attr & ROOM_HAVEN) == TRUE && currentuser->status < WIZARD) {		
 UserPtr=FindFirstUser();		/* find first user */
 
 while(UserPtr != NULL) {
-	if((regexp(UserPtr->name,target) == TRUE) && (UserPtr->loggedin == TRUE) && (UserPtr->room == currentuser->room)) {
-		if(config.allowplayerkilling == FALSE) {		/* can't kill player */
+	if((regexp(UserPtr->username,target) == TRUE) && (UserPtr->room == currentuser->room)) {
+		if(config.AllowPlayerKilling == FALSE) {		/* can't kill player */
 			SetLastError(currentuser,SPELL_HAVEN);
+			return(-1);
 		}
 
-		if(UserPtr->status > WIZARD) {		/* if not user, cast spell */
+		if(UserPtr->userlevel > WIZARD) {		/* if not user, cast spell */
 			if(UserPtr->gender == MALE) {
-				sprintf(SpellMessage,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->name,GetPointerToMaleTitles(currentuser->status));
-				send(currentuser->handle,SpellMessage,strlen(SpellMessage),0);
+				sprintf(SpellMessage,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->username,GetPointerToMaleTitles(currentuser->userlevel));
+				send(currentuser->socket,SpellMessage,strlen(SpellMessage),0);
 				return(0);
 			} 
 			else
 			{
-				sprintf(SpellMessage,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->name,GetPointerToFemaleTitles(currentuser->status));
-				send(currentuser->handle,SpellMessage,strlen(SpellMessage),0);
+				sprintf(SpellMessage,"%s casts a spell on %s the %s but it just bounces off with no effect\r\n",currentuser->username,GetPointerToFemaleTitles(currentuser->userlevel));
+				send(currentuser->socket,SpellMessage,strlen(SpellMessage),0);
 				return(0);
 			}
 
 		}
 
-		HitPoints=UserPtr->staminapoints-spellnext->damage;	/* deduct stamina points from user */
+		HitPoints=UserPtr->staminapoints-foundspell.damage;	/* deduct stamina points from user */
 
 		/* update user stamina points */ 
 		
-		UpdateUser(UserPtr,UserPtr->name,UserPtr->password,UserPtr->homeroom,UserPtr->status,UserPtr->desc,UserPtr->magicpoints,UserPtr->staminapoints - HitPoints,UserPtr->experiencepoints,UserPtr->gender,UserPtr->race,UserPtr->userclass,UserPtr->flags);
+		UpdateUser(UserPtr,UserPtr->username,UserPtr->username,UserPtr->password,UserPtr->homeroom,UserPtr->userlevel,UserPtr->description,UserPtr->magicpoints,UserPtr->staminapoints - HitPoints,UserPtr->experiencepoints,UserPtr->gender,&UserPtr->race,&UserPtr->userclass,UserPtr->flags);
 
 		/* update own spell points */
 
-		UpdateUser(currentuser,currentuser->name,currentuser->password,currentuser->homeroom,currentuser->status,currentuser->desc,currentuser->magicpoints-spellnext->spellpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,currentuser->race,currentuser->userclass,currentuser->flags);
+		UpdateUser(currentuser,currentuser->username,currentuser->username,currentuser->password,currentuser->homeroom,currentuser->userlevel,currentuser->description,currentuser->magicpoints-foundspell.spellpoints,currentuser->staminapoints,currentuser->experiencepoints,currentuser->gender,&currentuser->race,&currentuser->userclass,currentuser->flags);
 
-		sprintf(SpellMessage,"%s casts a %s on %s causing %d points of damage\r\n",currentuser->name,spellnext->message,UserPtr->name,spellnext->damage);
-		send(currentuser->handle,SpellMessage,strlen(SpellMessage),0);
+		sprintf(SpellMessage,"%s casts a %s on %s causing %d points of damage\r\n",currentuser->username,foundspell.message,UserPtr->username,foundspell.damage);
+		send(currentuser->socket,SpellMessage,strlen(SpellMessage),0);
 
 	}
 
@@ -147,19 +150,19 @@ for(MonsterCount=0;MonsterCount < currentroom->monstercount;MonsterCount++) {
 
 	 /* calculate hit points */
 	
-		HitPoints=spellnext->spellpoints / (currentuser->status/2) + currentuser->race->strength+currentuser->race->luck;
+		HitPoints=foundspell.spellpoints / (currentuser->userlevel/2) + currentuser->race.strength+currentuser->race.luck;
 		monsternext->stamina -= HitPoints;		/* deduct stamina points */
 
-		sprintf(SpellMessage,"%s casts a %s on the %s and causes %d points of damage ",currentuser->name,spellnext->name,monsternext->name,HitPoints);
+		sprintf(SpellMessage,"%s casts a %s on the %s and causes %d points of damage ",currentuser->username,foundspell.name,monsternext->name,HitPoints);
 
-		send(currentuser->handle,SpellMessage,strlen(SpellMessage),0);
+		send(currentuser->socket,SpellMessage,strlen(SpellMessage),0);
 
 		if(monsternext->stamina <= 0) {		/* monster has been killed */
-			send(currentuser->handle,SpellHasKilled,strlen(SpellHasKilled),0);
+			send(currentuser->socket,SpellHasKilled,strlen(SpellHasKilled),0);
 		}
 		else
 		{
-			send(currentuser->handle,"\r\n",2,0);
+			send(currentuser->socket,"\r\n",2,0);
 		}
 
 		monsternext->last=monsternext->next;		/* remove monster */
@@ -169,101 +172,5 @@ for(MonsterCount=0;MonsterCount < currentroom->monstercount;MonsterCount++) {
 }
 
 return(0);
-}
-
-int LoadSpells(void) {
-spell *spellnext;
-FILE *handle;
-int LineCount;
-char *ConfigurationTokens[BUF_SIZE][BUF_SIZE];
-char *LineBuffer[BUF_SIZE];
-int ErrorCount=0;
-char *CurrentDirectory[BUF_SIZE];
-
-spellnext=spells;
-LineCount=0;
-
-handle=fopen(SpellsConfigurationFile,"rb");
-if(handle == NULL) {																						/* couldn't open file */
-	printf("\nmud: Can't open configuration file %s\n",SpellsConfigurationFile);
-	return(-1);
-}
-
-while(!feof(handle)) {
-	fgets(LineBuffer,BUF_SIZE,handle);		/* get and parse line */
-
-	if((char) *LineBuffer == '#')  continue;		/* skip comments */
-	if((char) *LineBuffer == '\n')  continue;		/* skip newline */
-
-	RemoveNewLine(LineBuffer);		/* remove newline character */
-
-	LineCount++;
-
-	if(strlen(LineBuffer) < 2) continue;		/* skip blank line */
-
-	TokenizeLine(LineBuffer,ConfigurationTokens,":\n");				/* tokenize line */
-
-	if(strcmp(ConfigurationTokens[0],"begin_spell") == 0) {	/* end */
-
-		if(spells == NULL) {			/* first room */
-			spells=calloc(1,sizeof(spell));
-			if(spells == NULL) {
-				perror("\nmud:");
-				exit(NOMEM);
-			}
-
-			spellnext=spells;
-		}
-		else
-		{
-			spellnext->next=calloc(1,sizeof(spell));
-			spellnext=spellnext->next;
-
-			if(spellnext == NULL) {
-				perror("\nmud:");
-				exit(NOMEM);
-			}
-		}
-
-
-		strcpy(spellnext->name,ConfigurationTokens[1]);
-		continue;			
-	}
-
-	if(strcmp(ConfigurationTokens[0],"spellpointsused") == 0) {	/* spell points used */
-		spellnext->spellpoints=atoi(ConfigurationTokens[1]);
-		continue;			
-	}
-
-	if(strcmp(ConfigurationTokens[0],"spelldamage") == 0) {	/* spell damage */
-		spellnext->damage=atoi(ConfigurationTokens[1]);
-		continue;			
-	}
-
-	if(strcmp(ConfigurationTokens[0],"spellmessage") == 0) {	/* spell message */
-		strcpy(spellnext->message,ConfigurationTokens[1]);
-		continue;			
-	}
-
-	if(strcmp(ConfigurationTokens[0],"spelllevel") == 0) {		/* level	*/
-		spellnext->level=atoi(ConfigurationTokens[1]);
-		continue;			
-	}
-
-	if(strcmp(ConfigurationTokens[0],"spellclass") == 0) {		/* class */
-		strcpy(spellnext->class,ConfigurationTokens[1]);
-		continue;			
-	}
-
-	if(strcmp(ConfigurationTokens[0],"end") == 0) continue;
-
-	if(strcmp(ConfigurationTokens[0],"#") == 0) continue;			
-
-	printf("\nmud: %d: unknown configuration option %s in %s\n",LineCount,ConfigurationTokens[0],SpellsConfigurationFile);		/* unknown configuration option */
-	ErrorCount++;
-}
-
-fclose(handle);
-return(ErrorCount);
 }
 

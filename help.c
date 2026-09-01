@@ -47,11 +47,11 @@ FILE *handle;
 char *HelpFile[BUF_SIZE];
 
 if(!*HelpTopic) {		                      /* get help file */
-	strcpy(HelpFile,"help/help.txt");
+	strncpy(HelpFile,"help/help.txt",BUF_SIZE);
 }
 else
 {
-	sprintf(HelpFile,"help/%s.txt",HelpTopic);
+	snprintf(HelpFile,BUF_SIZE,"help/%s.txt",HelpTopic);
 }
 
 handle=fopen(HelpFile,"rb");
@@ -63,7 +63,7 @@ if(!handle) {                 /* can't open file */
 do {
 	fgets(ReadBuffer,BUF_SIZE,handle);
 
-	send(currentuser->handle,ReadBuffer,strlen(ReadBuffer),0);
+	send(currentuser->socket,ReadBuffer,strlen(ReadBuffer),0);
 } while(!feof(handle));
 
 fclose(handle);
