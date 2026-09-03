@@ -625,7 +625,7 @@ GetConfigurationInformation(&config);
 for(RoomCount=1;RoomCount < GetNumberOfRooms(); RoomCount++) {
 //	if((rooms[RoomCount].attributes & ROOM_HAVEN) == 0) {          /* not haven */
 
-		NumberOfObjectsToGenerate=rand() % (config.roomobjectnumber + 1);
+		NumberOfObjectsToGenerate=rand() % (config.MaximumNumberOfObjectsPerRoom + 1);
 
 		if(sqlite3_prepare_v2(GetDatabaseHandle(),"SELECT NAME,DESCRIPTION,ATTACKPOINTS,GENERATEPROB,STAMINAPOINTS,MAGICPOINTS,ATTRIBUTES,VERB,VERBMESSAGE FROM GENERATABLEOBJECTS ORDER BY RANDOM() LIMIT ?;",-1,&SQLStatementHandle,NULL) != SQLITE_OK) {	/* prepare SQL statement */
 			printf("mud: %s\n",sqlite3_errmsg(GetDatabaseHandle()));

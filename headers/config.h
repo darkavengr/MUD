@@ -1,16 +1,16 @@
+#include <stdbool.h>
 #include "size.h"
 
 #ifndef CONFIG_H
 	#define CONFIG_H
 
 	typedef struct {
-		char *server[BUF_SIZE];
 		int port;
 		int ObjectGenerateTime;
 		int ConfigurationSaveTime;
 		int BackupDatabase;
-		int AllowPlayerKilling;
-		int AllowNewAccounts;
+		bool AllowPlayerKilling;
+		bool AllowNewAccounts;
 		int MonsterGenerateTime;
 		int PointsForWarrior;
 		int PointsForHero;
@@ -22,7 +22,8 @@
 		int PointsForLegend;
 		int PointsForWizard;
 		char *BannerMessage;
-		int roomobjectnumber;
+		int MaximumNumberOfObjectsPerRoom;
+		int MaximumNumberOfLoginAttempts;
 	} CONFIG;
 #endif
 

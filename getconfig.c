@@ -82,7 +82,7 @@ while(!feof(handle)) {
 		config.ConfigurationSaveTime=GetValueFromTimeString(LineTokens[1]);
 	}
 	else if(strncmp(LineTokens[0],"MaximumNumberOfObjectsPerRoom",BUF_SIZE) == 0) {        /* maximum number of objects per room */
-		config.roomobjectnumber=atoi(LineTokens[1]);
+		config.MaximumNumberOfObjectsPerRoom=atoi(LineTokens[1]);
 	}
 	else if(strncmp(LineTokens[0],"BackupDatabase",BUF_SIZE) == 0) {		/* backup database before save */
 		config.BackupDatabase=-1;
@@ -111,6 +111,9 @@ while(!feof(handle)) {
 	 }
 	 else if(strncmp(LineTokens[0],"MonsterGenerateTime",BUF_SIZE) == 0) {		/* how often to reset monsters */
 		config.MonsterGenerateTime=GetValueFromTimeString(LineTokens[1]);
+	 }
+	else if(strncmp(LineTokens[0],"MaximumNumberOfLoginAttempts",BUF_SIZE) == 0) {		/* maximum number of login attempts */
+		config.MaximumNumberOfLoginAttempts=atoi(LineTokens[1]);
 	 }
 	 else if(strncmp(LineTokens[0],"PointsForWarrior",BUF_SIZE) == 0) {
 		config.PointsForWarrior=atoi(LineTokens[1]);	/* points for levels */
@@ -229,10 +232,13 @@ if(handle == NULL) return(-1);                                        /* couldn'
 
 fprintf(handle,"port=%d\n",config.port);
 
-memset(buf,0,BUF_SIZE);
-
 CreateTimeString(config.ObjectGenerateTime,buf);
 fprintf(handle,"ObjectGenerateTime=%s\n",buf);
+
+CreateTimeString(config.ConfigurationSaveTime,buf);
+fprintf(handle,"ConfigurationSaveTime=%s\n",buf);
+
+fprintf(handle,"MaximumNumberOfObjectsPerRoom=%d\n",config.MaximumNumberOfObjectsPerRoom);
 
 fputs("BackupDatabase=",handle);
 if(config.BackupDatabase == TRUE) {
@@ -252,7 +258,6 @@ else
 	fputs("false\n",handle);
 }
 
-
 fputs("AllowNewAccounts=",handle);
 if(config.AllowNewAccounts== TRUE) {
 	fputs("true\n",handle);
@@ -261,6 +266,11 @@ else
 {
 	fputs("false\n",handle);
 }
+
+CreateTimeString(config.MonsterGenerateTime,buf);
+fprintf(handle,"MonsterGenerateTime=%s\n",buf);
+
+fprintf(handle,"MaximumNumberOfLoginAttempts=%d\n",config.MaximumNumberOfLoginAttempts);
 
 fprintf(handle,"PointsForHero=%d\n",config.PointsForHero);
 fprintf(handle,"PointsForWarrior=%d\n",config.PointsForWarrior);

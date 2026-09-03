@@ -62,6 +62,7 @@ struct {
 	int gender;
 	int connectionstate;
 	user *user;
+	int NumberOfLoginAttempts;
 } connections[1024];
 
 fd_set readset,currentset;
@@ -232,6 +233,8 @@ while(1) {
 	        			close(AcceptSocket);
 			        }
 				
+				connections[SocketCount].NumberOfLoginAttempts=0;
+
 			        send(AcceptSocket,config.BannerMessage,strlen(config.BannerMessage),0);  	/* send banner message
 
 				/* send username prompt */
@@ -248,15 +251,11 @@ while(1) {
 	 		}
 	 		else
          		{				/* existing connection */
-				//printf("SocketCount=%d %d\n",SocketCount,connections[SocketCount].connectionstate);
-
 	  			memset(connections[SocketCount].OutputBuffer,0,BUF_SIZE);
 
 				/* get line from connection */		
 
 				if((connections[SocketCount].connectionstate == STATE_CHECKLOGIN) || (connections[SocketCount].connectionstate == STATE_GETGENDER)) {	
-					//printf("state=%d\n",connections[SocketCount].connectionstate);
-
 					retval=recv(SocketCount,connections[SocketCount].OutputBuffer,1,0);
 					if((retval == -1) || (retval == 0)) {
 						close(SocketCount);
@@ -338,6 +337,15 @@ while(1) {
 						{
 
 							PrintError(SocketCount,INVALID_LOGIN);
+
+							/* disconnect user if there were to many incorrect login attempts */
+
+							if(++connections[SocketCount].NumberOfLoginAttempts == config.MaximumNumberOfLoginAttempts) {
+								snprintf(OutputBuffer,BUF_SIZE,"Too many (%d) incorrect login attempts\r\n",config.MaximumNumberOfLoginAttempts);
+
+								send(SocketCount,OutputBuffer,strlen(OutputBuffer),0);  	
+								close(SocketCount);
+							}
 
 					 		if(config.AllowNewAccounts == TRUE) {
 		        	              			send(SocketCount,NewUserAccountPrompt,strlen(NewUserAccountPrompt),0);  	
